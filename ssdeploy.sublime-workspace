@@ -1,0 +1,1092 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"down",
+				"download_files"
+			],
+			[
+				"data",
+				"database"
+			],
+			[
+				"da",
+				"database"
+			],
+			[
+				"base",
+				"basename"
+			],
+			[
+				"lin",
+				"links"
+			],
+			[
+				"fi",
+				"file"
+			],
+			[
+				"spec",
+				"specify"
+			],
+			[
+				"l",
+				"lfile_col_count"
+			],
+			[
+				"s",
+				"specified"
+			],
+			[
+				"if",
+				"ifile_col_count"
+			],
+			[
+				"in",
+				"input_file"
+			],
+			[
+				"file",
+				"file_name"
+			],
+			[
+				"data_",
+				"data_type"
+			],
+			[
+				"raw",
+				"raw_data"
+			],
+			[
+				"meta",
+				"meta_data"
+			],
+			[
+				"ra",
+				"raw_data_dir"
+			],
+			[
+				"rel",
+				"related_files"
+			],
+			[
+				"links_",
+				"links_file"
+			],
+			[
+				"rwa",
+				"raw_data_dir"
+			],
+			[
+				"me",
+				"meta_data_dir"
+			],
+			[
+				"t",
+				"tumor_type"
+			],
+			[
+				"resul",
+				"results.txt"
+			],
+			[
+				"install",
+				"install_nrpe.sh"
+			],
+			[
+				"templ",
+				"templates"
+			],
+			[
+				"ftp",
+				"ftp_home"
+			],
+			[
+				"top",
+				"top_dir"
+			],
+			[
+				"gene",
+				"gene_symbol"
+			],
+			[
+				"tu",
+				"tuple\t(statistics.py)"
+			],
+			[
+				"pic",
+				"picture_list"
+			],
+			[
+				"ti",
+				"title"
+			],
+			[
+				"su",
+				"summary"
+			],
+			[
+				"get_",
+				"get_db"
+			],
+			[
+				"out",
+				"output_dir"
+			],
+			[
+				"log",
+				"log_file_path"
+			],
+			[
+				"pro",
+				"projects"
+			],
+			[
+				"exi",
+				"exist_attr"
+			],
+			[
+				"store",
+				"store_data"
+			],
+			[
+				"stor",
+				"store_func_dict"
+			],
+			[
+				"no",
+				"normal_tumor"
+			],
+			[
+				"ensem",
+				"ensembl_id"
+			],
+			[
+				"fil",
+				"file_obj"
+			],
+			[
+				"file_",
+				"file_obj"
+			],
+			[
+				"add",
+				"add_argument"
+			],
+			[
+				"pi",
+				"picture4"
+			],
+			[
+				"repo",
+				"report_plugin\t(views.py)"
+			],
+			[
+				"rat",
+				"ratt_ensembl_2"
+			],
+			[
+				"mou",
+				"mouset_ensembl_2"
+			],
+			[
+				"human",
+				"humant_ensembl_2"
+			],
+			[
+				"Mouse",
+				"MouseENSID\t(report_plugin.py)"
+			],
+			[
+				"Hua",
+				"HumanENSID\t(report_plugin.py)"
+			],
+			[
+				"proje",
+				"project_name"
+			],
+			[
+				"project",
+				"project_name\t(statistics.py)"
+			],
+			[
+				"get_e",
+				"get_ensembl_id"
+			],
+			[
+				"ana",
+				"analysis_type"
+			],
+			[
+				"Ge",
+				"GeneExprs\t(statistics.py)"
+			],
+			[
+				"ex",
+				"exist_id"
+			],
+			[
+				"tra",
+				"transcript_id"
+			],
+			[
+				"id",
+				"id_type"
+			],
+			[
+				"class",
+				"classmethod"
+			],
+			[
+				"Ra",
+				"RatTID"
+			],
+			[
+				"Mou",
+				"MouseTID"
+			],
+			[
+				"Hum",
+				"HumanTID"
+			],
+			[
+				"Rat",
+				"RatTID\t(models.py)"
+			],
+			[
+				"Human",
+				"HumanTID\t(models.py)"
+			],
+			[
+				"HUM",
+				"HumanENSID\t(models.py)"
+			],
+			[
+				"expr",
+				"exprs_lst"
+			],
+			[
+				"tiss",
+				"tissue_type_lst"
+			],
+			[
+				"tisu",
+				"tissue_type"
+			],
+			[
+				"tissue",
+				"tissue_type"
+			],
+			[
+				"que",
+				"query_objs"
+			],
+			[
+				"qe",
+				"query_objs"
+			],
+			[
+				"ene",
+				"ensembl_id"
+			],
+			[
+				"re",
+				"required"
+			],
+			[
+				"mod",
+				"module_dir"
+			],
+			[
+				"exp",
+				"exprs_level"
+			],
+			[
+				"exprs",
+				"exprs_level"
+			],
+			[
+				"expre",
+				"expression_level"
+			],
+			[
+				"the",
+				"theme"
+			],
+			[
+				"ylab",
+				"ylab_name"
+			],
+			[
+				"geom",
+				"geom_bar"
+			],
+			[
+				"theme",
+				"theme_bw"
+			],
+			[
+				"tgc",
+				"tgc_data"
+			],
+			[
+				"gp",
+				"ggplot"
+			],
+			[
+				"dra",
+				"draw_barplot"
+			],
+			[
+				"TEM",
+				"TEMP_DIR"
+			],
+			[
+				"DATA",
+				"DATA_DIR"
+			],
+			[
+				"TE",
+				"TEMP_DIR\t(settings.py)"
+			],
+			[
+				"he",
+				"height"
+			],
+			[
+				"wid",
+				"width"
+			],
+			[
+				"pictu",
+				"picture_list"
+			],
+			[
+				"succ",
+				"success"
+			],
+			[
+				"dlc",
+				"dlcup_project"
+			],
+			[
+				"list",
+				"list-style"
+			],
+			[
+				"exce",
+				"exceptions\t(models.py)"
+			],
+			[
+				"dl",
+				"dlcup_project\t(views.py)"
+			],
+			[
+				"not",
+				"not_found"
+			],
+			[
+				"get",
+				"get_id_type"
+			],
+			[
+				"sepe",
+				"species"
+			],
+			[
+				"bootstrap",
+				"bootstrap-select\t(bootstrap-select.min.css)"
+			],
+			[
+				"span",
+				"span4\t(about.html)"
+			],
+			[
+				"sen",
+				"send_file"
+			],
+			[
+				"proj",
+				"project"
+			],
+			[
+				"ens",
+				"ensembl_id"
+			],
+			[
+				"en",
+				"ensembl_id"
+			],
+			[
+				"Re",
+				"ReferenceField"
+			],
+			[
+				"ensembl_",
+				"ensembl_trans_id"
+			],
+			[
+				"St",
+				"StringField"
+			],
+			[
+				"which",
+				"which_field"
+			],
+			[
+				"d",
+				"d"
+			],
+			[
+				"di",
+				"directory"
+			],
+			[
+				"dir",
+				"dir_name"
+			],
+			[
+				"mat",
+				"match.index"
+			],
+			[
+				"remo",
+				"remote_dir"
+			],
+			[
+				"r",
+				"rsync_files"
+			],
+			[
+				"sp",
+				"spawn"
+			],
+			[
+				"gdc",
+				"gdc_file"
+			],
+			[
+				"rem",
+				"remote.conf\t(rsync.sh)"
+			],
+			[
+				"remot",
+				"remote.conf\t(get_gdc.sh)"
+			],
+			[
+				"use",
+				"user"
+			],
+			[
+				"diff",
+				"diff_genes"
+			],
+			[
+				"n",
+				"nrow"
+			],
+			[
+				"ro",
+				"row.names"
+			],
+			[
+				"clini",
+				"clinical_data"
+			],
+			[
+				"row",
+				"row.names\t(prepare_exp_data.R)"
+			],
+			[
+				"co",
+				"col.names"
+			],
+			[
+				"src",
+				"src_data_dir"
+			],
+			[
+				"sur",
+				"survival_dir"
+			],
+			[
+				"run",
+				"run_stage"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "manage.py",
+			"settings":
+			{
+				"buffer_size": 806,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 127.0,
+		"last_filter": "Package Control: in",
+		"selected_items":
+		[
+			[
+				"Package Control: in",
+				"Package Control: Install Package"
+			],
+			[
+				"das",
+				"DashDoc: invoke Dash with selected word"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Install Package"
+			],
+			[
+				":dash",
+				"DashDoc: invoke Dash with selected word"
+			],
+			[
+				":in",
+				"Package Control: Install Package"
+			],
+			[
+				":instal",
+				"Package Control: Install Package"
+			],
+			[
+				":install",
+				"Package Control: Install Package"
+			],
+			[
+				":pdb",
+				"SublimeREPL: Python - PDB current file"
+			],
+			[
+				":fold",
+				"Code Folding: Unfold All"
+			],
+			[
+				"pa",
+				"Package Control: List Packages"
+			],
+			[
+				"packa",
+				"Package Control: Enable Package"
+			],
+			[
+				"packagec",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control",
+				"Package Control: Install Package"
+			],
+			[
+				"package f",
+				"Preferences: Package Control Settings – Default"
+			],
+			[
+				"key",
+				"Preferences: Key Bindings - User"
+			],
+			[
+				"sni",
+				"Snippet: html"
+			],
+			[
+				"snippe",
+				"Snippet: html"
+			],
+			[
+				":open",
+				"View: Toggle Open Files in Side Bar"
+			],
+			[
+				":4",
+				"Set Syntax: camlp4"
+			],
+			[
+				":sni",
+				"HTML: Wrap Selection With Tag"
+			],
+			[
+				"Snippet: ",
+				"Snippet: html"
+			]
+		],
+		"width": 593.0
+	},
+	"console":
+	{
+		"height": 125.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/Users/FK/Downloads/ssdeploy"
+	],
+	"file_history":
+	[
+		"/Users/FK/Downloads/gCMAPWeb/R/cmap.R",
+		"/Users/FK/Downloads/gCMAPWeb/R/cmapRun-methods.R",
+		"/Users/FK/Downloads/gCMAPWeb/R/reporting.R",
+		"/Users/FK/Downloads/gCMAPWeb/R/file_io.R",
+		"/Users/FK/Downloads/gCMAPWeb/R/cmapAnalysis.R",
+		"/Users/FK/Downloads/gCMAPWeb/R/html_elements.R",
+		"/Users/FK/Downloads/gCMAPWeb/R/plotting_functions.R",
+		"/Users/FK/Downloads/gCMAPWeb/R/createObject.R",
+		"/Users/FK/Documents/Projects/pgx_gdc/bin/run_grsa_pipeline",
+		"/Users/FK/Downloads/会议信息",
+		"/Users/FK/Downloads/email.txt",
+		"/Users/FK/Documents/Projects/Tunasync/Makefile",
+		"/Users/FK/Documents/Projects/Tunasync/cmd/tunasync/tunasync.go",
+		"/Users/FK/Documents/Projects/pgx_wget/bin/auto_download_by_project.sh"
+	],
+	"find":
+	{
+		"height": 23.0
+	},
+	"find_in_files":
+	{
+		"height": 93.0,
+		"where_history":
+		[
+			"<open folders>",
+			"/Users/FK/Downloads/SSCOP/oms,/Users/FK/Downloads/SSCOP/asset,/Users/FK/Downloads/SSCOP/deploy,/Users/FK/Downloads/SSCOP/installed",
+			"<open folders>,*.py",
+			"<open folders>",
+			"/Users/FK/Downloads/ggplot2/R",
+			"<open folders>",
+			"/Users/FK/Documents/Projects/DiagnosticSystem",
+			"/Users/xs/Documents/Code/python/PyQt4"
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"asset_info",
+			"plugins",
+			"\"",
+			"[ ]+\\n",
+			"  *\"",
+			"\\[[0-9]*\\]",
+			"load_cmaps",
+			"cmap",
+			"cmapH",
+			"cmap",
+			"cmapAnalysis",
+			"cmap",
+			"generate_report",
+			"cmapHeatmap",
+			"cmap",
+			"Reference",
+			"reference",
+			"validate_config_file",
+			"Builder",
+			"reference.cmaps",
+			".gene_score_density",
+			"parse_request",
+			"setClass",
+			"input_file",
+			"exit",
+			"cd ",
+			"菜单",
+			"mkdir",
+			"/usr/local",
+			"%",
+			"，",
+			", ",
+			"$num",
+			"chcwd",
+			"PROJECTS",
+			"\"",
+			"\\n",
+			":",
+			"'",
+			", ",
+			"/media",
+			", ",
+			"category",
+			"robj",
+			"[ \\n]+",
+			"\\[[0-9]+]",
+			"[ \\n]+",
+			"\\[[0-9]+]",
+			"DLCUP_DB",
+			"bootstrap-select.js",
+			"<[/]*li>",
+			"prettyPhoto",
+			"circle",
+			"img",
+			"facebook",
+			"icon-",
+			"facebook",
+			"circle",
+			"select",
+			"display",
+			"icontains",
+			"selectpicker",
+			"single",
+			"ca-wrapper",
+			"ca-nav",
+			"na-nav",
+			"na",
+			"nav-collapse",
+			"pull-right",
+			".container",
+			"height",
+			"navbar",
+			"navba'r",
+			"nav",
+			"portfolio",
+			"src=\"",
+			"href=\"",
+			"render_block",
+			"compute_surv",
+			"^[\\t]*",
+			"\\t\\t\\t\\t",
+			"\\n",
+			" ",
+			";.*",
+			"\\t",
+			"SRX/SRX178/",
+			"\"",
+			"gtable",
+			"library",
+			".all_aesthetics",
+			"compact",
+			"character\\(0\\)\\n",
+			"character(0)",
+			".CEL",
+			".sh",
+			"run_all",
+			"run.sh",
+			"run",
+			"RunAnnoByCSV",
+			"file names in data",
+			"file names in the ",
+			"pca",
+			"png",
+			"PCA",
+			"annotation_colors",
+			"coverAndKeyPlot",
+			"refName",
+			"pcaFun",
+			" +",
+			" *",
+			"cancer_name",
+			"gdc_stage",
+			"45.78.49.89",
+			"FK",
+			"-s",
+			"src_data_dir",
+			"mv",
+			"clinical",
+			"diff_analysis",
+			"read.csv",
+			"write.csv",
+			"=",
+			"check",
+			"https://anaconda.org/",
+			"(.*)$",
+			"workflow",
+			"clargs",
+			"version"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": true,
+		"replace_history":
+		[
+			"",
+			" ",
+			", ",
+			"",
+			"{{prefix}}",
+			"\\n",
+			"",
+			"\\t\"\"\\n",
+			"\\t\"summary\"\\n",
+			" =",
+			"",
+			"\\n",
+			"media",
+			"\\n",
+			"tissue_type",
+			", ",
+			"",
+			", ",
+			"",
+			"about",
+			"src=\"/media/",
+			"href=\"/media/",
+			"",
+			"\\t",
+			"-l",
+			"local_data_dir",
+			"<-",
+			"https://anaconda.org/bioconda/",
+			"\\1/files",
+			"、",
+			"src=\"images/",
+			";",
+			"http://www.scrcnet.org/biobank/pdf/\\1",
+			"\\1.pdf",
+			"\\1",
+			"",
+			"\\1 \\\n                   ",
+			"\\1 \\\n\\t\\t",
+			"\\1 \\\\r\\t\\t",
+			"\\1 \\\\n\\t\\t",
+			"",
+			"default",
+			"\\1. ",
+			"\\1.",
+			"default",
+			"PGx_Network_Space/\\1\\tPGx_Network_Space",
+			"PGx_Network_Space/\\1",
+			"",
+			"\\t",
+			"$ipmi_interface",
+			"",
+			"''",
+			"^''",
+			"",
+			"%% ",
+			"<!--\\1-->",
+			"commit",
+			"prepare_commit",
+			"scheme()",
+			"path()",
+			"record_name",
+			"ResultsBrowser",
+			"%s = \"%s\"'",
+			"'\\1'",
+			"plugin",
+			"",
+			"'",
+			"_list_data",
+			"_write",
+			"big",
+			"Big",
+			"",
+			"database_model",
+			"', '",
+			"",
+			"    ",
+			"",
+			"    ",
+			"     ",
+			"    ",
+			"experiment_info",
+			"    ",
+			"kwd",
+			"experiment_info",
+			"    ",
+			"",
+			"    ",
+			"",
+			"    ",
+			"Experiment",
+			"    ",
+			"task_table",
+			"SampleTableWidget",
+			"PatientTableWidget",
+			"",
+			"', '",
+			"table_mode",
+			"DateEdit",
+			"ExperimentNameEdit",
+			"ProjectComboBox",
+			"RemovePatientButton",
+			"AddPatientButton",
+			"PatientInfoTable",
+			"ButtonBox",
+			"    ",
+			".",
+			"self",
+			"",
+			"parent",
+			"    ",
+			"setBuddy"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": false
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "manage.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 806,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 23.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "ssdeploy.sublime-project",
+	"replace":
+	{
+		"height": 42.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"pyqt4.sublime-project"
+			],
+			[
+				"custom_types",
+				"galaxy/lib/galaxy/model/custom_types.py"
+			],
+			[
+				"mapping",
+				"galaxy/lib/galaxy/model/mapping.py"
+			],
+			[
+				"orm/__init__.py",
+				"galaxy/lib/galaxy/model/orm/__init__.py"
+			],
+			[
+				"__init__.py",
+				"galaxy/lib/galaxy/model/__init__.py"
+			],
+			[
+				"app",
+				"lib/galaxy/app.py"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"~/Documents/Code/python/PyQt4/diagnosicSystem.sublime-workspace"
+			]
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 392.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 392.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 198.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
