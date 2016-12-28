@@ -1,0 +1,151 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>{% block title %}SSCOP Web Interface{% endblock %}</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'sscobbler/jquery-ui.css' %}" type="text/css" />
+  <link rel="stylesheet" type="text/css" media="all" href="{% static 'sscobbler/jsGrowl.css' %}" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+  <link rel="stylesheet" href="{% static 'sscobbler/sidebar-menu.css' %}">
+  <link rel="icon" type="image/png" href="{% static 'sscobbler/favicon.png' %}" />
+  <link rel="stylesheet" href="{% static 'sscobbler/bootstrap.min.css' %}">
+  <link rel="stylesheet" type="text/css" media="all" href="{% static 'sscobbler/style.css' %}" />
+  <script src="{% static 'sscobbler/jquery.min.js' %}"></script>
+  <script src="{% static 'sscobbler/jquery-ui.min.js' %}"></script>
+  <script src="{% static 'sscobbler/jsGrowl.js' %}" type="text/javascript"></script> 
+  <script src="{% static 'sscobbler/jsGrowl_jquery.js' %}" type="text/javascript"></script> 
+  <!-- <script src="{% static 'sscobbler/sscobbler.js' %}" type="text/javascript"></script> -->
+</head>
+<body onload="go_go_gadget()">
+  <div id="container">
+    <form id="menuaction" method="POST" action="">{% csrf_token %}</form>
+    <script type="text/javascript">
+      function menuaction(action) {
+        document.forms["menuaction"].action = action
+        document.forms["menuaction"].submit();
+    }
+    </script>
+    <aside class="main-sidebar">
+      <section  class="sidebar">
+        <ul class="sidebar-menu">
+          <li class="sidebar-header">SuperSAN vHPC</li>
+          <li class="treeview">
+            <a href="/sscobbler">
+              <!-- <i class="fa fa-dashboard"></i> <span>Dashboard</span> -->
+              <i class="fa fa-dashboard"></i> <span>仪表盘</span>
+            </a>
+          </li>
+
+          <li class="treeview">
+            <a href="/sscobbler">
+              <i class="fa fa-cubes"></i> <span>系统部署</span>
+              <i class="fa fa-angle-left pull-right"></i>
+            </a>
+            <ul class="treeview-menu">
+              <li><a href=""><i class="fa fa-circle"></i>配置与定义<i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                  <li><a href="/sscobbler/distro/list"><i class="fa fa-circle-o"></i>Distros</a></li>
+                  <li><a href="/sscobbler/profile/list"><i class="fa fa-circle-o"></i>Profiles</a></li>
+                  <li><a href="/sscobbler/system/list"><i class="fa fa-circle-o"></i>Systems</a></li>
+                  <li><a href="/sscobbler/repo/list"><i class="fa fa-circle-o"></i>Repos</a></li>
+                  <li><a href="/sscobbler/image/list"><i class="fa fa-circle-o"></i>Images</a></li>
+                  <li><a href="/sscobbler/aifile/list"><i class="fa fa-circle-o"></i>自动安装模板</a></li>
+                  <li><a href="/sscobbler/snippet/list"><i class="fa fa-circle-o"></i>自动安装Snippets</a></li>
+                  <li><a href="/sscobbler/mgmtclass/list"><i class="fa fa-circle-o"></i>管理类</a></li>
+                  <li><a href="/sscobbler/setting/list"><i class="fa fa-circle-o"></i>设置</a></li>
+                </ul>
+              </li>
+            </ul>
+            <ul class="treeview-menu">
+              <li><a href=""><i class="fa fa-circle"></i>资源<i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                  <li><a href="/sscobbler/package/list"><i class="fa fa-circle-o"></i>Packages</a></li>
+                  <li><a href="/sscobbler/file/list"><i class="fa fa-circle-o"></i>Files</a></li>
+                </ul>
+              </li>
+            </ul>
+            <ul class="treeview-menu">
+              <li><a href=""><i class="fa fa-circle"></i>Actions<i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                  <li><a href="/sscobbler/import/prompt"><i class="fa fa-circle-o"></i>导入ISO镜像</a></li>
+                  <li><a href="javascript:menuaction('/sscobbler/sync');"><i class="fa fa-circle-o"></i>同步</a></li>
+                  <li><a href="javascript:menuaction('/sscobbler/reposync');"><i class="fa fa-circle-o"></i>同步仓库</a></li>
+                  <li><a href="javascript:menuaction('/sscobbler/hardlink');"><i class="fa fa-circle-o"></i>Hardlink</a></li>
+                  <li><a href="javascript:menuaction('/sscobbler/buildiso');"><i class="fa fa-circle-o"></i>构建ISO镜像</a></li>
+                </ul>
+              </li>
+            </ul>
+            <ul class="treeview-menu">
+              <li><a href=""><i class="fa fa-circle"></i>其它<i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu">
+                  <li><a href="/sscobbler/check"><i class="fa fa-circle-o"></i>检测</a></li>
+                  <li><a href="/sscobbler/events"><i class="fa fa-circle-o"></i>事件</a></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li class="treeview">
+            <a href="/sscobbler">
+              <i class="fa fa-cog"></i>软件/服务部署<i class="fa fa-angle-left pull-right"></i>
+            </a>
+            <ul class="treeview-menu" style="display: none;">
+              <li><a href=""><i class="fa fa-circle"></i>软件部署</a></li>
+              <li><a href=""><i class="fa fa-circle"></i>服务部署</a></li>
+              <li><a href=""><i class="fa fa-circle"></i>主机信息</a></li>
+              <li><a href=""><i class="fa fa-circle"></i>其它</a>
+              </li>
+            </ul>
+          </li>
+          <li class="treeview">
+            <a href="/sscobbler">
+              <i class="fa fa-bar-chart"></i>系统与网络监控<i class="fa fa-angle-left pull-right"></i>
+            </a>
+            <ul class="treeview-menu" style="display: none;">
+              <li><a href=""><i class="fa fa-circle"></i>主机监控</a></li>
+              <li><a href=""><i class="fa fa-circle"></i>网络监控</a></li>
+              <li><a href=""><i class="fa fa-circle"></i>事件</a></li>
+              <li><a href=""><i class="fa fa-circle"></i>其它</a>
+              </li>
+            </ul>
+          </li>
+          <li><a href="/sscobbler"><i class="fa fa-book"></i> <span>使用指南</span></a></li>
+          <li class="second-header">监控消息</li>
+          <li><a href=""><i class="fa fa-bug text-red"></i> <span>错误</span></a></li>
+          <li><a href=""><i class="fa fa-exclamation-triangle text-yellow"></i> <span>警告</span></a></li>
+          <li><a href=""><i class="fa fa-info-circle text-aqua"></i> <span>信息</span></a></li>
+        </ul>
+      </section>
+    </aside>
+    <div class="right-container">
+      <div id="header" class="header">
+        <div id="user">
+          <input type="hidden" name="username" id="username" value="{{ username }}" />
+          <span><b>{{ username }}</b> <a class="action" href="javascript:menuaction('/sscobbler/logout');">退出</a></span>
+        </div>
+      </div>
+      <hr>
+      <div class="content-container">
+        <div id="content">
+          {% block content %}
+          {% endblock %}
+        </div>
+        {% block welcome %}
+        {% endblock %}
+      </div>
+      <hr>
+      <div id="footer" class="footer">
+        <span>SuperSAN vHPC {{ version }}</span>
+      </div>
+      <div id="jsGrowl"></div>
+    </div>
+  </div>
+  <script src="http://libs.useso.com/js/jquery/2.1.1/jquery.min.js" type="text/javascript"></script>
+  <script>window.jQuery || document.write('<script src="{% static "sscobbler/jquery.2.1.1.min.js" %}"><\/script>')</script>
+  <script src="{% static 'sscobbler/sidebar-menu.js' %}"></script>
+  <script>
+    $.sidebarMenu($('.sidebar-menu'))
+  </script>
+</body>
+</html>
