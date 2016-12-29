@@ -454,6 +454,9 @@ $(document).ready(function()
 
 <h1>{% ifequal editmode 'edit'  %}Editing{% else %}Adding{% endifequal %} a {{ what|capfirst }}{%ifequal editmode 'edit' %}: {{ name }}{% endifequal %}</h1>
 <hr />
+
+<div class="form-container">
+<div class="tab-wrapper">
 <form name="editform" method="post" action="/sscobbler/{{ what }}/save">
   {% csrf_token %}
   <input type="hidden" name="editmode" value="{{ editmode }}" />
@@ -461,29 +464,31 @@ $(document).ready(function()
 
   <div>
 {% if editable %}
-    <input class="button" type="submit" name="submit" onClick="on_form_submit();" value="Save" />
-    <input class="button" type="button" onClick="window.location='/{{ what }}/list';" value="Cancel" />
+    <!-- <input class="button" id="save-button" type="submit" name="submit" onClick="on_form_submit();" value="Save" /> -->
+    <!-- <input class="button" id="cancel-button" type="button" onClick="window.location='/{{ what }}/list';" value="Cancel" /> -->
+    <input class="button" id="save-button" type="submit" name="submit" onClick="on_form_submit();" value="保存" />
+    <input class="button" id="cancel-button" type="button" onClick="window.location='/sscobbler/{{ what }}/list';" value="取消" />
 {% else %}
-    This user does not have permissions to edit this object.
+    <!-- This user does not have permissions to edit this object. -->
+    当前用户无权限编辑此对象。
 {% endif %}
   </div>
 
-  <div id="tabs">
-    <ul>
 {% for key,value in sections.items|sort %}
-      <li><a href="#tabs-{{ forloop.counter }}">{{ value.name }}</a></li>
-{% endfor %}
-    </ul>
-{% for key,value in sections.items|sort %}
-    <div id="tabs-{{ forloop.counter }}">
+    <input type="radio" name="tab-radio" class="tab-radio" id="tab-radio-{{ forloop.counter }}" {% if forloop.counter == 1 %} checked {% endif %} >
+    <label for="tab-radio-{{ forloop.counter }}" class="tab-handler tab-handler-{{ forloop.counter }}">{{ value.name }}</label>
+    <!-- <div id="tabs-{{ forloop.counter }}"> -->
+    <div class="tab-content tab-content-{{ forloop.counter }}">
     <ol>
   {% if what == "system" and value.name == "Networking" %}
     <li id="network_interface_add_row" class="editrow">
-      <label for="network_interface_add" id="network_interface_add_caption">Add interface</label>
+      <!-- <label for="network_interface_add" id="network_interface_add_caption">Add interface</label> -->
+      <label for="network_interface_add" id="network_interface_add_caption">添加网卡</label>
       <span id="network_interface_add"></span>
     </li>
     <li id="network_interface_edit_row" class="editrow">
-      <label for="network_interface_edit" id="network_interface_edit_caption">Edit interface</label>
+      <!-- <label for="network_interface_edit" id="network_interface_edit_caption">Edit interface</label> -->
+      <label for="network_interface_edit" id="network_interface_edit_caption">编辑网卡</label>
       <span id="network_interface_edit"></span>
     </li>
   {% endif %}
@@ -532,7 +537,8 @@ $(document).ready(function()
     {% ifequal item.html_element "multiselect" %}
       <div class="multiselect">
         <div class="multileft">
-          <label for="from_{{ item.dname }}">Available:</label>
+          <!-- <label for="from_{{ item.dname }}">Available:</label> -->
+          <label for="from_{{ item.dname }}">可获取</label>
           <br />
           <select multiple id="from_{{ item.dname }}" name="from_{{ item.dname }}" class="edit">
       {% for choice in item.choices %}
@@ -547,7 +553,8 @@ $(document).ready(function()
           <input class="button" type="button" value="&lt;&lt;" id="remove_{{ item.dname }}" onclick="$('#{{ item.dname }} option:selected').remove().appendTo('#from_{{ item.dname }}');" />
         </div>
         <div class="multiright">
-          <label for="{{ item.dname }}">Selected:</label>
+          <!-- <label for="{{ item.dname }}">Selected:</label> -->
+          <label for="{{ item.dname }}">已选择</label>
           <br />
           <select multiple id="{{ item.dname }}" name="{{ item.dname }}" class="edit">
       {% for choice in item.choices %}
@@ -578,6 +585,8 @@ $(document).ready(function()
     </div>
 {% endfor %}
   </div>
+</div>
+</div>
 
 {% ifequal what "system" %}
   <input type="hidden" id="interface_list" name="interface_list" value="1" />
@@ -586,4 +595,5 @@ $(document).ready(function()
 {% endifequal %}
 
 </form>
+
 {% endblock content %}

@@ -228,9 +228,9 @@ $(document).ready(function() {
 <ul id="submenubar">
   <li>
     <!-- <a class="action" href="/sscobbler/{{what}}/edit">Create new {{ what }}</a> -->
-    <a class="action" href="/sscobbler/{{what}}/edit">创建新的{{ what }}</a>
+    <a class="action" href="/sscobbler/{{what}}/edit">创建新{{ what }}</a>
     <!-- {% ifequal what "profile" %}<a class="action" href="/sscobbler/sub{{what}}/edit">Create new sub-{{ what }}</a>{% endifequal %} -->
-    {% ifequal what "profile" %}<a class="action" href="/sscobbler/sub{{what}}/edit">创建新的子{{ what }}</a>{% endifequal %}
+    {% ifequal what "profile" %}<a class="action" href="/sscobbler/sub{{what}}/edit">创建新子{{ what }}</a>{% endifequal %}
   </li>
   <li>
     <select id="batchactions">

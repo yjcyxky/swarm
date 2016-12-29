@@ -58,7 +58,7 @@ Set Right Container
 }
 
 .content-container, .header, .footer {
-  /*position: relative;*/
+  position: relative;
   /*float: right;*/
   right: 0;
   z-index: 810;
@@ -113,15 +113,22 @@ Set Welcome Page
 Set Footer CSS
 */
 #footer { 
+  /*position: absolute;*/
+  bottom: 0;
+  width: 80%;
   font-size: 1.5em;
   text-align: center;
   height: 8%;
+  clear: both;
+  /*margin-bottom: -60px;*/
 }
 
 /*
 Set Content CSS
 */
 #content {
+  position: relative;
+  height: 100%;
   width: 98%;
   overflow: auto;
   margin: auto 1%;
@@ -415,7 +422,7 @@ span.context-tip:hover {
   jQuery UI formatting for tabs, some styling based on examples here:
   http://keith-wood.name/uiTabs.html 
   */
-.ui-tabs .ui-tabs-nav li a {
+/*.ui-tabs .ui-tabs-nav li a {
   padding: 0.5em 0.5em;
   font-size: 0.95em;
   font-weight: bold;
@@ -446,4 +453,82 @@ span.context-tip:hover {
 #tabs .ui-tabs-panel {
   border-width: 0px 1px 1px 1px;
   background-color: white;
+}*/
+
+.form-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.1);
+}
+
+.tab-wrapper {
+  position: absolute;
+  width: 100%;
+  height: 60px;
+  background-color: #33344a;
+}
+
+.tab-wrapper .tab-radio {
+  display: none;
+}
+
+.tab-handler {
+  z-index: 2;
+  display: block;
+  float: left;
+  width: auto;
+  height: 60px;
+  padding: 0 20px;
+  margin: 0 0;
+  color: #717181;
+  font-size: 16px;
+  line-height: 60px;
+  transition: .3s;
+  transform: scale(.9);
+}
+
+.tab-radio:checked + .tab-handler {
+  color: #fff;
+  background-color: #e74c3c;
+  transform: scale(1);
+}
+
+.tab-radio:checked + .tab-handler + .tab-content {
+  visibility: visible;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.tab-wrapper .tab-content {
+  visibility: hidden;
+  position: absolute;
+  top: 60px;
+  left: 0;
+  width: 100%;
+  padding: 30px;
+  color: #999;
+  font-size: 1em;
+  line-height: 1.618em;
+  background-color: #fff;
+  opacity: 0;
+  transition: transform .5s, opacity .7s;
+  transform: translateY(20px);
+}
+
+#save-button, #cancel-button {
+  position: absolute;
+  top: 0px;
+  width: 100px;
+  height: 60px;
+  right: 0;
+}
+
+#save-button {
+  right: 110px;
+}
+
+#cancel-button {
+  right: 0;
 }

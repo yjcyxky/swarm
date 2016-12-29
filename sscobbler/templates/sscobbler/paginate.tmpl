@@ -19,18 +19,20 @@ function change_page(value) {
   {% endfor %}
   </select>
   {% ifnotequal pageinfo.prev_page "~" %}
-  <a href="javascript:change_page('{{ pageinfo.prev_page }}')"><span class="lpointers">&lArr;</span></a>
+  <a href="javascript:change_page('{{ pageinfo.prev_page }}')">
+  <!-- <span class="lpointers">&lArr;</span></a> -->
   {% else %}
-  <span class="lpointers">&lArr;</span>
+  <!-- <span class="lpointers">&lArr;</span> -->
   {% endifnotequal %}
   <select name="page" id="page" onchange="javascript:change_page(this.value)">
     <!-- {% for p in pageinfo.pages %}<option value="{{ p }}"{% ifequal pageinfo.page p %} selected="selected"{% endifequal %}>Page {{ p }}</option>{% endfor %} -->
     {% for p in pageinfo.pages %}<option value="{{ p }}"{% ifequal pageinfo.page p %} selected="selected"{% endifequal %}>页 {{ p }}</option>{% endfor %}
   </select>
   {% ifnotequal pageinfo.next_page "~" %}
-  <a href="javascript:change_page('{{ pageinfo.next_page }}')"><span class="rpointers">&rArr;</span></a>
+  <a href="javascript:change_page('{{ pageinfo.next_page }}')">
+  <!-- <span class="rpointers">&rArr;</span></a> -->
   {% else %}
-  <span class="rpointers">&rArr;</span>
+  <!-- <span class="rpointers">&rArr;</span> -->
   {% endifnotequal %}
 </li>
 {% endif %}
