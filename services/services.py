@@ -26,7 +26,6 @@ import os
 import urllib
 import cgi
 
-
 def application(environ, start_response):
 
     if 'VIRTUALENV' in environ and environ['VIRTUALENV'] != "":
@@ -106,7 +105,8 @@ def application(environ, start_response):
 
     # req.content_type = "text/plain;charset=utf-8"
     response_headers = [('Content-type', 'text/plain;charset=utf-8'),
-                        ('Content-Length', str(len(content)))]
+                        ('Content-Length', str(len(content))),
+                        ('Access-Control-Allow-Origin', '*')]   # For CORS
     start_response(status, response_headers)
 
     return [content]

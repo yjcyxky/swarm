@@ -303,11 +303,11 @@ $(document).ready(function() {
           <span class="action" onClick="javascript:$('#dialog' ).data('name', '{{ item.0.1 }}').dialog( 'open' )">删除</span>
   {% ifequal what "system" %}
           <!-- <span class="action" onClick="window.location='/cblr/svc/op/autoinstall/system/{{ item.0.1 }}'">View automatic installation template</span> -->
-          <span class="action" onClick="window.location='/cblr/svc/op/autoinstall/system/{{ item.0.1 }}'">查看自动安装模板</span>
+          <span class="action" onClick="window.location='http://10.157.43.71/cblr/svc/op/autoinstall/system/{{ item.0.1 }}'">查看自动安装模板</span>
   {% endifequal %}
   {% ifequal what "profile" %}
           <!-- <span class="action" onClick="window.location='/cblr/svc/op/autoinstall/profile/{{ item.0.1 }}'">View automatic installation template</span> -->
-          <span class="action" onClick="window.location='/cblr/svc/op/autoinstall/profile/{{ item.0.1 }}'">查看自动安装模板</span>
+          <span class="action" onClick="window.location='http://10.157.43.71/cblr/svc/op/autoinstall/profile/{{ item.0.1 }}'">查看自动安装模板</span>
   {% endifequal %}
         </td>
       </tr>

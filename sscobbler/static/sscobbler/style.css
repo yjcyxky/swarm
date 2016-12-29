@@ -33,91 +33,143 @@ table{
 }
 /*End Reset*/
 
-/* Lets set the primary styles and feel for the app */
-/*body {
-  font-family: "URW Gothic", "Liberation Sans", "Helvetica", "Luxi Sans", "Bitstream Vera Sans", arial,helvetica,clean,sans-serif;
-  color: #333333;
-  background-color: #EEEEEE;
-  font-size: 1em;
-}
-
-a { 
-  color: #333333;
-  text-decoration: none;
-}
-
-a:hover { 
-  color: #306CAC;
-}
-
-img { 
-  border: 0px;
-}
-
-h1,h2,legend { 
-  color: #306CAC;
-  font-weight: bold;
-}
-
-h1 { 
-  font-size: 1.5em;
-}
-
-h2,legend { 
-  font-size: 1.2em;
-  margin-bottom: 0px;
-}
-
-input, textarea { 
-  background-color: white;
-  padding: 2px 4px;
-  border: 1px solid #306CAC;
-  border-radius:4px;
-  -moz-border-radius:4px;
-  -webkit-border-radius:4px;
-}
-
-input[type=text], input[type=password], select { 
-  width: 350px;
-}
-
-input[type=submit], input[type=reset], input[type=button] { 
-  width: auto;
-  margin-top: 5px;
-  margin-bottom: 5px;
-}
-
-input[type=checkbox] { 
-  background: none;
-  border: none;
-  margin-right: 196px;
-  margin-top: 5px;
-}
-
-label { 
-  font-weight: bold;
-}*/
-
 ol, ul { 
   list-style: none;
 }
-
-/*textarea { 
-  height: 8em;
-  width: 25em;
-  margin-bottom: 4px;
-}
-
-pre textarea { 
-  height: 30em;
-  width: 60em;
-}
-*/
 
 hr { 
   height: 1px;
   margin: 0px;
 }
+
+/*
+Set Right Container
+*/
+.right-container {
+    position: absolute;
+    /*overflow: scroll;*/
+    top: 0;
+    right: 0;
+    height: 100%;
+    min-height: 100%;
+    /*min-width: 600px;*/
+    width: 80%;
+    z-index: 810;
+}
+
+.content-container, .header, .footer {
+  /*position: relative;*/
+  /*float: right;*/
+  right: 0;
+  z-index: 810;
+  margin: auto auto;
+  overflow: auto;
+}
+
+/*
+Set Header CSS
+*/
+#header {
+  margin: 10px 10px;
+  height: 5%;
+}
+
+#user { 
+  text-align: right;
+  font-size: 1.2em;
+  width: 100%
+}
+
+#username {
+  margin-top: 10px;
+}
+
+/*
+Set content-container
+*/
+.content-container {
+  top: -80;
+  height: 87%;
+}
+
+/*
+Set Welcome Page
+*/
+#welcome { 
+  width: 100%;
+  font-size: 2em;
+  text-align: center;
+  margin: 10% 10px;
+  height: 80%;
+}
+
+#welcome img {
+  display: block;
+  width: 185px;
+  margin: auto auto 20px auto;
+}
+
+/*
+Set Footer CSS
+*/
+#footer { 
+  font-size: 1.5em;
+  text-align: center;
+  height: 8%;
+}
+
+/*
+Set Content CSS
+*/
+#content {
+  width: 98%;
+  overflow: auto;
+  margin: auto 1%;
+  font-size: 1em;
+}
+
+#submenubar, #filter-adder { 
+  width: 100%; 
+  overflow: auto;
+  margin: 0 0;
+  padding: 0 0;
+}
+
+#submenubar li { 
+  float: left; 
+  height: 26px; 
+  margin-left: 8px; 
+}
+
+#submenubar li:first-child { 
+  margin-left: 0px; 
+  margin-top: 3px; 
+}
+
+#submenubar li.paginate { 
+  float: right; 
+}
+
+#submenubar li.paginate select {
+  width: auto; 
+}
+
+#submenubar input { 
+  margin: 0px; 
+}
+
+#submenubar .action, #submenu .button { 
+  height: 26px; 
+}
+
+input#filter_value {
+  margin: 0 5px 0 5px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  border:1px solid #a6a6a6;
+}
+
 
 /* Defining the classes */
 .button, .action {
@@ -231,7 +283,7 @@ li.paginate select {
 span.context-tip {
   display: none;
   background-repeat: no-repeat;
-  background-image: url('/static/tooltip.png');
+  background-image: url('/static/sscobbler/tooltip.png');
   padding-left: 30px;
   color: #EEEEEE;
 }
@@ -394,133 +446,4 @@ span.context-tip:hover {
 #tabs .ui-tabs-panel {
   border-width: 0px 1px 1px 1px;
   background-color: white;
-}
-
-
-/*
-Set Right Container
-*/
-.right-container {
-    position: absolute;
-    /*overflow: scroll;*/
-    top: 0;
-    right: 0;
-    height: 100%;
-    min-height: 100%;
-    /*min-width: 600px;*/
-    width: 80%;
-    z-index: 810;
-}
-
-.content-container, .header, .footer {
-  /*position: relative;*/
-  /*float: right;*/
-  right: 0;
-  z-index: 810;
-  margin: auto auto;
-  overflow: auto;
-}
-
-/*
-Set Header CSS
-*/
-#header {
-  margin: 10px 10px;
-  height: 5%;
-}
-
-#user { 
-  text-align: right;
-  font-size: 1.2em;
-  width: 100%
-}
-
-#username {
-  margin-top: 10px;
-}
-
-/*
-Set content-container
-*/
-.content-container {
-  top: -80;
-  height: 87%;
-}
-
-/*
-Set Welcome Page
-*/
-#welcome { 
-  width: 100%;
-  font-size: 2em;
-  text-align: center;
-  margin: 10% 10px;
-  height: 80%;
-}
-
-#welcome img {
-  display: block;
-  width: 185px;
-  margin: auto auto 20px auto;
-}
-
-/*
-Set Footer CSS
-*/
-#footer { 
-  font-size: 1.5em;
-  text-align: center;
-  height: 8%;
-}
-
-/*
-Set Content CSS
-*/
-#content {
-  width: 98%;
-  overflow: auto;
-  margin: auto 1%;
-  font-size: 1em;
-}
-
-#submenubar, #filter-adder { 
-  width: 100%; 
-  overflow: auto;
-  margin: 0 0;
-  padding: 0 0;
-}
-
-#submenubar li { 
-  float: left; 
-  height: 26px; 
-  margin-left: 8px; 
-}
-
-#submenubar li:first-child { 
-  margin-left: 0px; 
-  margin-top: 3px; 
-}
-
-#submenubar li.paginate { 
-  float: right; 
-}
-
-#submenubar li.paginate select {
-  width: auto; 
-}
-
-#submenubar input { 
-  margin: 0px; 
-}
-
-#submenubar .action, #submenu .button { 
-  height: 26px; 
-}
-
-input#filter_value {
-  margin: 0 5px 0 5px;
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  border-radius: 4px;
-  border:1px solid #a6a6a6;
 }

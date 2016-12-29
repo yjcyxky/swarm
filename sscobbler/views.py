@@ -72,6 +72,7 @@ def index(request):
 
     t = get_template('index.tmpl')
     html = t.render(RequestContext(request, {
+        # 调用cobbler API获取(可修改/etc/cobbler/version文件或SSCOPDeploy项目setup.py文件)
         'version': remote.extended_version(request.session['token'])['version'],
         'username': username,
     }))
@@ -143,23 +144,23 @@ def get_fields(what, is_subobject, seed_item=None):
     """
 
     if what == "distro":
-        fields = remote.get_item_distro_fileds
+        fields = remote.get_item_distro_fileds()
     if what == "profile":
-        fields = remote.get_item_profile_fileds
+        fields = remote.get_item_profile_fileds()
     if what == "system":
-        fields = remote.get_item_system_fileds
+        fields = remote.get_item_system_fileds()
     if what == "repo":
-        fields = remote.get_item_repo_fileds
+        fields = remote.get_item_repo_fileds()
     if what == "image":
-        fields = remote.get_item_image_fileds
+        fields = remote.get_item_image_fileds()
     if what == "mgmtclass":
-        fields = remote.get_item_mgmtclass_fileds
+        fields = remote.get_item_mgmtclass_fileds()
     if what == "package":
-        fields = remote.get_item_package_fileds
+        fields = remote.get_item_package_fileds()
     if what == "file":
-        fields = remote.get_item_file_fileds
+        fields = remote.get_item_file_fileds()
     if what == "setting":
-        fields = remote.get_item_settings_fileds
+        fields = remote.get_item_settings_fileds()
 
     settings = remote.get_settings()
 
@@ -247,7 +248,7 @@ def get_network_interface_fields():
     @return list network interface fields UI metadata
     """
 
-    fields = item_system.NETWORK_INTERFACE_FIELDS
+    fields = remote.get_network_interface_fields()
 
     fields_ui = []
     for field in fields:

@@ -4,6 +4,22 @@
 		"selected_items":
 		[
 			[
+				"h",
+				"hidden"
+			],
+			[
+				"mar",
+				"margin"
+			],
+			[
+				"right",
+				"right-container\t(master.tmpl)"
+			],
+			[
+				"wid",
+				"width\t(master.tmpl)"
+			],
+			[
 				"down",
 				"download_files"
 			],
@@ -356,10 +372,6 @@
 				"height"
 			],
 			[
-				"wid",
-				"width"
-			],
-			[
 				"pictu",
 				"picture_list"
 			],
@@ -502,28 +514,96 @@
 			[
 				"co",
 				"col.names"
-			],
-			[
-				"src",
-				"src_data_dir"
-			],
-			[
-				"sur",
-				"survival_dir"
-			],
-			[
-				"run",
-				"run_stage"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"file": "manage.py",
+			"file": "sscobbler/templates/sscobbler/master.tmpl",
 			"settings":
 			{
-				"buffer_size": 806,
+				"buffer_size": 7959,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ssdeploy/settings.py",
+			"settings":
+			{
+				"buffer_size": 3542,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "sscobbler/static/sscobbler/sscobbler.js",
+			"settings":
+			{
+				"buffer_size": 1700,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "Searching 132 files for \"cblr\" (regex)\n\n/Users/FK/Documents/Projects/SSCOPWeb/services/cblr_services.py:\n  238          name = \"?\"\n  239          if system is not None:\n  240:             url = \"%s/cblr/svc/op/autoinstall/system/%s\" % (serverseg, name)\n  241          elif profile is not None:\n  242:             url = \"%s/cblr/svc/op/autoinstall/profile/%s\" % (serverseg, name)\n  243          else:\n  244              name = self.autodetect(**rest)\n  245              if name.startswith(\"FAILED\"):\n  246                  return \"# autodetection %s\" % name\n  247:             url = \"%s/cblr/svc/op/autoinstall/system/%s\" % (serverseg, name)\n  248  \n  249          try:\n\n/Users/FK/Documents/Projects/SSCOPWeb/services/services.py:\n   39  \n   40      import yaml\n   41:     from cblr_services import CobblerSvc\n   42  \n   43      my_uri = urllib.unquote(environ['REQUEST_URI'])\n\n/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/sscobbler.js:\n   12    /* FIXME: don't show events that are older than 40 seconds */\n   13  \n   14:   $.getJSON(\"/cblr/svc/op/events/user/\" + username,\n   15      function(data){$.each(data, function(i,record) {\n   16        var id = record[0];\n\n/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/generic_list.tmpl:\n  303            <span class=\"action\" onClick=\"javascript:$('#dialog' ).data('name', '{{ item.0.1 }}').dialog( 'open' )\">删除</span>\n  304    {% ifequal what \"system\" %}\n  305:           <!-- <span class=\"action\" onClick=\"window.location='/cblr/svc/op/autoinstall/system/{{ item.0.1 }}'\">View automatic installation template</span> -->\n  306:           <span class=\"action\" onClick=\"window.location='/cblr/svc/op/autoinstall/system/{{ item.0.1 }}'\">查看自动安装模板</span>\n  307    {% endifequal %}\n  308    {% ifequal what \"profile\" %}\n  309:           <!-- <span class=\"action\" onClick=\"window.location='/cblr/svc/op/autoinstall/profile/{{ item.0.1 }}'\">View automatic installation template</span> -->\n  310:           <span class=\"action\" onClick=\"window.location='/cblr/svc/op/autoinstall/profile/{{ item.0.1 }}'\">查看自动安装模板</span>\n  311    {% endifequal %}\n  312          </td>\n\n9 matches across 4 files\n\n\nSearching 132 files for \"cblr/svc\" (regex)\n\n/Users/FK/Documents/Projects/SSCOPWeb/services/cblr_services.py:\n  238          name = \"?\"\n  239          if system is not None:\n  240:             url = \"%s/cblr/svc/op/autoinstall/system/%s\" % (serverseg, name)\n  241          elif profile is not None:\n  242:             url = \"%s/cblr/svc/op/autoinstall/profile/%s\" % (serverseg, name)\n  243          else:\n  244              name = self.autodetect(**rest)\n  245              if name.startswith(\"FAILED\"):\n  246                  return \"# autodetection %s\" % name\n  247:             url = \"%s/cblr/svc/op/autoinstall/system/%s\" % (serverseg, name)\n  248  \n  249          try:\n\n/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/sscobbler.js:\n   12    /* FIXME: don't show events that are older than 40 seconds */\n   13  \n   14:   $.getJSON(\"/cblr/svc/op/events/user/\" + username,\n   15      function(data){$.each(data, function(i,record) {\n   16        var id = record[0];\n\n/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/generic_list.tmpl:\n  303            <span class=\"action\" onClick=\"javascript:$('#dialog' ).data('name', '{{ item.0.1 }}').dialog( 'open' )\">删除</span>\n  304    {% ifequal what \"system\" %}\n  305:           <!-- <span class=\"action\" onClick=\"window.location='/cblr/svc/op/autoinstall/system/{{ item.0.1 }}'\">View automatic installation template</span> -->\n  306:           <span class=\"action\" onClick=\"window.location='/cblr/svc/op/autoinstall/system/{{ item.0.1 }}'\">查看自动安装模板</span>\n  307    {% endifequal %}\n  308    {% ifequal what \"profile\" %}\n  309:           <!-- <span class=\"action\" onClick=\"window.location='/cblr/svc/op/autoinstall/profile/{{ item.0.1 }}'\">View automatic installation template</span> -->\n  310:           <span class=\"action\" onClick=\"window.location='/cblr/svc/op/autoinstall/profile/{{ item.0.1 }}'\">查看自动安装模板</span>\n  311    {% endifequal %}\n  312          </td>\n\n8 matches across 3 files\n\n\nSearching 132 files for \"/cblr/svc\" (regex)\n\n/Users/FK/Documents/Projects/SSCOPWeb/services/cblr_services.py:\n  238          name = \"?\"\n  239          if system is not None:\n  240:             url = \"%s/cblr/svc/op/autoinstall/system/%s\" % (serverseg, name)\n  241          elif profile is not None:\n  242:             url = \"%s/cblr/svc/op/autoinstall/profile/%s\" % (serverseg, name)\n  243          else:\n  244              name = self.autodetect(**rest)\n  245              if name.startswith(\"FAILED\"):\n  246                  return \"# autodetection %s\" % name\n  247:             url = \"%s/cblr/svc/op/autoinstall/system/%s\" % (serverseg, name)\n  248  \n  249          try:\n\n/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/sscobbler.js:\n   12    /* FIXME: don't show events that are older than 40 seconds */\n   13  \n   14:   $.getJSON(\"http://10.157.43.71/cblr/svc/op/events/user/\" + username,\n   15      function(data){$.each(data, function(i,record) {\n   16        var id = record[0];\n\n/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/generic_list.tmpl:\n  303            <span class=\"action\" onClick=\"javascript:$('#dialog' ).data('name', '{{ item.0.1 }}').dialog( 'open' )\">删除</span>\n  304    {% ifequal what \"system\" %}\n  305:           <!-- <span class=\"action\" onClick=\"window.location='/cblr/svc/op/autoinstall/system/{{ item.0.1 }}'\">View automatic installation template</span> -->\n  306:           <span class=\"action\" onClick=\"window.location='http://10.157.43.71/cblr/svc/op/autoinstall/system/{{ item.0.1 }}'\">查看自动安装模板</span>\n  307    {% endifequal %}\n  308    {% ifequal what \"profile\" %}\n  309:           <!-- <span class=\"action\" onClick=\"window.location='/cblr/svc/op/autoinstall/profile/{{ item.0.1 }}'\">View automatic installation template</span> -->\n  310:           <span class=\"action\" onClick=\"window.location='http://10.157.43.71/cblr/svc/op/autoinstall/profile/{{ item.0.1 }}'\">查看自动安装模板</span>\n  311    {% endifequal %}\n  312          </td>\n\n8 matches across 3 files\n",
+			"settings":
+			{
+				"buffer_size": 6172,
+				"line_ending": "Unix",
+				"name": "Find Results",
+				"scratch": true
+			}
+		},
+		{
+			"file": "sscobbler/templates/sscobbler/generic_list.tmpl",
+			"settings":
+			{
+				"buffer_size": 11782,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "services/cblr_services.py",
+			"settings":
+			{
+				"buffer_size": 10481,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "sscobbler/views.py",
+			"settings":
+			{
+				"buffer_size": 53087,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "services/services.py",
+			"settings":
+			{
+				"buffer_size": 3766,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "sscobbler/urls.py",
+			"settings":
+			{
+				"buffer_size": 2410,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "sscobbler/templates/sscobbler/index.tmpl",
+			"settings":
+			{
+				"buffer_size": 260,
+				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		}
@@ -644,10 +724,60 @@
 	},
 	"expanded_folders":
 	[
-		"/Users/FK/Downloads/ssdeploy"
+		"/Users/FK/Documents/Projects/SSCOPWeb",
+		"/Users/FK/Documents/Projects/SSCOPWeb/services",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler",
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy"
 	],
 	"file_history":
 	[
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssnagios/apps.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/style.css",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/bootstrap.min.css",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/master.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/index.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/generic_list.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/filter.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/paginate.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/sidebar-menu.css",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/sscobbler.js",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/__init__.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/settings.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/aifile_edit.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/snippet_list.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/task_created.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/snippet_edit.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/aifile_list.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/check.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/empty.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/enoaccess.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/error_page.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/eventlog.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/events.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/generic_edit.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/import.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/item.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/manage.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssnagios/models.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/models.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/field_ui_info.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/settings.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/config.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/apps.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/admin.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/__init__.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/urls.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/urls.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/tests.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/views.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/sidebar-menu.js",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/login.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/login_style.css",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/blank.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/index.html",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/sscop.js",
 		"/Users/FK/Downloads/gCMAPWeb/R/cmap.R",
 		"/Users/FK/Downloads/gCMAPWeb/R/cmapRun-methods.R",
 		"/Users/FK/Downloads/gCMAPWeb/R/reporting.R",
@@ -665,7 +795,7 @@
 	],
 	"find":
 	{
-		"height": 23.0
+		"height": 35.0
 	},
 	"find_in_files":
 	{
@@ -687,6 +817,57 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"/cblr/svc",
+			"cblr/svc",
+			"cblr",
+			"index",
+			"master",
+			"login",
+			"version",
+			"style.css",
+			"input",
+			"on",
+			"tr",
+			"t'r",
+			"Name",
+			"page",
+			"确定删除",
+			"Re'cu'r'si've",
+			"table",
+			"hidden",
+			"list",
+			"body",
+			"font-size",
+			"second",
+			"font-size",
+			"user",
+			"sidebar-menu",
+			"header",
+			"main-sidebar",
+			"width",
+			"content-container",
+			"fa-circle-o",
+			"SuperSAN",
+			"Super",
+			"blank.tmpl",
+			"style.css",
+			"style",
+			"userna'me",
+			"for",
+			"Sorry, either you need to login or your session expired.",
+			"欢迎",
+			"\"/",
+			"'/",
+			"\"/",
+			"\"/static/",
+			"static",
+			"\"/static/",
+			"link rel=",
+			"sscop_web/",
+			"/sscop_web",
+			"sscop_web",
+			"sscop_we",
+			"get_absolute_url",
 			"asset_info",
 			"plugins",
 			"\"",
@@ -763,58 +944,7 @@
 			"nav",
 			"portfolio",
 			"src=\"",
-			"href=\"",
-			"render_block",
-			"compute_surv",
-			"^[\\t]*",
-			"\\t\\t\\t\\t",
-			"\\n",
-			" ",
-			";.*",
-			"\\t",
-			"SRX/SRX178/",
-			"\"",
-			"gtable",
-			"library",
-			".all_aesthetics",
-			"compact",
-			"character\\(0\\)\\n",
-			"character(0)",
-			".CEL",
-			".sh",
-			"run_all",
-			"run.sh",
-			"run",
-			"RunAnnoByCSV",
-			"file names in data",
-			"file names in the ",
-			"pca",
-			"png",
-			"PCA",
-			"annotation_colors",
-			"coverAndKeyPlot",
-			"refName",
-			"pcaFun",
-			" +",
-			" *",
-			"cancer_name",
-			"gdc_stage",
-			"45.78.49.89",
-			"FK",
-			"-s",
-			"src_data_dir",
-			"mv",
-			"clinical",
-			"diff_analysis",
-			"read.csv",
-			"write.csv",
-			"=",
-			"check",
-			"https://anaconda.org/",
-			"(.*)$",
-			"workflow",
-			"clargs",
-			"version"
+			"href=\""
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -822,6 +952,10 @@
 		"regex": true,
 		"replace_history":
 		[
+			"http://10.157.43.71/cblr/svc",
+			"fa-circle",
+			"\"/sscobbler/",
+			"\"{% static 'sscobbler/",
 			"",
 			" ",
 			", ",
@@ -943,16 +1077,370 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "manage.py",
+					"file": "sscobbler/templates/sscobbler/master.tmpl",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 806,
+						"buffer_size": 7959,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								7605,
+								7657
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 32.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "ssdeploy/settings.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3542,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1236,
+								1236
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 517.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "sscobbler/static/sscobbler/sscobbler.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1700,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								900,
+								900
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 22.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6172,
+						"regions":
+						{
+							"match":
+							{
+								"flags": 112,
+								"regions":
+								[
+									[
+										198,
+										202
+									],
+									[
+										323,
+										327
+									],
+									[
+										586,
+										590
+									],
+									[
+										777,
+										781
+									],
+									[
+										1056,
+										1060
+									],
+									[
+										1513,
+										1517
+									],
+									[
+										1674,
+										1678
+									],
+									[
+										1872,
+										1876
+									],
+									[
+										2034,
+										2038
+									],
+									[
+										2376,
+										2384
+									],
+									[
+										2501,
+										2509
+									],
+									[
+										2764,
+										2772
+									],
+									[
+										3027,
+										3035
+									],
+									[
+										3484,
+										3492
+									],
+									[
+										3645,
+										3653
+									],
+									[
+										3843,
+										3851
+									],
+									[
+										4005,
+										4013
+									],
+									[
+										4347,
+										4356
+									],
+									[
+										4472,
+										4481
+									],
+									[
+										4735,
+										4744
+									],
+									[
+										5017,
+										5026
+									],
+									[
+										5474,
+										5483
+									],
+									[
+										5654,
+										5663
+									],
+									[
+										5852,
+										5861
+									],
+									[
+										6033,
+										6042
+									]
+								],
+								"scope": ""
+							}
+						},
+						"selection":
+						[
+							[
+								4145,
+								4145
+							]
+						],
+						"settings":
+						{
+							"default_dir": "/Users/FK/Documents/Projects/SSCOPWeb",
+							"detect_indentation": false,
+							"line_numbers": false,
+							"output_tag": 3,
+							"result_base_dir": "",
+							"result_file_regex": "^([^ \t].*):$",
+							"result_line_regex": "^ +([0-9]+):",
+							"scroll_past_end": true,
+							"syntax": "Packages/Default/Find Results.hidden-tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1290.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "sscobbler/templates/sscobbler/generic_list.tmpl",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 11782,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								11516,
+								11525
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 4067.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "services/cblr_services.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10481,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								32,
+								4
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 261.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "sscobbler/views.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 53087,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2164,
+								2164
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1050.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "services/services.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3766,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								21,
+								29
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 902.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "sscobbler/urls.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2410,
 						"regions":
 						{
 						},
@@ -973,7 +1461,35 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "sscobbler/templates/sscobbler/index.tmpl",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 260,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
 					"type": "text"
 				}
 			]
@@ -1018,7 +1534,7 @@
 	"project": "ssdeploy.sublime-project",
 	"replace":
 	{
-		"height": 42.0
+		"height": 64.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1084,7 +1600,7 @@
 	"show_open_files": true,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 198.0,
+	"side_bar_width": 177.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{
