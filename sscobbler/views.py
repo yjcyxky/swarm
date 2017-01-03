@@ -13,22 +13,19 @@ import string
 import time
 import xmlrpclib
 
-# import cobbler.item_distro as item_distro
-# import cobbler.item_file as item_file
-# import cobbler.item_image as item_image
-# import cobbler.item_mgmtclass as item_mgmtclass
-# import cobbler.item_package as item_package
-# import cobbler.item_profile as item_profile
-# import cobbler.item_repo as item_repo
-# import cobbler.item_system as item_system
-# import cobbler.settings as item_settings
-# import cobbler.utils as utils
-from sscobbler.config import COBBLER_API_URL
+from sscop_config import COBBLER_API_URL, INTERFACE_LANG, ZH_INTERFACE, EN_INTERFACE
 import field_ui_info
 
 url_cobbler_api = None
 remote = None
 username = None
+
+if INTERFACE_LANG == 'en':
+    INTERFACE = EN_INTERFACE
+elif INTERFACE_LANG == 'zh':
+    INTERFACE = ZH_INTERFACE
+else:
+    INTERFACE = ZH_INTERFACE
 
 # ==================================================================================
 
@@ -72,6 +69,7 @@ def index(request):
 
     t = get_template('index.tmpl')
     html = t.render(RequestContext(request, {
+        'interface': INTERFACE,
         # 调用cobbler API获取(可修改/etc/cobbler/version文件或SSCOPDeploy项目setup.py文件)
         'version': remote.extended_version(request.session['token'])['version'],
         'username': username,
@@ -89,6 +87,8 @@ def task_created(request):
         return login(request, next="/sscobbler/task_created", expired=True)
     t = get_template("task_created.tmpl")
     html = t.render(RequestContext(request, {
+        'production': PRODUCTION,
+        'interface': INTERFACE,
         'version': remote.extended_version(request.session['token'])['version'],
         'username': username
     }))
@@ -109,6 +109,7 @@ def error_page(request, message):
     message = message.replace("<Fault 1: \"<class 'cobbler.cexceptions.CX'>:'", "Remote exception: ")
     message = message.replace("'\">", "")
     html = t.render(RequestContext(request, {
+        'interface': INTERFACE,
         'version': remote.extended_version(request.session['token'])['version'],
         'message': message,
         'username': username
@@ -450,6 +451,7 @@ def genlist(request, what, page=None):
         'items': __format_items(pageditems["items"], columns),
         'pageinfo': pageditems["pageinfo"],
         'filters': filters,
+        'interface': INTERFACE,
         'version': remote.extended_version(request.session['token'])['version'],
         'username': username,
         'limit': limit,
@@ -683,6 +685,7 @@ def import_prompt(request):
         return login(request, next="/sscobbler/import/prompt", expired=True)
     t = get_template('import.tmpl')
     html = t.render(RequestContext(request, {
+        'interface': INTERFACE,
         'version': remote.extended_version(request.session['token'])['version'],
         'username': username,
     }))
@@ -700,6 +703,7 @@ def check(request):
     results = remote.check(request.session['token'])
     t = get_template('check.tmpl')
     html = t.render(RequestContext(request, {
+        'interface': INTERFACE,
         'version': remote.extended_version(request.session['token'])['version'],
         'username': username,
         'results': results
@@ -752,6 +756,7 @@ def aifile_list(request, page=None):
     html = t.render(RequestContext(request, {
         'what': 'aifile',
         'ai_files': aifile_list,
+        'interface': INTERFACE,
         'version': remote.extended_version(request.session['token'])['version'],
         'username': username,
         'item_count': len(aifile_list[0]),
@@ -785,6 +790,7 @@ def aifile_edit(request, aifile_name=None, editmode='edit'):
         'aidata': aidata,
         'editable': editable,
         'editmode': editmode,
+        'interface': INTERFACE,
         'version': remote.extended_version(request.session['token'])['version'],
         'username': username
     }))
@@ -837,6 +843,7 @@ def snippet_list(request, page=None):
     html = t.render(RequestContext(request, {
         'what': 'snippet',
         'snippets': snippet_list,
+        'interface': INTERFACE,
         'version': remote.extended_version(request.session['token'])['version'],
         'username': username
     }))
@@ -869,6 +876,7 @@ def snippet_edit(request, snippet_name=None, editmode='edit'):
         'snippetdata': snippetdata,
         'editable': editable,
         'editmode': editmode,
+        'interface': INTERFACE,
         'version': remote.extended_version(request.session['token'])['version'],
         'username': username
     }))
@@ -927,6 +935,7 @@ def setting_list(request):
     t = get_template('settings.tmpl')
     html = t.render(RequestContext(request, {
         'settings': results,
+        'interface': INTERFACE,
         'version': remote.extended_version(request.session['token'])['version'],
         'username': username,
     }))
@@ -961,6 +970,7 @@ def setting_edit(request, setting_name=None):
         'subobject': False,
         'editmode': 'edit',
         'editable': True,
+        'interface': INTERFACE,
         'version': remote.extended_version(request.session['token'])['version'],
         'username': username,
         'name': setting_name,
@@ -1011,6 +1021,7 @@ def events(request):
     t = get_template('events.tmpl')
     html = t.render(RequestContext(request, {
         'results': events2,
+        'interface': INTERFACE,
         'version': remote.extended_version(request.session['token'])['version'],
         'username': username
     }))
@@ -1042,6 +1053,7 @@ def eventlog(request, event=0):
         'eventstate': eventstate,
         'eventid': event,
         'eventtime': eventtime,
+        'interface': INTERFACE,
         'version': remote.extended_version(request.session['token'])['version'],
         'username': username
     }
@@ -1249,6 +1261,7 @@ def generic_edit(request, what=None, obj_name=None, editmode="new"):
         'interfaces': interfaces,
         'interface_names': inames,
         'interface_length': len(inames),
+        'interface': INTERFACE,
         'version': remote.extended_version(request.session['token'])['version'],
         'username': username,
         'name': obj_name
@@ -1425,8 +1438,16 @@ def login(request, next=None, message=None, expired=False):
     #     return accept_remote_user(request, next)
 
     if expired and not message:
-        message = r"请联系管理员获取用户名与密码"
-    return render_to_response('login.tmpl', RequestContext(request, {'next': next, 'message': message}))
+        if INTERFACE_LANG == 'en':
+            message = r'Please Contact Administrator for username and password!'
+        else:
+            message = r"请联系管理员获取用户名与密码！"
+    content = {
+        'interface': INTERFACE,
+        'next': next, 
+        'message': message
+    }
+    return render_to_response('login.tmpl', RequestContext(request, content))
 
 
 # def accept_remote_user(request, nextsite):
@@ -1472,7 +1493,11 @@ def do_login(request):
             return HttpResponseRedirect("/sscobbler")
     else:
         # return login(request, nextsite, message="Login failed, please try again")
-        return login(request, nextsite, message="登录失败，请重试！")
+        if INTERFACE_LANG == 'en':
+            message = "Login Failed, Please Retry!"
+        else:
+            message="登录失败，请重试！"
+        return login(request, nextsite, message)
 
 
 @require_POST

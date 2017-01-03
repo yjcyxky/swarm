@@ -12,7 +12,7 @@ function change_page(value) {
 </script>
 
 <!-- <li class="paginate"><label for="limit">Items/Page</label> -->
-<li class="paginate"><label for="limit">条目/页</label>
+<li class="paginate"><label for="limit">{{ interface.item }}/{{ interface.page }}</label>
   <select name="limit" id="limit" onchange="javascript:change_limit(this.value)">
   {% for p in pageinfo.items_per_page_list %}
     <option value="{{ p }}"{% ifequal pageinfo.items_per_page p %} selected="selected"{% endifequal %}>{{ p }}</option>

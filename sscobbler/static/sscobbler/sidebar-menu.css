@@ -30,6 +30,14 @@
   color: #b8c7ce; 
 }
 
+#sidebar-header-link {
+  padding: 0 0;
+  display: block;
+  border-left: 0;
+  color: #4b646f; 
+  font-size: 1em;
+}
+
 .sidebar-menu > li > a > .fa {
   width: 20px; 
 }

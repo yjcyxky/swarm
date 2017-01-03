@@ -2,22 +2,22 @@
 <html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
 {% load static %}
 <head>
-    <title>{% block title %}超存vHPC自动化部署与数据分析平台{% endblock %}</title>
+    <title>{% block title %} {{ interface.company_name }}{{ interface.production_name }} {% endblock %}</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
     <link rel="stylesheet" type="text/css" media="all" href="{% static 'sscobbler/login_style.css' %}" />
-    <link rel="icon" type="image/png" href="{% static 'sscobbler/favicon.png' %}" />
+    <link rel="icon" type="image/png" href="{% static interface.favicon %}" />
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css"> -->
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js"></script> -->
 </head>
 <body class="loginscreen">
   <div class="login">
-    <img src="{% static 'sscobbler/logo-sscobbler.png' %}"/>
+    <img src="{% static interface.logo %}"/>
     <form action="/sscobbler/do_login" method="post">
       {% csrf_token %}
       {% if next %}<input type="hidden" name="next" value="{{ next|escape }}" />{% endif %}
-      <input type="text" name="username" value="" id="username" placeholder="用户名" required>
-      <input type="password" name="password" value="" id="password" placeholder='密码' required>
-      <input class="button" type="submit" value="登录" id="submit"/>
+      <input type="text" name="username" value="" id="username" placeholder="{{ interface.username }}" required>
+      <input type="password" name="password" value="" id="password" placeholder="{{ interface.passwd }}" required>
+      <input class="button" type="submit" value="{{ interface.login }}" id="submit"/>
     </form>
 {% if message %}
     <p class="error">{{ message }}</p>

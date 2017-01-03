@@ -6,10 +6,10 @@ function add_filter() {
     field_value = document.getElementById("filter_value");
     if (field_name.value == "") {
         // alert("You must select a field to filter on.");
-        alert("你必须选择用于筛选的字段！");
+        alert("{{ interface.alert_filter_filed }}");
     } else if (field_value.value == "") {
         // alert("You must select a filter value.");
-        alert("你必须填写用于筛选的值！");
+        alert("{{ interface.alert_filter_value }}");
     } else {
         document.forms["action"].action = '/sscobbler/{{ what }}/modifylist/addfilter/'+field_name.value+':'+field_value.value;
         document.forms["action"].submit();
@@ -23,7 +23,7 @@ function del_filter(filter) {
 <ul id="filter-adder">
   <li>
     <!-- <label for="filter_field">Filter</label> -->
-    <label for="filter_field">筛选</label>
+    <label for="filter_field">{{ interface.filter }}</label>
     <select id="filter_field" name="filter_field" class="filter">
       <option value=""></option>
       <option value="name">name</option>
@@ -148,9 +148,9 @@ function del_filter(filter) {
   {% endifequal %}
     </select>
     <!-- <label for="filter_value"> on </label><input type="text" name="filter_value" id="filter_value" onkeypress="javascript:if (event.keyCode == 13) add_filter();" /> -->
-    <label for="filter_value"> 是 </label><input type="text" name="filter_value" id="filter_value" onkeypress="javascript:if (event.keyCode == 13) add_filter();" />
+    <label for="filter_value"> {{ interface.yes }} </label><input type="text" name="filter_value" id="filter_value" onkeypress="javascript:if (event.keyCode == 13) add_filter();" />
     <!-- <input class="button" type="button" name="filter_add" id="filter_add" onclick="javascript: add_filter();" value="Add" /> -->
-    <input class="button" type="button" name="filter_add" id="filter_add" onclick="javascript: add_filter();" value="添加" />
+    <input class="button" type="button" name="filter_add" id="filter_add" onclick="javascript: add_filter();" value="{{ interface.add_filter }}" />
   </li>
 </ul>
   {% if filters %}

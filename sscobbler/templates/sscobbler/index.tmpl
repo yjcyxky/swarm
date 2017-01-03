@@ -4,8 +4,8 @@
 
 {% load static %}
 <div id="welcome" class="welcome">
-<img src="{% static 'sscobbler/logo-sscobbler.png' %}" />
-欢迎使用<a href="http://super-san.com/index.asp">SuperSAN</a> vHPC自动化部署与数据分析平台
+<a href="{{ interface.website }}"><img src="{% static interface.logo %}" /></a>
+{{ interface.welcome }}<a href="{{ interface.production_link }}">{{ interface.company_name }}{{ interface.production_name }}</a>
 </div>
 
 <script type="text/javascript">
