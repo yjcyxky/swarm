@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.shortcuts import render
@@ -60,21 +60,21 @@ def strip_none(data, omit_none=False):
 
     return data
 
-def index(request):
-    """
-    This is the main greeting page for cobbler web.
-    """
-    if not test_user_authenticated(request):
-        return login(request, next="/sscobbler", expired=True)
+# def index(request):
+#     """
+#     This is the main greeting page for cobbler web.
+#     """
+#     if not test_user_authenticated(request):
+#         return login(request, next="/sscobbler", expired=True)
 
-    t = get_template('index.tmpl')
-    html = t.render(RequestContext(request, {
-        'interface': INTERFACE,
-        # 调用cobbler API获取(可修改/etc/cobbler/version文件或SSCOPDeploy项目setup.py文件)
-        'version': remote.extended_version(request.session['token'])['version'],
-        'username': username,
-    }))
-    return HttpResponse(html)
+#     t = get_template('index.tmpl')
+#     html = t.render(RequestContext(request, {
+#         'interface': INTERFACE,
+#         # 调用cobbler API获取(可修改/etc/cobbler/version文件或SSCOPDeploy项目setup.py文件)
+#         'version': remote.extended_version(request.session['token'])['version'],
+#         'username': username,
+#     }))
+#     return HttpResponse(html)
 
 # ========================================================================
 
@@ -87,7 +87,6 @@ def task_created(request):
         return login(request, next="/sscobbler/task_created", expired=True)
     t = get_template("task_created.tmpl")
     html = t.render(RequestContext(request, {
-        'production': PRODUCTION,
         'interface': INTERFACE,
         'version': remote.extended_version(request.session['token'])['version'],
         'username': username
@@ -524,7 +523,9 @@ def modify_list(request, what, pref, value=None):
         return error_page(request, "Invalid preference change request")
 
     # redirect to the list page
-    return HttpResponseRedirect("/sscobbler/%s/list" % what)
+    # return HttpResponseRedirect("/sscobbler/%s/list" % what)
+    url = '/sscobbler/%s/list' % what
+    return JsonResponse({'status': True, 'message': None, 'url': url})
 
 # ======================================================================
 
@@ -546,7 +547,9 @@ def generic_rename(request, what, obj_name=None, obj_newname=None):
     else:
         obj_id = remote.get_item_handle(what, obj_name, request.session['token'])
         remote.rename_item(what, obj_id, obj_newname, request.session['token'])
-        return HttpResponseRedirect("/sscobbler/%s/list" % what)
+        # return HttpResponseRedirect("/sscobbler/%s/list" % what)
+        url = '/sscobbler/%s/list' % what
+        return JsonResponse({'status': True, 'message': None, 'url': url})
 
 # ======================================================================
 
@@ -568,7 +571,9 @@ def generic_copy(request, what, obj_name=None, obj_newname=None):
     else:
         obj_id = remote.get_item_handle(what, obj_name, request.session['token'])
         remote.copy_item(what, obj_id, obj_newname, request.session['token'])
-        return HttpResponseRedirect("/sscobbler/%s/list" % what)
+        # return HttpResponseRedirect("/sscobbler/%s/list" % what)
+        url = '/sscobbler/%s/list' % what
+        return JsonResponse({'status': True, 'message': None, 'url': url})
 
 # ======================================================================
 
@@ -594,7 +599,9 @@ def generic_delete(request, what, obj_name=None):
             remote.xapi_object_edit(what, obj_name, "remove", {'name': obj_name, 'recursive': recursive}, request.session['token'])
         except Exception, e:
             return error_page(request, str(e))
-        return HttpResponseRedirect("/sscobbler/%s/list" % what)
+        # return HttpResponseRedirect("/sscobbler/%s/list" % what)
+        url = '/sscobbler/%s/list' % what
+        return JsonResponse({'status': True, 'message': None, 'url': url})
 
 
 # ======================================================================
@@ -675,7 +682,9 @@ def generic_domulti(request, what, multi_mode=None, multi_arg=None):
         return error_page(request, "Unknown batch operation on %ss: %s" % (what, str(multi_mode)))
 
     # FIXME: "operation complete" would make a lot more sense here than a redirect
-    return HttpResponseRedirect("/sscobbler/%s/list" % what)
+    # return HttpResponseRedirect("/sscobbler/%s/list" % what)
+    url = '/sscobbler/%s/list' % what
+    return JsonResponse({'status': True, 'message': None, 'url': url})
 
 # ======================================================================
 
@@ -819,10 +828,12 @@ def aifile_save(request):
 
     if delete1 and delete2:
         remote.remove_autoinstall_template(aifile_name, request.session['token'])
-        return HttpResponseRedirect('/sscobbler/aifile/list')
+        # return HttpResponseRedirect('/sscobbler/aifile/list')
+        return JsonResponse({'status': True, 'message': None, 'url': '/sscobbler/aifile/list'})
     else:
         remote.write_autoinstall_template(aifile_name, aidata, request.session['token'])
-        return HttpResponseRedirect('/sscobbler/aifile/list')
+        # return HttpResponseRedirect('/sscobbler/aifile/list')
+        return JsonResponse({'status': True, 'message': None, 'url': '/sscobbler/aifile/list'})
 
 # ======================================================================
 
@@ -899,7 +910,8 @@ def snippet_save(request):
     snippetdata = request.POST.get('snippetdata', "").replace('\r\n', '\n')
 
     if snippet_name is None:
-        return HttpResponse("NO SNIPPET NAME SPECIFIED")
+        # return HttpResponse("NO SNIPPET NAME SPECIFIED")
+        return JsonResponse({'status': False, 'message': INTERFACE.no_snippet_wmsg, 'url': None})
 
     if editmode != 'edit':
         if snippet_name.find("/var/lib/cobbler/snippets/") != 0:
@@ -910,10 +922,12 @@ def snippet_save(request):
 
     if delete1 and delete2:
         remote.remove_autoinstall_snippet(snippet_name, request.session['token'])
-        return HttpResponseRedirect('/sscobbler/snippet/list')
+        # return HttpResponseRedirect('/sscobbler/snippet/list')
+        return JsonResponse({'status': True, 'message': None, 'url': '/sscobbler/snippet/list'})
     else:
         remote.write_autoinstall_snippet(snippet_name, snippetdata, request.session['token'])
-        return HttpResponseRedirect('/sscobbler/snippet/list')
+        # return HttpResponseRedirect('/sscobbler/snippet/list')
+        return JsonResponse({'status': True, 'message': None, 'url': '/sscobbler/snippet/list'})
 
 # ======================================================================
 
@@ -944,7 +958,8 @@ def setting_list(request):
 
 def setting_edit(request, setting_name=None):
     if not setting_name:
-        return HttpResponseRedirect('/sscobbler/setting/list')
+        # return HttpResponseRedirect('/sscobbler/setting/list')
+        return JsonResponse({'status': False, 'message': None, 'url': '/sscobbler/setting/list'})
     if not test_user_authenticated(request):
         return login(request, next="/sscobbler/setting/edit/%s" % setting_name, expired=True)
 
@@ -996,7 +1011,8 @@ def setting_save(request):
     if remote.modify_setting(setting_name, setting_value, request.session['token']):
         return error_page(request, "There was an error saving the setting")
 
-    return HttpResponseRedirect("/sscobbler/setting/list")
+    # return HttpResponseRedirect("/sscobbler/setting/list")
+    return JsonResponse({'status': True, 'message': None, 'url': '/sscobbler/setting/list'})
 
 # ======================================================================
 
@@ -1084,7 +1100,8 @@ def sync(request):
     if not test_user_authenticated(request):
         return login(request, next="/sscobbler/sync", expired=True)
     remote.background_sync({"verbose": "True"}, request.session['token'])
-    return HttpResponseRedirect("/sscobbler/task_created")
+    # return HttpResponseRedirect("/sscobbler/task_created")
+    return JsonResponse({'status': True, 'message': None, 'url': '/sscobbler/task_created'})
 
 # ======================================================================
 
@@ -1097,7 +1114,8 @@ def reposync(request):
     if not test_user_authenticated(request):
         return login(request, next="/sscobbler/reposync", expired=True)
     remote.background_reposync({"names": "", "tries": 3}, request.session['token'])
-    return HttpResponseRedirect("/sscobbler/task_created")
+    # return HttpResponseRedirect("/sscobbler/task_created")
+    return JsonResponse({'status': True, 'message': None, 'url': '/sscobbler/task_created'})
 
 # ======================================================================
 
@@ -1110,7 +1128,8 @@ def hardlink(request):
     if not test_user_authenticated(request):
         return login(request, next="/sscobbler/hardlink", expired=True)
     remote.background_hardlink({}, request.session['token'])
-    return HttpResponseRedirect("/sscobbler/task_created")
+    # return HttpResponseRedirect("/sscobbler/task_created")
+    return JsonResponse({'status': True, 'message': None, 'url': '/sscobbler/task_created'})
 
 # ======================================================================
 
@@ -1130,7 +1149,8 @@ def replicate(request):
     # remote.background_replicate(options, request.session['token'])
     if not test_user_authenticated(request):
         return login(request, next="/sscobbler/replicate", expired=True)
-    return HttpResponseRedirect("/sscobbler/task_created")
+    # return HttpResponseRedirect("/sscobbler/task_created")
+    return JsonResponse({'status': True, 'message': None, 'url': '/sscobbler/task_created'})
 
 # ======================================================================
 
@@ -1224,7 +1244,7 @@ def generic_edit(request, what=None, obj_name=None, editmode="new"):
         __tweak_field(fields, "arch", "choices", remote.get_valid_archs())
         __tweak_field(fields, "breed", "choices", remote.get_valid_breeds())
         __tweak_field(fields, "os_version", "choices", remote.get_valid_os_versions())
-        __tweak_field(fields, "autoinst", "choices", autoinstall_list)
+        __tweak_field(fields, "autoinstall", "choices", autoinstall_list)
 
     # if editing save the fields in the session for comparison later
     if editmode == "edit":
@@ -1248,7 +1268,6 @@ def generic_edit(request, what=None, obj_name=None, editmode="new"):
     elif what == "system":
         sections_data = field_ui_info.SYSTEM_UI_FIELDS_MAPPING
     sections = _create_sections_metadata(what, sections_data, fields)
-
     t = get_template('generic_edit.tmpl')
     inames = interfaces.keys()
     inames.sort()
@@ -1264,7 +1283,7 @@ def generic_edit(request, what=None, obj_name=None, editmode="new"):
         'interface': INTERFACE,
         'version': remote.extended_version(request.session['token'])['version'],
         'username': username,
-        'name': obj_name
+        'name': obj_name,
     }))
 
     return HttpResponse(html)
@@ -1390,7 +1409,9 @@ def generic_save(request, what):
     except Exception, e:
         return error_page(request, str(e))
 
-    return HttpResponseRedirect('/sscobbler/%s/list' % what)
+    # return HttpResponseRedirect('/sscobbler/%s/list' % what)
+    url = '/sscobbler/%s/list' % what
+    return JsonResponse({'status': True, 'message': None, 'url': url})
 
 
 # ======================================================================
@@ -1426,28 +1447,61 @@ def test_user_authenticated(request):
 use_passthru = -1
 
 
-def login(request, next=None, message=None, expired=False):
-    # There are risks by using get_shared_secret 
-    global use_passthru
-    # if use_passthru < 0:
-    #     token = remote.login("", remote.get_shared_secret())
-    #     auth_module = remote.get_authn_module_name(token)
-    #     use_passthru = auth_module == 'authn_passthru'
+# def login(request, next=None, message=None, expired=False):
+#     # There are risks by using get_shared_secret 
+#     global use_passthru
+#     # if use_passthru < 0:
+#     #     token = remote.login("", remote.get_shared_secret())
+#     #     auth_module = remote.get_authn_module_name(token)
+#     #     use_passthru = auth_module == 'authn_passthru'
 
-    # if use_passthru:
-    #     return accept_remote_user(request, next)
+#     # if use_passthru:
+#     #     return accept_remote_user(request, next)
+
+#     if expired and not message:
+#         if INTERFACE_LANG == 'en':
+#             message = r'Please Contact Administrator for username and password!'
+#         else:
+#             message = r"请联系管理员获取用户名与密码！"
+#     content = {
+#         'interface': INTERFACE,
+#         'next': next, 
+#         'message': message
+#     }
+#     return render_to_response('login.tmpl', RequestContext(request, content))
+
+def login(request, next=None, message=None, expired=False):
+    global use_passthru
+    global remote
+    global url_cobbler_api
 
     if expired and not message:
         if INTERFACE_LANG == 'en':
             message = r'Please Contact Administrator for username and password!'
         else:
             message = r"请联系管理员获取用户名与密码！"
+
     content = {
         'interface': INTERFACE,
         'next': next, 
         'message': message
     }
-    return render_to_response('login.tmpl', RequestContext(request, content))
+
+    username = 'cobbler'
+    password = 'yjc040653'
+
+    if url_cobbler_api is None:
+        url_cobbler_api = local_get_cobbler_api_url()
+
+    remote = xmlrpclib.Server(url_cobbler_api, allow_none=True)
+    token = remote.login(username, password)
+
+    if token:
+        request.session['username'] = username
+        request.session['token'] = token
+        return HttpResponseRedirect(next)
+    else:
+        return HttpResponseRedirect("/")
 
 
 # def accept_remote_user(request, nextsite):
@@ -1463,41 +1517,60 @@ def login(request, next=None, message=None, expired=False):
 #     else:
 #         return HttpResponseRedirect("")
 
+# @require_POST
+# def do_login(request):
+#     global remote
 
-@require_POST
-def do_login(request):
-    global remote
-    global username
-    global url_cobbler_api
+#     username = 'cobbler'
+#     password = 'yjc040653'
 
-    username = request.POST.get('username', '').strip()
-    password = request.POST.get('password', '')
-    nextsite = request.POST.get('next', None)  # nextsite: /sscobler，详见页面中隐藏的input标签
+#     if url_cobbler_api is None:
+#         url_cobbler_api = local_get_cobbler_api_url()
 
-    if url_cobbler_api is None:
-        url_cobbler_api = local_get_cobbler_api_url()
+#     remote = xmlrpclib.Server(url_cobbler_api, allow_none=True)
+#     token = remote.login(username, password)
 
-    remote = xmlrpclib.Server(url_cobbler_api, allow_none=True)
+#     if token:
+#         request.session['username'] = username
+#         request.session['token'] = token
+#         return True
+#     else:
+#         return False
 
-    try:
-        token = remote.login(username, password)
-    except:
-        token = None
+# @require_POST
+# def do_login(request):
+#     global remote
+#     global username
+#     global url_cobbler_api
 
-    if token:
-        request.session['username'] = username
-        request.session['token'] = token
-        if nextsite:
-            return HttpResponseRedirect(nextsite)
-        else:
-            return HttpResponseRedirect("/sscobbler")
-    else:
-        # return login(request, nextsite, message="Login failed, please try again")
-        if INTERFACE_LANG == 'en':
-            message = "Login Failed, Please Retry!"
-        else:
-            message="登录失败，请重试！"
-        return login(request, nextsite, message)
+#     username = request.POST.get('username', '').strip()
+#     password = request.POST.get('password', '')
+#     nextsite = request.POST.get('next', None)  # nextsite: /sscobler，详见页面中隐藏的input标签
+
+#     if url_cobbler_api is None:
+#         url_cobbler_api = local_get_cobbler_api_url()
+
+#     remote = xmlrpclib.Server(url_cobbler_api, allow_none=True)
+
+#     try:
+#         token = remote.login(username, password)
+#     except:
+#         token = None
+
+#     if token:
+#         request.session['username'] = username
+#         request.session['token'] = token
+#         if nextsite:
+#             return HttpResponseRedirect(nextsite)
+#         else:
+#             return HttpResponseRedirect("/sscobbler")
+#     else:
+#         # return login(request, nextsite, message="Login failed, please try again")
+#         if INTERFACE_LANG == 'en':
+#             message = "Login Failed, Please Retry!"
+#         else:
+#             message="登录失败，请重试！"
+#         return login(request, nextsite, message)
 
 
 @require_POST

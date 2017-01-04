@@ -1,6 +1,3 @@
-{% extends 'master.tmpl' %}
-{% block content %}
-
 <h1>{{ eventid }} : {{ eventname }} :: {{ eventstate }}</h1>
 <hr />
 <pre>
@@ -9,6 +6,4 @@
 </textarea>
 </pre>
 <br />
-<a href="javascript:location.reload(true)">Refresh log</a>
-
-{% endblock content %}
+<a href="javascript:loadurl('/sscobbler/eventlog/{{ eventid }}')">{{ interface.refresh_log }}</a>

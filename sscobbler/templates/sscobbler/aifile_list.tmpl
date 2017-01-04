@@ -1,12 +1,10 @@
-{% extends 'master.tmpl' %}
-{% block content %}
-<h1>SSCOP Automatic Installation Templates</h1>
+<h1>{{ interface.company_name }}{{ interface.auto_installation_templ }}</h1>
 <hr />
 <!-- This is kind weird, but force the name "autoinst"
 because we know this is the aifile page. If this gets moved
 to generic_list, then it can be hacked around -->
 <ul id="submenubar">
-  <li><a class="action" href="/sscobbler/{{ what }}/edit">Create new automatic installation template</a><li>
+  <li><a class="action" href="javascript:loadurl('/sscobbler/{{ what }}/edit')">{{ interface.create_new }}{{ interface.auto_installation_templ }}</a><li>
 </ul>
 <table id="listitems" cellspacing="0">
   <thead>
@@ -23,11 +21,11 @@ to generic_list, then it can be hacked around -->
       <td>{{ autoinstall_file }}</td>
   {% if option %}
       <td>
-    {% ifequal option "editable" %}<span class="action" onClick="window.location='/sscobbler/aifile/edit/file:{{ autoinstall_file }}'">Edit</span> {% endifequal %}
+    <!-- {% ifequal option "editable" %}<span class="action" onClick="window.location='/sscobbler/aifile/edit/file:{{ autoinstall_file }}'">Edit</span> {% endifequal %} -->
+    {% ifequal option "editable" %}<span class="action" onClick="javascript:loadurl('/sscobbler/aifile/edit/file:{{ autoinstall_file }}')">{{ interface.edit }}</span> {% endifequal %}
       </td>
   {% endif %}
     </tr>
 {% endfor %}
   </tbody>
 </table>
-{% endblock content %}

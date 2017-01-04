@@ -1,34 +1,59 @@
-{% extends "master.tmpl" %}
-
-{% block content %}
-
-<h1>Events</h1>
-<hr />
-{% if results %}
-<table id="listitems" cellspacing="0">
-  <thead>
-    <tr>
-      <th></th>
-      <th width="40%">Start Time</th>
-      <th width="20%">Name</th>
-      <th width="20%">State</th>
-      <th width="20%">Log</th>
-    </tr>
-  </thead>
-  <tbody>
-  {% for line in results reversed %}
-    <tr class="{% cycle 'rowodd' 'roweven' %}">
-      <td></td>
-      <td>{{ line.1|safe }}</td>
-      <td>{{ line.2|safe }}</td>
-      <td>{{ line.3|safe }}</td>
-      <td><a action="class" href="/sscobbler/eventlog/{{ line.0 }}">log</a></td>
-    </tr>
-  {% endfor %}
-  </tbody>
-</table>
+{% ifequal interface.language 'en' %}
+  <h1>Events Log</h1>
+  <hr />
+  {% if results %}
+  <table id="listitems" cellspacing="0">
+    <thead>
+      <tr>
+        <th></th>
+        <th width="40%">Start Time</th>
+        <th width="20%">Name</th>
+        <th width="20%">State</th>
+        <th width="20%">Log</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for line in results reversed %}
+      <tr class="{% cycle 'rowodd' 'roweven' %}">
+        <td></td>
+        <td>{{ line.1|safe }}</td>
+        <td>{{ line.2|safe }}</td>
+        <td>{{ line.3|safe }}</td>
+        <td><a action="class" href="javascript:loadurl('/sscobbler/eventlog/{{ line.0 }}')">log</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <h2>No events</h2>
+  {% endif %}
 {% else %}
-<h2>No events</h2>
-{% endif %}
-
-{% endblock %}
+  <h1>任务日志</h1>
+  <hr />
+  {% if results %}
+  <table id="listitems" cellspacing="0">
+    <thead>
+      <tr>
+        <th></th>
+        <th width="40%">开始时间</th>
+        <th width="20%">名称</th>
+        <th width="20%">状态</th>
+        <th width="20%">日志</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for line in results reversed %}
+      <tr class="{% cycle 'rowodd' 'roweven' %}">
+        <td></td>
+        <td>{{ line.1|safe }}</td>
+        <td>{{ line.2|safe }}</td>
+        <td>{{ line.3|safe }}</td>
+        <td><a action="class" href="javascript:loadurl('/sscobbler/eventlog/{{ line.0 }}')">日志文件</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <h2>无任何事件</h2>
+  {% endif %}
+{% endifequal %}

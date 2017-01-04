@@ -4,12 +4,68 @@
 		"selected_items":
 		[
 			[
-				"marg",
-				"margin-top"
+				"file",
+				"filename"
+			],
+			[
+				"open",
+				"open_batch_dialog"
+			],
+			[
+				"dial",
+				"dialog"
+			],
+			[
+				"user",
+				"username"
+			],
+			[
+				"l",
+				"loadurl"
+			],
+			[
+				"bord",
+				"border-box"
+			],
+			[
+				"box",
+				"box-sizing"
 			],
 			[
 				"in",
-				"initial"
+				"inline"
+			],
+			[
+				"di",
+				"display"
+			],
+			[
+				"ac",
+				"action_submit"
+			],
+			[
+				"action",
+				"action_submit\t(sscobbler.js)"
+			],
+			[
+				"inter",
+				"interface"
+			],
+			[
+				"Htt",
+				"HttpResponse"
+			],
+			[
+				"jav",
+				"javascript:loadurl"
+			],
+			[
+				"next",
+				"nextsite"
+			],
+			[
+				"marg",
+				"margin-top"
 			],
 			[
 				"wid",
@@ -56,20 +112,12 @@
 				"specify"
 			],
 			[
-				"l",
-				"lfile_col_count"
-			],
-			[
 				"s",
 				"specified"
 			],
 			[
 				"if",
 				"ifile_col_count"
-			],
-			[
-				"file",
-				"file_name"
 			],
 			[
 				"data_",
@@ -456,10 +504,6 @@
 				"d"
 			],
 			[
-				"di",
-				"directory"
-			],
-			[
 				"dir",
 				"dir_name"
 			],
@@ -470,70 +514,69 @@
 			[
 				"remo",
 				"remote_dir"
-			],
-			[
-				"r",
-				"rsync_files"
-			],
-			[
-				"sp",
-				"spawn"
-			],
-			[
-				"gdc",
-				"gdc_file"
-			],
-			[
-				"rem",
-				"remote.conf\t(rsync.sh)"
-			],
-			[
-				"remot",
-				"remote.conf\t(get_gdc.sh)"
-			],
-			[
-				"use",
-				"user"
-			],
-			[
-				"diff",
-				"diff_genes"
-			],
-			[
-				"n",
-				"nrow"
-			],
-			[
-				"ro",
-				"row.names"
-			],
-			[
-				"clini",
-				"clinical_data"
-			],
-			[
-				"row",
-				"row.names\t(prepare_exp_data.R)"
 			]
 		]
 	},
 	"buffers":
 	[
 		{
-			"contents": "Searching 133 files for \"Sessions\" (regex)\n\n/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/settings.py:\n   38      'django.contrib.auth',\n   39      'django.contrib.contenttypes',\n   40:     'django.contrib.sessions',\n   41      'django.contrib.messages',\n   42      'django.contrib.staticfiles',\n   ..\n   49      'corsheaders.middleware.CorsMiddleware',\n   50      'django.middleware.security.SecurityMiddleware',\n   51:     'django.contrib.sessions.middleware.SessionMiddleware',\n   52      'django.middleware.common.CommonMiddleware',\n   53  #    'django.middleware.csrf.CsrfViewMiddleware',\n   ..\n  124  MEDIA_ROOT = os.path.join(BASE_DIR, 'media')\n  125  \n  126: SESSION_ENGINE = 'django.contrib.sessions.backends.file'\n  127: SESSION_FILE_PATH = '/var/lib/cobbler_sessions'\n  128  \n  129  # Set CORS\n\n4 matches in 1 file\n",
+			"file": "sscobbler/templates/sscobbler/task_created.tmpl",
 			"settings":
 			{
-				"buffer_size": 827,
-				"line_ending": "Unix",
-				"name": "Find Results",
-				"scratch": true
+				"buffer_size": 457,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "sscobbler/templates/sscobbler/snippet_list.tmpl",
+			"settings":
+			{
+				"buffer_size": 1141,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "sscobbler/templates/sscobbler/settings.tmpl",
+			"settings":
+			{
+				"buffer_size": 1262,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
 			}
 		},
 		{
 			"file": "sscobbler/views.py",
 			"settings":
 			{
-				"buffer_size": 53716,
+				"buffer_size": 56958,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "sscobbler/templates/sscobbler/events.tmpl",
+			"settings":
+			{
+				"buffer_size": 1503,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "sscobbler/templates/sscobbler/eventlog.tmpl",
+			"settings":
+			{
+				"buffer_size": 283,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ssdeploy/templates/master.tmpl",
+			"settings":
+			{
+				"buffer_size": 12373,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -542,24 +585,35 @@
 			"file": "sscop_config.py",
 			"settings":
 			{
-				"buffer_size": 3804,
+				"buffer_size": 5861,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "sscobbler/templates/sscobbler/index.tmpl",
+			"file": "ssdeploy/static/jsGrowl.css",
 			"settings":
 			{
-				"buffer_size": 423,
+				"buffer_size": 2230,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "sscobbler/urls.py",
+			"contents": "Searching 132 files for \"jsGrowl\"\n\n/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/sscobbler.js:\n    1: var js_growl = new jsGrowl('js_growl');\n    2  var run_once = 0\n    3  var now = new Date()\n\n/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/static/jsGrowl.css:\n    1   \n    2: .jsgrowl_msg_container{\n    3    font-family: Arial, Helvetica, sans-serif;\n    4    position:fixed;\n    .\n   10    text-align:left;\n   11  }\n   12: .jsgrowl_msg_container .jsg_body{\n   13    background-color:white;\n   14    width:380px;\n   15  }\n   16: .jsgrowl_msg_container .jsg_body_container{\n   17    position:relative;\n   18    min-height:30px;\n   19  }\n   20: .jsgrowl_msg_container .jsg_clickable{\n   21    cursor:pointer;\n   22  }\n   23: .jsgrowl_msg_container .jsg_close{\n   24    position:absolute;\n   25    right:0;\n   ..\n   33    width:22px;\n   34  }\n   35: .jsgrowl_msg_container .jsg_icon{\n   36    float:left;\n   37    padding:0 10px 0 0 ;\n   38    height: 32px;\n   39  }\n   40: .jsgrowl_msg_container .jsg_title{\n   41    font-weight:bold;\n   42    color:#000;\n   ..\n   46    border-bottom:1px #000 solid;\n   47  }\n   48: .jsgrowl_msg_container .jsg_msg{\n   49    font-weight:bold;\n   50    color:#000;\n   ..\n   53    word-spacing: 3px;\n   54  }\n   55: .jsgrowl_msg_container .jsg_side{\n   56    background-color:white;\n   57    width:10px;\n   58  }\n   59: .jsgrowl_msg_container .jsg_middle{\n   60    background-color:white;\n   61    width:380px;\n   62  }\n   63: .jsgrowl_msg_container .jsg_corner {\n   64    height:10px;\n   65    width:10px;\n   66    background-color: transparent ;\n   67    background-repeat: no-repeat;\n   68:   background-image:url(/static/jsgrowl_corners.png) ;\n   69  }\n   70: .jsgrowl_msg_container .jsg_tl{\n   71    background-position: top left;\n   72  }\n   73: .jsgrowl_msg_container .jsg_tr{\n   74    background-position: top right;\n   75  }\n   76: .jsgrowl_msg_container .jsg_bl{\n   77    background-position: bottom left;\n   78  }\n   79: .jsgrowl_msg_container .jsg_br{\n   80    background-position: bottom right;\n   81  }\n   82: .jsgrowl_msg_container .jsg_mr{\n   83    background-position: top right;\n   84  }\n   85: .jsgrowl_msg_container .jsg_mb{\n   86    background-position: bottom right;\n   87  }\n   88   \n   89: .jsgrowl_msg_container:hover .jsg_corner {\n   90:   background-image:url(/static/jsgrowl_corners_hover.png) ;\n   91  }\n   92: .jsgrowl_msg_container:hover .jsg_middle {\n   93:   background-image:url(/static/jsgrowl_middle_hover.png) ;\n   94  }\n   95: .jsgrowl_msg_container:hover .jsg_side {\n   96:   background-image:url(/static/jsgrowl_side_hover.png) ;\n   97  }\n   98: .jsgrowl_msg_container:hover .jsg_close{\n   99:   background-image: url(/static/jsgrowl_close.png);\n  100  }\n  101   \n\n/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/static/jsGrowl.js:\n    1: /*  jsGrowl - JavaScript Messaging System, version 1.6.0.3\n    2   *  (c) 2009 Rodrigo DeJuana\n    3   *\n    4:  *  jsGrowl is freely distributable under the terms of the BSD license.\n    5   *\n    6   *--------------------------------------------------------------------------*/\n    7  \n    8: function jsGrowlMsg(msg, id) {\n    9    this.initialize(msg, id);\n   10  }\n   11: //var jsGrowlMsg = Class.create();\n   12: jsGrowlMsg.prototype = {\n   13    timeout: 5000,\n   14    hover_timeout: 2000,\n   ..\n   37      var click_css = this.click_callback ? ' class=\"jsg_clickable\" ' : '';\n   38      var title_html = this.title ? '<div class=\"jsg_title\">'+this.title+'</div>' : '';\n   39:     return '<table id=\"growl_flash_msg_'+this.id+'\" class=\"jsgrowl_msg_container\"'+\n   40        ' onmouseover=\"'+jsg+'.overMsg('+this.id+');\"'+\n   41        ' onmouseout=\"'+jsg+'.outMsg('+this.id+');\"'+ click_html +\n   ..\n   78    },\n   79    appear: function(){\n   80:     jsGrowlInterface.appear(this.element);\n   81    },\n   82    fade: function(jsg,timeout){\n   ..\n   88      var id = this.id;\n   89      var f = function(){\n   90:       jsGrowlInterface.fadeAndRemove(e,jsg,id);\n   91      };\n   92      this.timeout_id = setTimeout(f,timeout);\n   93    },\n   94    removeMsg: function(){\n   95:     jsGrowlInterface.remove(this.element);\n   96      if ( this.close_callback ){\n   97        this.close_callback();\n   ..\n  117  };\n  118  \n  119: function jsGrowl(name,opts) {\n  120    this.initialize(name,opts);\n  121  }\n  122: //var jsGrowl = Class.create();\n  123: jsGrowl.prototype = {\n  124    start_top: 10,\n  125    start_right: 10,\n  ...\n  145        alert('The variable name is required.  I need this for when I write out the message, the message message can fire the correct events.');\n  146      }\n  147:     this.msg_container = opts.msg_container ? opts.msg_container : 'jsGrowl';\n  148      var jsg = this;\n  149:     jsGrowlInterface.onload(jsg);\n  150    },\n  151    onload: function(){\n  152      this.msg_container =  document.getElementById(this.msg_container);\n  153      if ( !this.msg_container ){\n  154:       //alert('I need a div on your page with the id \"jsGrowl\" or I will not work.');\n  155      }\n  156      this.loaded = true;\n  ...\n  175        return;\n  176      }\n  177:     var jsg_msg = new jsGrowlMsg(msg, this.msg_id++);\n  178      var jsg = this;\n  179  \n  180      //this.msg_container.insert(jsg_msg.html(jsg.name));\n  181:     jsGrowlInterface.insert(this.msg_container, jsg_msg.html(jsg.name))\n  182      jsg_msg.setElement();\n  183      var insert = this.setLocation(jsg_msg);\n\n/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/static/jsGrowl_jquery.js:\n    1: /* jsGrowl jQuery Interface */\n    2  \n    3: var jsGrowlInterface = {\n    4    onload: function(jsg){\n    5      $(window).load( function() {\n    .\n   21    fadeAndRemove: function(element,jsg,id){\n   22      var f = function(){\n   23:       jsGrowlInterface.remove(element);\n   24        jsg.removeMsg(id);\n   25      };\n   26:     jsGrowlInterface.fade(element, f);\n   27    }\n   28  \n\n/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/templates/master.tmpl:\n    7    {% load static %}\n    8    <link rel=\"stylesheet\" href=\"{% static 'jquery-ui.css' %}\" type=\"text/css\" />\n    9:   <link rel=\"stylesheet\" type=\"text/css\" media=\"all\" href=\"{% static 'jsGrowl.css' %}\" />\n   10    <link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css\">\n   11    <link rel=\"stylesheet\" href=\"{% static 'sidebar-menu.css' %}\">\n   ..\n   18    <!-- <script src=\"{% static 'jquery-ui.min.js' %}\"></script> -->\n   19    <script src=\"http://code.jquery.com/ui/1.12.0/jquery-ui.min.js\" integrity=\"sha256-eGE6blurk5sHj+rmkfsGYeKyZx3M4bG+ZlFyA7Kns7E=\" crossorigin=\"anonymous\"></script>\n   20:   <script src=\"{% static 'jsGrowl.js' %}\" type=\"text/javascript\"></script> \n   21:   <script src=\"{% static 'jsGrowl_jquery.js' %}\" type=\"text/javascript\"></script> \n   22    <script src=\"{% static 'sscobbler/sscobbler.js' %}\" type=\"text/javascript\"></script>\n   23  </head>\n   ..\n  155          <span>{{ interface.production_abbr }} {{ version }}</span>\n  156        </div>\n  157:       <div id=\"jsGrowl\"></div>\n  158      </div>\n  159    </div>\n\n52 matches across 5 files\n\n\nSearching 132 files for \"is complete\"\n\n/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/admin/js/vendor/jquery/jquery.js:\n 6542  \t\tanim.always( function() {\n 6543  \n 6544: \t\t\t// Ensure the complete handler is called before this completes\n 6545  \t\t\tanim.always( function() {\n 6546  \t\t\t\thooks.unqueued--;\n\n/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/sscobbler.js:\n   21        var logmsg = \" <a href=\\\"/eventlog/\" + id + \"\\\">(log)</A>\";\n   22        if (state == \"complete\") {\n   23:         buf = \"Task \" + name + \" is complete: \" + logmsg\n   24        }\n   25        else if (state == \"running\") {\n\n2 matches across 2 files\n",
 			"settings":
 			{
-				"buffer_size": 2410,
+				"buffer_size": 7764,
+				"line_ending": "Unix",
+				"name": "Find Results",
+				"scratch": true
+			}
+		},
+		{
+			"file": "sscobbler/static/sscobbler/sscobbler.js",
+			"settings":
+			{
+				"buffer_size": 266,
+				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		}
@@ -682,52 +736,71 @@
 	[
 		"/Users/FK/Documents/Projects/SSCOPWeb",
 		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler",
 		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler"
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templatetags",
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy",
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/static",
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/templates"
 	],
 	"file_history":
 	[
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/sscobbler.js",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/events.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/snippet_edit.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/static/style.css",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/views.py",
 		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/urls.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/urls.py",
 		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/generic_list.tmpl",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/generic_edit.tmpl",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/style.css",
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/templates/master.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/import.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscop_config.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/aifile_edit.tmpl",
 		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/item.tmpl",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/index.tmpl",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/empty.tmpl",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/login.tmpl",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/master.tmpl",
 		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/paginate.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/snippet_list.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/generic_edit.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/aifile_list.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/test/sidebar-menu.js",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/filter.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/static/sidebar-menu.css",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/eventlog.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/error_page.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/static/sidebar-menu.js",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/check.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/empty.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/enoaccess.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/task_created.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/settings.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/test/master.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/templates/login.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/settings.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/models.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/templates/index.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/static/index.html",
+		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/views.py",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/test/jquery.min.js",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/test/aifile_edit.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/index.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/master.tmpl",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/style.css",
+		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/login.tmpl",
 		"/Users/FK/Documents/Projects/SSCOPWeb/services/cblr_services.py",
 		"/Users/FK/Documents/Projects/SSCOPWeb/services/services.py",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/views.py",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/sscobbler.js",
-		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/settings.py",
 		"/Users/FK/Documents/Projects/SSCOPWeb/ssnagios/apps.py",
 		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/bootstrap.min.css",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/filter.tmpl",
 		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/sidebar-menu.css",
 		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/__init__.py",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/settings.tmpl",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/aifile_edit.tmpl",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/snippet_list.tmpl",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/task_created.tmpl",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/snippet_edit.tmpl",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/aifile_list.tmpl",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/check.tmpl",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/enoaccess.tmpl",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/error_page.tmpl",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/eventlog.tmpl",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/events.tmpl",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/templates/sscobbler/import.tmpl",
 		"/Users/FK/Documents/Projects/SSCOPWeb/manage.py",
 		"/Users/FK/Documents/Projects/SSCOPWeb/ssnagios/models.py",
-		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/models.py",
 		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/field_ui_info.py",
 		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/config.py",
 		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/apps.py",
 		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/admin.py",
 		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/__init__.py",
-		"/Users/FK/Documents/Projects/SSCOPWeb/ssdeploy/urls.py",
 		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/tests.py",
 		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/sidebar-menu.js",
 		"/Users/FK/Documents/Projects/SSCOPWeb/sscobbler/static/sscobbler/login_style.css",
@@ -773,6 +846,87 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"is complete",
+			"jsGrowl",
+			"task is complete",
+			"task",
+			"javascript.load",
+			"production",
+			"task_created",
+			"Name",
+			"snippet",
+			"s'ni",
+			"tool",
+			"input",
+			"container",
+			"batch",
+			"resiz",
+			"recursive_delete",
+			"delete",
+			"de",
+			"modifylist",
+			"rename",
+			"dialog",
+			"delete",
+			"save",
+			"tabs",
+			"generic_save",
+			"save",
+			"generic_edit",
+			"_create_sections_metadata",
+			"field_ui_info",
+			"generic_edit",
+			"generic",
+			"{{ name }}",
+			"Create_New",
+			"obj_name",
+			"create_new",
+			".button",
+			"span",
+			"action_multi",
+			"modifylist",
+			"dialog",
+			"action",
+			"page",
+			"页",
+			"loadurl",
+			"dialog",
+			"delete",
+			".style",
+			"treeview-menu",
+			"display",
+			".css",
+			"setStyle",
+			"treeview-menu",
+			"10.157.43.71",
+			"创建新",
+			"HttpResponseRedirect",
+			"HttpResponseRedirect(\"/sscobbler/%s/list\" % what",
+			"editmode",
+			"保存",
+			"generic",
+			"保存",
+			"action",
+			"on_form_submit",
+			"window.location",
+			"javascript",
+			"取消",
+			"submenu",
+			"href",
+			"genlist",
+			"login",
+			"test_user_authenticated",
+			"index",
+			"test_user_authenticated",
+			"$",
+			"ui-icons",
+			"tooltip.png",
+			"jsgrowl_close.png",
+			"RequestContext",
+			"(/sscobbler/[a-zA-Z]+)",
+			"(/sscobbler/[a-zA-Z]+/[a-zA-Z]+)",
+			"menuaction",
+			"static 'sscobbler/",
 			"Sessions",
 			"requests",
 			"lpointers",
@@ -819,95 +973,16 @@
 			"Re'cu'r'si've",
 			"table",
 			"hidden",
-			"list",
-			"body",
-			"font-size",
-			"second",
-			"font-size",
-			"user",
-			"sidebar-menu",
-			"header",
-			"main-sidebar",
-			"width",
-			"content-container",
-			"fa-circle-o",
-			"SuperSAN",
-			"Super",
-			"blank.tmpl",
-			"style.css",
-			"style",
-			"userna'me",
-			"for",
-			"Sorry, either you need to login or your session expired.",
-			"欢迎",
-			"\"/",
-			"'/",
-			"\"/",
-			"\"/static/",
-			"static",
-			"\"/static/",
-			"link rel=",
-			"sscop_web/",
-			"/sscop_web",
-			"sscop_web",
-			"sscop_we",
-			"get_absolute_url",
-			"asset_info",
-			"plugins",
-			"\"",
-			"[ ]+\\n",
-			"  *\"",
-			"\\[[0-9]*\\]",
-			"load_cmaps",
-			"cmap",
-			"cmapH",
-			"cmap",
-			"cmapAnalysis",
-			"cmap",
-			"generate_report",
-			"cmapHeatmap",
-			"cmap",
-			"Reference",
-			"reference",
-			"validate_config_file",
-			"Builder",
-			"reference.cmaps",
-			".gene_score_density",
-			"parse_request",
-			"setClass",
-			"input_file",
-			"exit",
-			"cd ",
-			"菜单",
-			"mkdir",
-			"/usr/local",
-			"%",
-			"，",
-			", ",
-			"$num",
-			"chcwd",
-			"PROJECTS",
-			"\"",
-			"\\n",
-			":",
-			"'",
-			", ",
-			"/media",
-			", ",
-			"category",
-			"robj",
-			"[ \\n]+",
-			"\\[[0-9]+]",
-			"[ \\n]+",
-			"\\[[0-9]+]",
-			"DLCUP_DB"
+			"list"
 		],
 		"highlight": true,
 		"in_selection": false,
 		"preserve_case": false,
-		"regex": true,
+		"regex": false,
 		"replace_history":
 		[
+			"javascript:loadurl('\\1')",
+			"static '",
 			"relative",
 			"http://10.157.43.71/cblr/svc",
 			"fa-circle",
@@ -1034,144 +1109,24 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 7,
 			"sheets":
 			[
 				{
 					"buffer": 0,
+					"file": "sscobbler/templates/sscobbler/task_created.tmpl",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 827,
-						"regions":
-						{
-							"match":
-							{
-								"flags": 112,
-								"regions":
-								[
-									[
-										207,
-										215
-									],
-									[
-										442,
-										450
-									],
-									[
-										701,
-										709
-									],
-									[
-										770,
-										778
-									]
-								],
-								"scope": ""
-							}
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"default_dir": "/Users/FK/Documents/Projects/SSCOPWeb",
-							"detect_indentation": false,
-							"line_numbers": false,
-							"output_tag": 1,
-							"result_base_dir": "",
-							"result_file_regex": "^([^ \t].*):$",
-							"result_line_regex": "^ +([0-9]+):",
-							"scroll_past_end": true,
-							"syntax": "Packages/Default/Find Results.hidden-tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "sscobbler/views.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 53716,
+						"buffer_size": 457,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 21826.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "sscop_config.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3804,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								192,
-								192
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "sscobbler/templates/sscobbler/index.tmpl",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 423,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
+								440,
+								440
 							]
 						],
 						"settings":
@@ -1182,16 +1137,16 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
-					"file": "sscobbler/urls.py",
+					"buffer": 1,
+					"file": "sscobbler/templates/sscobbler/snippet_list.tmpl",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2410,
+						"buffer_size": 1141,
 						"regions":
 						{
 						},
@@ -1204,8 +1159,98 @@
 						],
 						"settings":
 						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 10,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "sscobbler/templates/sscobbler/settings.tmpl",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1262,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1249,
+								1233
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "sscobbler/views.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 56958,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								38072,
+								38072
+							]
+						],
+						"settings":
+						{
 							"syntax": "Packages/Python/Python.sublime-syntax",
 							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 15601.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "sscobbler/templates/sscobbler/events.tmpl",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1503,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								52,
+								52
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"tab_size": 2,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
@@ -1213,6 +1258,414 @@
 						"zoom_level": 1.0
 					},
 					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "sscobbler/templates/sscobbler/eventlog.tmpl",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 283,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								37,
+								37
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "ssdeploy/templates/master.tmpl",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 12373,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3127,
+								3186
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2630.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "sscop_config.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5861,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4156,
+								4156
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1442.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "ssdeploy/static/jsGrowl.css",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2230,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CSS/CSS.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 736.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7764,
+						"regions":
+						{
+							"match":
+							{
+								"flags": 112,
+								"regions":
+								[
+									[
+										140,
+										147
+									],
+									[
+										298,
+										305
+									],
+									[
+										447,
+										454
+									],
+									[
+										552,
+										559
+									],
+									[
+										666,
+										673
+									],
+									[
+										746,
+										753
+									],
+									[
+										870,
+										877
+									],
+									[
+										994,
+										1001
+									],
+									[
+										1138,
+										1145
+									],
+									[
+										1269,
+										1276
+									],
+									[
+										1373,
+										1380
+									],
+									[
+										1480,
+										1487
+									],
+									[
+										1677,
+										1684
+									],
+									[
+										1717,
+										1724
+									],
+									[
+										1805,
+										1812
+									],
+									[
+										1894,
+										1901
+									],
+									[
+										1985,
+										1992
+									],
+									[
+										2077,
+										2084
+									],
+									[
+										2166,
+										2173
+									],
+									[
+										2267,
+										2274
+									],
+									[
+										2347,
+										2354
+									],
+									[
+										2393,
+										2400
+									],
+									[
+										2473,
+										2480
+									],
+									[
+										2518,
+										2525
+									],
+									[
+										2596,
+										2603
+									],
+									[
+										2639,
+										2646
+									],
+									[
+										2718,
+										2725
+									],
+									[
+										2834,
+										2841
+									],
+									[
+										2946,
+										2953
+									],
+									[
+										3134,
+										3141
+									],
+									[
+										3213,
+										3220
+									],
+									[
+										3249,
+										3256
+									],
+									[
+										3574,
+										3581
+									],
+									[
+										3790,
+										3797
+									],
+									[
+										3958,
+										3965
+									],
+									[
+										4121,
+										4128
+									],
+									[
+										4275,
+										4282
+									],
+									[
+										4355,
+										4362
+									],
+									[
+										4388,
+										4395
+									],
+									[
+										4704,
+										4711
+									],
+									[
+										4752,
+										4759
+									],
+									[
+										5001,
+										5008
+									],
+									[
+										5146,
+										5153
+									],
+									[
+										5288,
+										5295
+									],
+									[
+										5524,
+										5531
+									],
+									[
+										5571,
+										5578
+									],
+									[
+										5764,
+										5771
+									],
+									[
+										5855,
+										5862
+									],
+									[
+										6171,
+										6178
+									],
+									[
+										6663,
+										6670
+									],
+									[
+										6746,
+										6753
+									],
+									[
+										7034,
+										7041
+									],
+									[
+										7344,
+										7355
+									],
+									[
+										7655,
+										7666
+									]
+								],
+								"scope": ""
+							}
+						},
+						"selection":
+						[
+							[
+								7661,
+								7661
+							]
+						],
+						"settings":
+						{
+							"default_dir": "/Users/FK/Documents/Projects/SSCOPWeb",
+							"detect_indentation": false,
+							"line_numbers": false,
+							"output_tag": 2,
+							"result_base_dir": "",
+							"result_file_regex": "^([^ \t].*):$",
+							"result_line_regex": "^ +([0-9]+):",
+							"scroll_past_end": true,
+							"syntax": "Packages/Default/Find Results.hidden-tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 3135.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "sscobbler/static/sscobbler/sscobbler.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 266,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
 					"type": "text"
 				}
 			]
@@ -1323,7 +1776,7 @@
 	"show_open_files": true,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 248.0,
+	"side_bar_width": 232.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

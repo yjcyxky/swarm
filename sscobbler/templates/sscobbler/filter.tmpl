@@ -12,13 +12,15 @@ function add_filter() {
         alert("{{ interface.alert_filter_value }}");
     } else {
         document.forms["action"].action = '/sscobbler/{{ what }}/modifylist/addfilter/'+field_name.value+':'+field_value.value;
-        document.forms["action"].submit();
+        // document.forms["action"].submit();
     }
 }
+
 function del_filter(filter) {
-    document.forms["action"].action = '/sscobbler/{{ what }}/modifylist/removefilter/' + filter
-    document.forms["action"].submit();
+    document.forms["action"].action = '/sscobbler/{{ what }}/modifylist/removefilter/' + filter;
+    // document.forms["action"].submit();
 }
+
 </script>
 <ul id="filter-adder">
   <li>
@@ -150,13 +152,14 @@ function del_filter(filter) {
     <!-- <label for="filter_value"> on </label><input type="text" name="filter_value" id="filter_value" onkeypress="javascript:if (event.keyCode == 13) add_filter();" /> -->
     <label for="filter_value"> {{ interface.yes }} </label><input type="text" name="filter_value" id="filter_value" onkeypress="javascript:if (event.keyCode == 13) add_filter();" />
     <!-- <input class="button" type="button" name="filter_add" id="filter_add" onclick="javascript: add_filter();" value="Add" /> -->
-    <input class="button" type="button" name="filter_add" id="filter_add" onclick="javascript: add_filter();" value="{{ interface.add_filter }}" />
+    <input class="button" type="submit" form="action" name="filter_add" id="filter_add" onclick="javascript: add_filter();" value="{{ interface.add_filter }}" />
   </li>
 </ul>
   {% if filters %}
 <ul id="filter-remover">
     {% for key,value in filters.items %}
-  <li><a href="javascript:del_filter('{{ key }}');" title="remove">✖</a> {{ key }} = {{ value }}</li>
+  <!-- <li><a href="javascript:del_filter('{{ key }}');" title="remove">✖</a>{{ key }} = {{ value }}</li> -->
+    <li><input type="submit" form="action" onclick="javascript:del_filter('{{ key }}');" title="remove" value="✖"/>{{ key }} = {{ value }}</li>
     {% endfor %}
 </ul>
   {% endif %}

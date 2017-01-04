@@ -1,6 +1,3 @@
-{% extends 'master.tmpl' %}
-{% block content %}
-
 {% if not editable %}
 <blockquote>
 NOTE: You do not have permission to make changes to this
@@ -11,16 +8,33 @@ if you need to resolve this.
 </blockquote>
 <br />
 {% endif %}
-<h1>{% ifequal editmode 'edit' %}Editing{% else %}Adding{% endifequal %} a Snippet</h1>
+<h1>{% ifequal editmode 'edit' %}{{ interface.editing }}{% else %}{{ interface.adding }}{% endifequal %}{{ interface.snippet }}</h1>
 <hr />
+<script type="text/javascript">
+  $('#snippetform').on('submit', function(e){
+    e.preventDefault();
+    $.ajax({
+      type: $(this).attr('method'),
+      url: $(this).attr('action'),
+      data: $(this).serialize(),
+      success: function(data){
+        if( data.status && data.url ) {
+          loadurl(data.url)
+        }
+      }
+    });
+  });
+</script>
 <form id="snippetform" method="post" action="/sscobbler/snippet/save">
   {% csrf_token %}
   <ol>
     <li>
-      <label for="snippetdata">{% if snippet_name %}Snippet: {{ snippet_name }}{% else %}Filename:{% endif %}</label>
+      <label for="snippetdata">{% if snippet_name %}{{ interface.snippet_label }}: {{ snippet_name }}{% else %}{{ interface.filename_label }}:{% endif %}</label>
+      <!-- Hold the snippet file name for the following request -->
+      <input type="hidden" id='snippet_file_name' value="{{ snippet_name }}" />
 {% ifnotequal editmode 'edit' %}
       <input type="text" name="snippet_name" id="snippet_name" />
-      <span class="context-tip">Example:  foo.ks (to be saved in /var/lib/cobbler/snippets/)</span>
+      <span class="context-tip">{{ interface.snippet_example_msg }}snippets/)</span>
 {% else %}
       <input type="hidden" name="snippet_name" value="{{ snippet_name }}" />
 {% endifnotequal %}
@@ -30,27 +44,27 @@ if you need to resolve this.
     </li>
 {% if deleteable %}
     <li>
+    <!-- TODO: Add a message box to notice users that they must check Delete and Really checkbox if they want to delete a file -->
       <input type="checkbox" name="delete1" value="delete1" />
-      <label class="delete" for="delete1">Delete</label>
+      <label class="delete" for="delete1">{{ interface.delete | title}}</label>
       <br>
       <input type="checkbox" name="delete2" value="delete2" />
-      <label class="delete" for="delete2">Really?</label>
+      <label class="delete" for="delete2">{{ interface.really }}</label>
       <span class="context-tip">Check both buttons and click save to delete this object</span>
     </li>
 {% else %}
   {% ifequal editmode "edit" %}
     <li>
-      <span class="warn">NOTE: This automatic OS installation template is currently in-use.</span>
+      <span class="warn">{{ interface.in_use_warning }}</span>
     </li>
   {% endifequal %}
 {% endif %}
 {% if editable %}
     <li>
       <input type="hidden" name="editmode" value="{{ editmode }}" />
-      <input class="button" type="submit" name="submit" value="Save" />
-      <input class="button" type="reset" name="reset" value="Reset" />
+      <input class="button" type="submit" name="submit" value="{{ interface.save | title }}" />
+      <input class="button" type="reset" name="reset" value="{{ interface.reset }}" />
     </li>
 {% endif %}
   </ol>
 </form>
-{% endblock content %}

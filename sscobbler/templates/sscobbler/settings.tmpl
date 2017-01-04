@@ -1,33 +1,49 @@
-{% extends "master.tmpl" %}
-
-{% block content %}
+{% ifequal interface.language 'en' %}
 <h1>Settings</h1>
 <hr />
 <p>
   These settings live in /etc/cobbler/settings on the server.
   <br />
-  After making changes <a href="/sscobbler/sync">sync</a> or run "cobbler sync" from the command line then restart cobblerd.
+  After making changes <a href="javascript:loadurl('/sscobbler/sync')">sync</a> or run "cobbler sync" from the command line then restart cobblerd.
 </p>
+{% else %}
+<h1>配置</h1>
+<hr />
+<p>
+  配置文件详见服务器/etc/cobbler/settings文件.
+  <br />
+  在修改配置文件后请点击<a href="javascript:loadurl('/sscobbler/sync')">同步</a>或者通过终端运行"cobbler sync"然后重启cobblerd服务。
+</p>
+{% endifequal %}
+
 {% if settings %}
 <table id="listitems" cellspacing="0">
   <thead>
     <tr>
       <th></th>
+      {% ifequal interface.language 'en' %}
       <th>Setting</th>
       <th>Value</th>
+      {% else %}
+      <th>设置</th>
+      <th>值</th>
+      {% endifequal %}
     </tr>
   </thead>
   <tbody>
   {% for setting,value in settings %}
     <tr class="{% cycle 'rowodd' 'roweven' %}">
       <td></td>
-      <td><a href="/sscobbler/setting/edit/{{ setting }}">{{ setting }}</a></td>
+      <td><a href="javascript:loadurl('/sscobbler/setting/edit/{{ setting }}')">{{ setting }}</a></td>
       <td>{% if value %}{{ value }}{% else %}None{% endif %}</td>
     </tr>
   {% endfor %}
   </tbody>
 </table>
 {% else %}
+{% ifequal interface.language 'en' %}
 <h2 class="error">No settings found.</h2>
+{% else %}
+<h2 class="error">未找到任何配置.</h2>
+{% endifequal %}
 {% endif %}
-{% endblock content %}

@@ -1,0 +1,254 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>{% block title %} {{ interface.company_name }}{{ interface.production_name }} {% endblock %}</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'jquery-ui.css' %}" type="text/css" />
+  <link rel="stylesheet" type="text/css" media="all" href="{% static 'jsGrowl.css' %}" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+  <link rel="stylesheet" href="{% static 'sidebar-menu.css' %}">
+  <link rel="icon" type="image/png" href="{% static interface.favicon %}" />
+  <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
+  <link rel="stylesheet" type="text/css" media="all" href="{% static 'style.css' %}" />
+  <!-- <script src="{% static 'jquery.min.js' %}"></script> -->
+  <script src="http://libs.useso.com/js/jquery/2.1.1/jquery.min.js" type="text/javascript"></script>
+  <!-- <script>window.jQuery || document.write('<script src="{% static "jquery.2.1.1.min.js" %}"><\/script>')</script> -->
+  <!-- <script src="{% static 'jquery-ui.min.js' %}"></script> -->
+  <script src="http://code.jquery.com/ui/1.12.0/jquery-ui.min.js" integrity="sha256-eGE6blurk5sHj+rmkfsGYeKyZx3M4bG+ZlFyA7Kns7E=" crossorigin="anonymous"></script>
+  <script src="{% static 'jsGrowl.js' %}" type="text/javascript"></script> 
+  <script src="{% static 'jsGrowl_jquery.js' %}" type="text/javascript"></script> 
+  <script src="{% static 'sscobbler/sscobbler.js' %}" type="text/javascript"></script>
+  <script type="text/javascript">
+    var js_growl = new jsGrowl('js_growl');
+    var run_once = 0
+    var now = new Date()
+    var page_load = -1
+
+    /* show tasks not yet recorded, update task found time in hidden field */
+
+    function get_latest_task_info() {
+      var username = document.getElementById("username").value
+
+      /* FIXME: used the logged in user here instead */
+      /* FIXME: don't show events that are older than 40 seconds */
+
+      $.getJSON("http://{{ interface.ip_address }}/cblr/svc/op/events/user/" + username,
+        function(data){$.each(data, function(i,record) {
+          var id = record[0];
+          var ts = record[1];
+          var name = record[2];
+          var state = record[3];
+          var buf = ""
+        {% ifequal interface.language 'en' %}
+          var logmsg = " <a href=javascript:loadurl(\"/sscobbler/eventlog/" + id + "\")>(log)</a>";
+          if (state == "complete") {
+            buf = "Task " + name + " is complete: " + logmsg
+          }
+          else if (state == "running") {
+            buf = "Task " + name + " is running: " + logmsg
+          }
+          else if (state == "failed") {
+            buf = "Task " + name + " has failed: " + logmsg
+          }
+          else {
+            buf = name
+          }
+        {% else %}
+          var logmsg = " <a href=javascript:loadurl(\"/sscobbler/eventlog/" + id + "\")>(日志文件)</a>";
+          if (state == "complete") {
+            buf = "任务" + name + "已经完成: " + logmsg
+          }
+          else if (state == "running") {
+            buf = "任务" + name + "正在运行: " + logmsg
+          }
+          else if (state == "failed") {
+            buf = "任务" + name + "运行失败: " + logmsg
+          }
+          else {
+            buf = name
+          }
+        {% endifequal %}
+          window.status = buf;
+          js_growl.addMessage({msg:buf});
+        });
+      });
+    }
+
+    function go_go_gadget() {
+      setInterval(get_latest_task_info, 2000)
+      try {
+        page_onload()
+      } 
+      catch (error) {
+      }
+    }
+
+    function page_onload() { 
+      var submitting = false;
+
+      $(window).bind("submit", function () {
+
+        submitting = true;
+
+      });
+
+      $(window).bind("beforeunload", function () {
+
+        if (!submitting && $("#aidata")[0].defaultValue !== $("#aidata")[0].value) {
+
+          submitting = false;
+          {% ifequal interface.language 'en' %}
+          return "You have unsaved changes.";
+          {% else %}
+          return "修改未保存";
+          {% endifequal %}
+        }
+
+      });
+    }
+  </script>
+</head>
+<body onload="go_go_gadget()">
+  <div id="container">
+    <form id="menuaction" method="POST" action="">{% csrf_token %}</form>
+    <script type="text/javascript">
+      function menuaction(action) {
+        document.forms["menuaction"].action = action
+        // document.forms["menuaction"].submit();
+    }
+    $('#menuaction').on('submit', function(e){
+      e.preventDefault();
+      $.ajax({
+        type: $(this).attr('method'),
+        url: $(this).attr('action'),
+        data: $(this).serialize(),
+        success: function(data){
+          if( data.status && data.url ) {
+            loadurl(data.url)
+          }
+        }
+      });
+    });
+    </script>
+    <aside class="main-sidebar">
+      <section  class="sidebar">
+        <ul class="sidebar-menu">
+          <li class="sidebar-header"><a id="sidebar-header-link" href="{{ interface.production_link }}">{{ interface.production_abbr }}</a></li>
+          <li class="treeview">
+            <a href="">
+              <!-- <i class="fa fa-dashboard"></i> <span>Dashboard</span> -->
+              <i class="fa fa-dashboard"></i> <span>{{ interface.dashboard }}</span>
+            </a>
+          </li>
+
+          <li class="treeview">
+            <a href="">
+              <i class="fa fa-cubes"></i> <span>{{ interface.system_deploy }}</span>
+              <i class="fa fa-angle-left pull-right"></i>
+            </a>
+            <ul class="treeview-menu">
+              <li><a href=""><i class="fa fa-circle"></i>{{ interface.configuration }}<i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu" style="display: none;">
+                  <li><a href="javascript:loadurl('/sscobbler/distro/list')"><i class="fa fa-circle-o"></i>{{ interface.distros }}</a></li>
+                  <li><a href="javascript:loadurl('/sscobbler/profile/list')"><i class="fa fa-circle-o"></i>{{ interface.profiles }}</a></li>
+                  <li><a href="javascript:loadurl('/sscobbler/system/list')"><i class="fa fa-circle-o"></i>{{ interface.systems }}</a></li>
+                  <li><a href="javascript:loadurl('/sscobbler/repo/list')"><i class="fa fa-circle-o"></i>{{ interface.repos }}</a></li>
+                  <li><a href="javascript:loadurl('/sscobbler/image/list')"><i class="fa fa-circle-o"></i>{{ interface.images }}</a></li>
+                  <li><a href="javascript:loadurl('/sscobbler/aifile/list')"><i class="fa fa-circle-o"></i>{{ interface.auto_installation_templ }}</a></li>
+                  <li><a href="javascript:loadurl('/sscobbler/snippet/list')"><i class="fa fa-circle-o"></i>{{ interface.auto_installation_snip }}</a></li>
+                  <li><a href="javascript:loadurl('/sscobbler/mgmtclass/list')"><i class="fa fa-circle-o"></i>{{ interface.mgmtclass }}</a></li>
+                  <li><a href="javascript:loadurl('/sscobbler/setting/list')"><i class="fa fa-circle-o"></i>{{ interface.settings }}</a></li>
+                </ul>
+              </li>
+            </ul>
+            <ul class="treeview-menu">
+              <li><a href=""><i class="fa fa-circle"></i>{{ interface.resources }}<i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu" style="display: none;">
+                  <li><a href="javascript:loadurl('/sscobbler/package/list')"><i class="fa fa-circle-o"></i>{{ interface.packages }}</a></li>
+                  <li><a href="javascript:loadurl('/sscobbler/file/list')"><i class="fa fa-circle-o"></i>{{ interface.files }}</a></li>
+                </ul>
+              </li>
+            </ul>
+            <ul class="treeview-menu">
+              <li><a href=""><i class="fa fa-circle"></i>{{ interface.actions }}<i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu" style="display: none;">
+                  <li><a href="javascript:loadurl('/sscobbler/import/prompt')"><i class="fa fa-circle-o"></i>{{ interface.import_iso }}</a></li>
+                  <li><a><i class="fa fa-circle-o"></i><input class="action" type="submit" form="menuaction" onClick="javascript:menuaction('/sscobbler/sync');" value="{{ interface.sync }}"/></a></li>
+                  <li><a><i class="fa fa-circle-o"></i><input class="action" type="submit" form="menuaction" onClick="javascript:menuaction('/sscobbler/reposync');" value="{{ interface.reposync }}"/></a></li>
+                  <li><a><i class="fa fa-circle-o"></i><input class="action" type="submit" form="menuaction" onClick="javascript:menuaction('/sscobbler/hardlink');" value="{{ interface.hardlink }}"/></a></li>
+                  <li><a><i class="fa fa-circle-o"></i><input class="action" type="submit" form="menuaction" onClick="javascript:menuaction('/sscobbler/buildiso');" value="{{ interface.build_iso }}"/></a></li>
+                </ul>
+              </li>
+            </ul>
+            <ul class="treeview-menu">
+              <li><a href=""><i class="fa fa-circle"></i>{{ interface.others }}<i class="fa fa-angle-left pull-right"></i></a>
+                <ul class="treeview-menu" style="display: none;">
+                  <li><a href="javascript:loadurl('/sscobbler/check')"><i class="fa fa-circle-o"></i>{{ interface.check }}</a></li>
+                  <li><a href="javascript:loadurl('/sscobbler/events')"><i class="fa fa-circle-o"></i>{{ interface.events }}</a></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li class="treeview">
+            <a href="">
+              <i class="fa fa-cog"></i>{{ interface.service_deploy }}<i class="fa fa-angle-left pull-right"></i>
+            </a>
+            <ul class="treeview-menu" style="display: none;">
+              <li><a href=""><i class="fa fa-circle"></i>软件部署</a></li>
+              <li><a href=""><i class="fa fa-circle"></i>服务部署</a></li>
+              <li><a href=""><i class="fa fa-circle"></i>主机信息</a></li>
+              <li><a href=""><i class="fa fa-circle"></i>其它</a>
+              </li>
+            </ul>
+          </li>
+          <li class="treeview">
+            <a href="">
+              <i class="fa fa-bar-chart"></i>{{ interface.monitoring }}<i class="fa fa-angle-left pull-right"></i>
+            </a>
+            <ul class="treeview-menu" style="display: none;">
+              <li><a href=""><i class="fa fa-circle"></i>主机监控</a></li>
+              <li><a href=""><i class="fa fa-circle"></i>网络监控</a></li>
+              <li><a href=""><i class="fa fa-circle"></i>事件</a></li>
+              <li><a href=""><i class="fa fa-circle"></i>其它</a>
+              </li>
+            </ul>
+          </li>
+          <li><a href=""><i class="fa fa-book"></i> <span>{{ interface.documentation }}</span></a></li>
+          <li class="second-header">{{ interface.monitoring_msg }}</li>
+          <li><a href=""><i class="fa fa-bug text-red"></i> <span>{{ interface.error_msg }}</span></a></li>
+          <li><a href=""><i class="fa fa-exclamation-triangle text-yellow"></i> <span>{{ interface.warning_msg }}</span></a></li>
+          <li><a href=""><i class="fa fa-info-circle text-aqua"></i> <span>{{ interface.info_msg }}</span></a></li>
+        </ul>
+      </section>
+    </aside>
+    <div class="right-container">
+      <div id="header" class="header">
+        <div id="user">
+          <input type="hidden" name="username" id="username" value="{{ username }}" />
+          <span><b>{{ username }}</b> <a class="action" href="javascript:menuaction('/sscobbler/logout');">{{ interface.quit }}</a></span>
+        </div>
+      </div>
+      <hr>
+      <div class="content-container">
+        <div id="content">
+<!--           {% block content %}
+          {% endblock %} -->
+        </div>
+        {% block welcome %}
+        {% endblock %}
+      </div>
+      <hr>
+      <div id="footer" class="footer">
+        <span>{{ interface.production_abbr }} {{ version }}</span>
+      </div>
+      <div id="jsGrowl"></div>
+    </div>
+  </div>
+  <script src="{% static 'sidebar-menu.js' %}"></script>
+  <script>
+    $.sidebarMenu($('.sidebar-menu'))
+  </script>
+</body>
+</html>

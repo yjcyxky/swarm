@@ -5,6 +5,7 @@
     height: 100%;
     min-height: 100%;
     /*min-width: 200px;*/
+    overflow: auto;
     width: 20%;
     z-index: 810;
     background-color: #222d32;

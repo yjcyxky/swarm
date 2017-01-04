@@ -1,13 +1,15 @@
 $.sidebarMenu = function(menu) {
-  var animationSpeed = 300;
+  var animationSpeed = 200;
   
   $(menu).on('click', 'li a', function(e) {
     var $this = $(this);
     var checkElement = $this.next();
+    var elements = $this.nextAll();
 
     if (checkElement.is('.treeview-menu') && checkElement.is(':visible')) {
       checkElement.slideUp(animationSpeed, function() {
         checkElement.removeClass('menu-open');
+        elements.css("display", "none");
       });
       checkElement.parent("li").removeClass("active");
     }
@@ -29,6 +31,7 @@ $.sidebarMenu = function(menu) {
         checkElement.addClass('menu-open');
         parent.find('li.active').removeClass('active');
         parent_li.addClass('active');
+        elements.css("display", "block");
       });
     }
     //if this isn't a link, prevent the page from being redirected

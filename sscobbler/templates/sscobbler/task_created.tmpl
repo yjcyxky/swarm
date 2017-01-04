@@ -1,11 +1,12 @@
-{% extends "master.tmpl" %}
-
-{% block content %}
-
+{% ifequal interface.language 'en' %}
 <h1>Task Enqueued</h1>
 <hr />
 
-A background task has been created for the action you have initiated.  Pop-up notifications will alert you to status updates regarding this and other tasks.  You can also browse the <a href="/sscobbler/events">Task Log</a>.
+A background task has been created for the action you have initiated.  Pop-up notifications will alert you to status updates regarding this and other tasks.  You can also browse the <a href="javascript:loadurl('/sscobbler/events')">Task Log</a>.
 
-{% endblock %}
+{% else %}
+<h1>任务排队</h1>
+<hr />
 
+提交的后台任务已创建，通知弹窗将为您更新任务完成状态，您也可浏览<a href="javascript:loadurl('/sscobbler/events')">任务日志</a>。
+{% endifequal %}
