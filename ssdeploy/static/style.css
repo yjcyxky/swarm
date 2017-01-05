@@ -47,7 +47,7 @@ Set Right Container
 */
 .right-container {
     position: absolute;
-    /*overflow: scroll;*/
+    overflow: scroll;
     top: 0;
     right: 0;
     height: 100%;
