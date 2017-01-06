@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 
 # User defined
-COBBLER_API_URL = "http://10.157.43.71/cobbler_api"
+COBBLERD_DOMAIN = r'10.157.43.71'
+COBBLER_API_URL = "http://" + COBBLERD_DOMAIN + "/cobbler_api"
 
 # You can use 'en' or 'zh', that they means english or chinese, alternatively.
 INTERFACE_LANG = 'zh'
+
+COBBLER_USERNAME = 'cobbler'
+COBBLER_PASSWORD = 'yjc040653'
 
 ZH_INTERFACE = {
     'language': 'zh',
@@ -53,7 +57,7 @@ ZH_INTERFACE = {
     'in_use_warning': r'注意：当前自动化系统安装模板正在使用中。',
     'info_msg': r'信息',
     'interface_num_wmsg': r'System至少要添加一个网卡',
-    'ip_address': r'10.157.43.71',
+    'ip_address': COBBLERD_DOMAIN,
     'item': r'条目',
     'login': r'登录',
     'mgmtclass': r'管理类',
@@ -141,7 +145,7 @@ EN_INTERFACE = {
     'info_msg': r'Informations',
     'interface_num_wmsg': r'systems must always have at least one interface.',
     'in_use_warning': r'NOTE: This automatic OS installation template is currently in-use.',
-    'ip_address': r'10.157.43.71',
+    'ip_address': COBBLERD_DOMAIN,
     'item': r'Items',
     'login': r'Login',
     'mgmtclass': r'Management Classes',

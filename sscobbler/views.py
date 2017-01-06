@@ -1443,37 +1443,13 @@ def test_user_authenticated(request):
             pass
     return False
 
-
-use_passthru = -1
-
-
-# def login(request, next=None, message=None, expired=False):
-#     # There are risks by using get_shared_secret 
-#     global use_passthru
-#     # if use_passthru < 0:
-#     #     token = remote.login("", remote.get_shared_secret())
-#     #     auth_module = remote.get_authn_module_name(token)
-#     #     use_passthru = auth_module == 'authn_passthru'
-
-#     # if use_passthru:
-#     #     return accept_remote_user(request, next)
-
-#     if expired and not message:
-#         if INTERFACE_LANG == 'en':
-#             message = r'Please Contact Administrator for username and password!'
-#         else:
-#             message = r"请联系管理员获取用户名与密码！"
-#     content = {
-#         'interface': INTERFACE,
-#         'next': next, 
-#         'message': message
-#     }
-#     return render_to_response('login.tmpl', RequestContext(request, content))
-
 def login(request, next=None, message=None, expired=False):
-    global use_passthru
     global remote
     global url_cobbler_api
+    global username
+
+    from sscop_config import COBBLER_USERNAME as username
+    from sscop_config import COBBLER_PASSWORD as password
 
     if expired and not message:
         if INTERFACE_LANG == 'en':
@@ -1487,9 +1463,6 @@ def login(request, next=None, message=None, expired=False):
         'message': message
     }
 
-    username = 'cobbler'
-    password = 'yjc040653'
-
     if url_cobbler_api is None:
         url_cobbler_api = local_get_cobbler_api_url()
 
@@ -1502,79 +1475,3 @@ def login(request, next=None, message=None, expired=False):
         return HttpResponseRedirect(next)
     else:
         return HttpResponseRedirect("/")
-
-
-# def accept_remote_user(request, nextsite):
-#     global username
-
-#     username = request.META['REMOTE_USER']
-#     token = remote.login(username, remote.get_shared_secret())
-
-#     request.session['username'] = username
-#     request.session['token'] = token
-#     if nextsite:
-#         return HttpResponseRedirect(nextsite)
-#     else:
-#         return HttpResponseRedirect("")
-
-# @require_POST
-# def do_login(request):
-#     global remote
-
-#     username = 'cobbler'
-#     password = 'yjc040653'
-
-#     if url_cobbler_api is None:
-#         url_cobbler_api = local_get_cobbler_api_url()
-
-#     remote = xmlrpclib.Server(url_cobbler_api, allow_none=True)
-#     token = remote.login(username, password)
-
-#     if token:
-#         request.session['username'] = username
-#         request.session['token'] = token
-#         return True
-#     else:
-#         return False
-
-# @require_POST
-# def do_login(request):
-#     global remote
-#     global username
-#     global url_cobbler_api
-
-#     username = request.POST.get('username', '').strip()
-#     password = request.POST.get('password', '')
-#     nextsite = request.POST.get('next', None)  # nextsite: /sscobler，详见页面中隐藏的input标签
-
-#     if url_cobbler_api is None:
-#         url_cobbler_api = local_get_cobbler_api_url()
-
-#     remote = xmlrpclib.Server(url_cobbler_api, allow_none=True)
-
-#     try:
-#         token = remote.login(username, password)
-#     except:
-#         token = None
-
-#     if token:
-#         request.session['username'] = username
-#         request.session['token'] = token
-#         if nextsite:
-#             return HttpResponseRedirect(nextsite)
-#         else:
-#             return HttpResponseRedirect("/sscobbler")
-#     else:
-#         # return login(request, nextsite, message="Login failed, please try again")
-#         if INTERFACE_LANG == 'en':
-#             message = "Login Failed, Please Retry!"
-#         else:
-#             message="登录失败，请重试！"
-#         return login(request, nextsite, message)
-
-
-@require_POST
-def do_logout(request):
-    request.session['username'] = ""
-    request.session['token'] = ""
-    return HttpResponseRedirect("/sscobbler")
