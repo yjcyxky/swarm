@@ -19,17 +19,10 @@ from django.contrib import staticfiles
 from ssdeploy import settings
 from ssdeploy import views
 
-from sscop_config import COBBLER_API_URL, INTERFACE_LANG, ZH_INTERFACE, EN_INTERFACE
-if INTERFACE_LANG == 'en':
-    INTERFACE = EN_INTERFACE
-elif INTERFACE_LANG == 'zh':
-    INTERFACE = ZH_INTERFACE
-else:
-    INTERFACE = ZH_INTERFACE
-
-admin.autodiscover()
+# admin.autodiscover()
 
 urlpatterns = [
+    url(r'^admin/(.*)$', admin.site.root),
     url(r'^$', views.index),
     url(r'^sscobbler/', include('sscobbler.urls')),
 ]

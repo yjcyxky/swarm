@@ -18,7 +18,7 @@ def index(request):
     # if not test_user_authenticated(request):
     #     return login(request, next="/sscobbler", expired=True)
 
-    t = get_template('index.tmpl')
+    t = get_template('login.tmpl')
     html = t.render(RequestContext(request, {
         'interface': INTERFACE,
     }))
