@@ -1,0 +1,43 @@
+/*Reset to a sane default across browsers*/
+html, body{
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+a,blockquote,body,div,dl,dt,dd,form,fieldset,h1,h2,h3,h4,h5,h6,html,img,input,label,li,ul,ol,p,pre,span,textarea,table,tbody,td,th,thead,tr {
+  /*border: 0;*/
+  /*margin: 0;*/
+  padding: 0;
+}
+
+table {
+  table-layout: auto;
+}
+
+select,input,button,textarea{
+  font-size:99%;
+}
+
+select {
+  margin: 0;
+}
+
+table{
+  border-collapse:collapse;
+  border-spacing:10px;
+  cell-spacing:10px;
+  empty-cells:show;
+  width: 100%;
+}
+
+ol, ul { 
+  list-style: none;
+}
+
+hr { 
+  height: 1px;
+  margin: 0px;
+}
+/*End Reset*/

@@ -1,14 +1,23 @@
 .main-sidebar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    min-height: 100%;
-    /*min-width: 200px;*/
-    overflow: auto;
-    width: 20%;
-    z-index: 810;
-    background-color: #222d32;
+  display: none;  
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  min-height: 100%;
+  /*min-width: 200px;*/
+  overflow: auto;
+  width: 20%;
+  z-index: 810;
+  background-color: #222d32;
+}
+
+.show-menu {
+  display: block;
+}
+
+.hide {
+  display: none;
 }
 
 .sidebar-menu {

@@ -1,4 +1,4 @@
-$.sidebarMenu = function(menu) {
+function initsidebarMenu(menu) {
   var animationSpeed = 200;
   
   $(menu).on('click', 'li a', function(e) {
@@ -39,4 +39,25 @@ $.sidebarMenu = function(menu) {
       e.preventDefault();
     }
   });
+}
+
+function initMenuEvents() {
+  function initEvents() {
+    $('#menu-button').on( 'click', openMenu );
+    $('#close-button').on( 'click', closeMenu );
+  }
+
+  function openMenu() {
+    $('.main-sidebar').addClass('show-menu');
+    $('.right-container').addClass('shrink');
+    $('.menu-button').addClass('hide');
+  }
+
+  function closeMenu() {
+    $('.main-sidebar').removeClass('show-menu');
+    $('.right-container').removeClass('shrink');
+    $('.menu-button').removeClass('hide');
+  }
+
+  initEvents();
 }

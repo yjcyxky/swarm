@@ -60,21 +60,21 @@ def strip_none(data, omit_none=False):
 
     return data
 
-# def index(request):
-#     """
-#     This is the main greeting page for cobbler web.
-#     """
-#     if not test_user_authenticated(request):
-#         return login(request, next="/sscobbler", expired=True)
+def index(request):
+    """
+    This is the main greeting page for cobbler web.
+    """
+    if not test_user_authenticated(request):
+        return login(request, next="/sscobbler", expired=True)
 
-#     t = get_template('index.tmpl')
-#     html = t.render(RequestContext(request, {
-#         'interface': INTERFACE,
-#         # 调用cobbler API获取(可修改/etc/cobbler/version文件或SSCOPDeploy项目setup.py文件)
-#         'version': remote.extended_version(request.session['token'])['version'],
-#         'username': username,
-#     }))
-#     return HttpResponse(html)
+    t = get_template('index.tmpl')
+    html = t.render(RequestContext(request, {
+        'interface': INTERFACE,
+        # 调用cobbler API获取(可修改/etc/cobbler/version文件或SSCOPDeploy项目setup.py文件)
+        'version': remote.extended_version(request.session['token'])['version'],
+        'username': username,
+    }))
+    return HttpResponse(html)
 
 # ========================================================================
 
@@ -1285,7 +1285,7 @@ def generic_edit(request, what=None, obj_name=None, editmode="new"):
         'username': username,
         'name': obj_name,
     }))
-
+    print(html)
     return HttpResponse(html)
 
 # ======================================================================

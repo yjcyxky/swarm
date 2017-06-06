@@ -5,131 +5,24 @@
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   {% load static %}
-  <link rel="stylesheet" href="{% static 'jquery-ui.css' %}" type="text/css" />
-  <link rel="stylesheet" type="text/css" media="all" href="{% static 'jsGrowl.css' %}" />
-  <link rel="stylesheet" href="{% static 'font-awesome.min.css' %}">
-  <link rel="stylesheet" href="{% static 'sidebar-menu.css' %}">
   <link rel="icon" type="image/png" href="{% static interface.favicon %}" />
-  <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
-  <link rel="stylesheet" type="text/css" media="all" href="{% static 'style.css' %}" />
-  <script src="{% static 'jquery.min.js' %}" type="text/javascript"></script>
-  <script>window.jQuery || document.write('<script src="http://libs.useso.com/js/jquery/2.1.1/jquery.min.js"><\/script>')</script>
-  <script src="{% static 'jquery-ui.min.js' %}"></script>
-  <script src="{% static 'jsGrowl.js' %}" type="text/javascript"></script> 
-  <script src="{% static 'jsGrowl_jquery.js' %}" type="text/javascript"></script> 
+  <link rel="stylesheet" href="{% static 'css/jquery-ui.css' %}" type="text/css" />
+  <link rel="stylesheet" type="text/css" media="all" href="{% static 'css/jsGrowl.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+  <link rel="stylesheet" type="text/css" media="all" href="{% static 'css/reset.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/sidebar-menu.css' %}">
+  <link rel="stylesheet" type="text/css" media="all" href="{% static 'css/style.css' %}" />
+  <script src="{% static 'js/jquery.min.js' %}" type="text/javascript"></script>
+  <!-- <script>window.jQuery || document.write('<script src="http://libs.useso.com/js/jquery/2.1.1/jquery.min.js"><\/script>')</script> -->
+  <script src="{% static 'js/jquery-ui.min.js' %}"></script>
+  <script src="{% static 'js/jsGrowl.js' %}" type="text/javascript"></script> 
+  <script src="{% static 'js/jsGrowl_jquery.js' %}" type="text/javascript"></script> 
   <script src="{% static 'sscobbler/sscobbler.js' %}" type="text/javascript"></script>
-  <script type="text/javascript">
-    var js_growl = new jsGrowl('js_growl');
-    var run_once = 0
-    var now = new Date()
-    var page_load = -1
-
-    /* show tasks not yet recorded, update task found time in hidden field */
-
-    function get_latest_task_info() {
-      var username = document.getElementById("username").value
-
-      /* FIXME: used the logged in user here instead */
-      /* FIXME: don't show events that are older than 40 seconds */
-
-      $.getJSON("http://{{ interface.ip_address }}/cblr/svc/op/events/user/" + username,
-        function(data){$.each(data, function(i,record) {
-          var id = record[0];
-          var ts = record[1];
-          var name = record[2];
-          var state = record[3];
-          var buf = ""
-        {% ifequal interface.language 'en' %}
-          var logmsg = " <a href=javascript:loadurl(\"/sscobbler/eventlog/" + id + "\")>(log)</a>";
-          if (state == "complete") {
-            buf = "Task " + name + " is complete: " + logmsg
-          }
-          else if (state == "running") {
-            buf = "Task " + name + " is running: " + logmsg
-          }
-          else if (state == "failed") {
-            buf = "Task " + name + " has failed: " + logmsg
-          }
-          else {
-            buf = name
-          }
-        {% else %}
-          var logmsg = " <a href=javascript:loadurl(\"/sscobbler/eventlog/" + id + "\")>(日志文件)</a>";
-          if (state == "complete") {
-            buf = "任务" + name + "已经完成: " + logmsg
-          }
-          else if (state == "running") {
-            buf = "任务" + name + "正在运行: " + logmsg
-          }
-          else if (state == "failed") {
-            buf = "任务" + name + "运行失败: " + logmsg
-          }
-          else {
-            buf = name
-          }
-        {% endifequal %}
-          window.status = buf;
-          js_growl.addMessage({msg:buf});
-        });
-      });
-    }
-
-    function go_go_gadget() {
-      setInterval(get_latest_task_info, 2000)
-      try {
-        page_onload()
-      } 
-      catch (error) {
-      }
-    }
-
-    function page_onload() { 
-      var submitting = false;
-
-      $(window).bind("submit", function () {
-
-        submitting = true;
-
-      });
-
-      $(window).bind("beforeunload", function () {
-
-        if (!submitting && $("#aidata")[0].defaultValue !== $("#aidata")[0].value) {
-
-          submitting = false;
-          {% ifequal interface.language 'en' %}
-          return "You have unsaved changes.";
-          {% else %}
-          return "修改未保存";
-          {% endifequal %}
-        }
-
-      });
-    }
-  </script>
+  <script src="{% static 'js/sidebar-menu.js' %}"></script>
 </head>
-<body onload="go_go_gadget()">
-  <div id="container">
-    <form id="menuaction" method="POST" action="">{% csrf_token %}</form>
-    <script type="text/javascript">
-      function menuaction(action) {
-        document.forms["menuaction"].action = action
-        // document.forms["menuaction"].submit();
-    }
-    $('#menuaction').on('submit', function(e){
-      e.preventDefault();
-      $.ajax({
-        type: $(this).attr('method'),
-        url: $(this).attr('action'),
-        data: $(this).serialize(),
-        success: function(data){
-          if( data.status && data.url ) {
-            loadurl(data.url)
-          }
-        }
-      });
-    });
-    </script>
+<body>
+  <div class="container">
     <aside class="main-sidebar">
       <section  class="sidebar">
         <ul class="sidebar-menu">
@@ -221,9 +114,11 @@
           <li><a href=""><i class="fa fa-info-circle text-aqua"></i> <span>{{ interface.info_msg }}</span></a></li>
         </ul>
       </section>
-    </aside>
+      <button class="close-button" id="close-button"></button>
+    </aside>  
+    <button class="menu-button" id="menu-button"></button>
     <div class="right-container">
-      <div id="header" class="header">
+      <div class="header">
         <div id="user">
           <input type="hidden" name="username" id="username" value="{{ username }}" />
           <span><b>{{ username }}</b> <a class="action" href="javascript:menuaction('/sscobbler/logout');">{{ interface.quit }}</a></span>
@@ -237,15 +132,27 @@
         {% endblock %}
       </div>
       <hr>
-      <div id="footer" class="footer">
+      <div class="footer">
         <span>{{ interface.production_abbr }} {{ version }}</span>
       </div>
       <div id="jsGrowl"></div>
     </div>
   </div>
-  <script src="{% static 'sidebar-menu.js' %}"></script>
-  <script>
-    $.sidebarMenu($('.sidebar-menu'))
+  <script type="text/javascript">
+    $(document).ready(function(){
+      function go_go_gadget() {
+        var ip_address = "{{ interface.ip_address }}";
+        setInterval(_get_latest_task_info(ip_address), 2000)
+        try {
+          page_onload();
+        } 
+        catch (error) {
+        }
+      }
+      go_go_gadget();
+      initsidebarMenu($('.sidebar-menu'));
+      initMenuEvents();
+    });
   </script>
 </body>
 </html>

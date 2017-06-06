@@ -9,7 +9,7 @@ from sscobbler import views
 admin.autodiscover()
 
 urlpatterns = [
-    # url(r'^$', views.index),
+    url(r'^$', views.index),
     url(r'^setting/list$', views.setting_list),
     url(r'^setting/edit/(?P<setting_name>.+)$', views.setting_edit),
     url(r'^setting/save$', views.setting_save),

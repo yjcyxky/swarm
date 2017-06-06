@@ -2,8 +2,8 @@
 
 {% block welcome %}
 
-{% load static %}
 <div id="welcome" class="welcome">
+{% load static %}
 <a href="{{ interface.website }}"><img src="{% static interface.logo %}" /></a>
 {{ interface.welcome }}<a href="{{ interface.production_link }}">{{ interface.company_name }}{{ interface.production_name }}</a>
 </div>

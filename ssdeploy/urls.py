@@ -22,7 +22,7 @@ from ssdeploy import views
 # admin.autodiscover()
 
 urlpatterns = [
-    url(r'^admin/(.*)$', admin.site.root),
+    # url(r'^admin/(.*)$', admin.site.root),
     url(r'^$', views.index),
     url(r'^sscobbler/', include('sscobbler.urls')),
 ]

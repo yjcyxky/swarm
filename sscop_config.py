@@ -8,19 +8,18 @@ COBBLER_API_URL = "http://" + COBBLERD_DOMAIN + "/cobbler_api"
 INTERFACE_LANG = 'zh'
 
 COBBLER_USERNAME = 'cobbler'
-COBBLER_PASSWORD = 'yjc040653'
+COBBLER_PASSWORD = 'cobbler'
 
 ZH_INTERFACE = {
     'language': 'zh',
     # This path is relative, the absolute path is project_path/sscobbler/static/sscobbler/favicon.png.
-    'logo': 'logo-sscobbler.png',
+    'logo': 'images/logo-sscobbler.png',
     'website': 'http://super-san.com/index.asp',
-    'favicon': 'favicon.png',
+    'favicon': 'images/favicon.png',
     'company_name': r'超存',
     'production_abbr': r'SuperSAN vHPC', 
     'production_name': r'vHPC自动化部署与数据分析平台',
     'production_link': r'http://super-san.com/pro.asp?classid=7',
-
     'actions': r'Actions',
     'add_filter': r'添加',
     'add_interface': r'添加网卡',
