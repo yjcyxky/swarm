@@ -1,4 +1,4 @@
-"""ssdeploy URL Configuration
+"""opsweb URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/1.10/topics/http/urls/
@@ -16,8 +16,8 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from django.contrib import staticfiles
-from ssdeploy import settings
-from ssdeploy import views
+from opsweb import settings
+from opsweb import views
 
 # admin.autodiscover()
 

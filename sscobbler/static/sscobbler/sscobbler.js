@@ -41,7 +41,7 @@ function get_latest_task_info(ip_address) {
         buf = name;
       }
       window.status = buf;
-      var js_growl = n1 ew jsGrowl('js_growl');
+      var js_growl = new jsGrowl('js_growl');
       js_growl.addMessage({msg:buf});
     });
   });

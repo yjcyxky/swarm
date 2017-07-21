@@ -11,7 +11,7 @@
 </head>
 <body class="loginscreen">
   <div class="login">
-    <img src="{% static 'images/{{interface.logo}}' %}"/>
+    <img src="{% static interface.logo %}"/>
     <form action="/sscobbler/do_login" method="post">
       {% csrf_token %}
       {% if next %}<input type="hidden" name="next" value="{{ next|escape }}" />{% endif %}
