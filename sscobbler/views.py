@@ -7,14 +7,20 @@ from django.template import RequestContext
 from django.template.loader import get_template
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
+from django.apps import apps
 
 import simplejson
 import string
 import time
 import xmlrpclib
 
-from sscop_config import COBBLER_API_URL, INTERFACE_LANG, ZH_INTERFACE, EN_INTERFACE
 import field_ui_info
+
+sscobbler_settings = apps.get_app_config("sscobbler").settings
+COBBLER_API_URL = sscobbler_settings.get("cobbler_api_url")
+INTERFACE_LANG = sscobbler_settings.get("interface_lang")
+ZH_INTERFACE = sscobbler_settings.get("zh_interface")
+EN_INTERFACE = sscobbler_settings.get("en_interface")
 
 url_cobbler_api = None
 remote = None

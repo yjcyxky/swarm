@@ -14,7 +14,7 @@
 5. 部署SwarmOpsWeb
 
 # How to reuse sscobbler app
-1. You need to prepare a sscop_config.py file that contains these variables described below when you want to reuse sscobbler.
+1. You need to prepare a config.py file that contains these variables described below when you want to reuse sscobbler.
 ```
 COBBLERD_DOMAIN: domain name or IP address of cobblerd server
 COBBLER_API_URL: cobbler api url 

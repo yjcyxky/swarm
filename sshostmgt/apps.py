@@ -1,0 +1,12 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.apps import AppConfig
+
+class SshostmgtConfig(AppConfig):
+    name = "sshostmgt"
+    db_settings = {
+        "db": "sshostmgt_db",
+        "host": "localhost",
+        "port": "27017"
+    }

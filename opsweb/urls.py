@@ -25,6 +25,7 @@ urlpatterns = [
     # url(r'^admin/(.*)$', admin.site.root),
     url(r'^$', views.index),
     url(r'^sscobbler/', include('sscobbler.urls')),
+    url(r'^sshostmgt/', include('sshostmgt.urls'))
 ]
 
 # This is only needed when using runserver.
