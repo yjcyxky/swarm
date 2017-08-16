@@ -21,9 +21,6 @@ apps.get_app_config("sscobbler").settings = {
     "en_interface": EN_INTERFACE
 }
 
-print(apps.get_app_config('sshostmgt').db_settings)
-print(apps.get_app_config('sscobbler').settings)
-
 def index(request):
     """
     This is the main greeting page for cobbler web.

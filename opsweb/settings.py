@@ -41,9 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
-    'sscobbler',
+    'sscobbler.apps.SscobblerConfig',
     'opsweb',
-    'sshostmgt',
+    'sshostmgt.apps.SshostmgtConfig',
 ]
 
 MIDDLEWARE = [
@@ -84,7 +84,12 @@ WSGI_APPLICATION = 'opsweb.wsgi.application'
 # 1. 语言字典转化表
 # 2. cobbler主机信息+动态主机信息，当cobbler更新时触发数据库更新；
 #    其它子系统依赖于数据库中主机信息，而不直接从cobbler获取；以避免cobbler无法与主机信息同步
-DATABASES = {}
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3')
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators

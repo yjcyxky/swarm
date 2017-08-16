@@ -9,13 +9,11 @@ from sshostmgt import views
 admin.autodiscover()
 
 urlpatterns = [
-    url(r'^$', views.redirect_to_hosts),
+    url(r'^$', views.get_all_hosts),
     url(r'^hosts$', views.get_all_hosts),
     url(r'^hosts/(?P<hostname>[a-zA-Z0-9_\-]+)/info$', views.get_host_info),
     url(r'^hosts/(?P<hostname>[a-zA-Z0-9_\-]+)/reboot$', views.reboot),
     url(r'^hosts/(?P<hostname>[a-zA-Z0-9_\-]+)/shutdown$', views.shutdown),
     url(r'^hosts/(?P<hostname>[a-zA-Z0-9_\-]+)/wakeup$', views.wakeup),
-    url(r'^hosts/(?P<hostname>[a-zA-Z0-9_\-]+)/powerstatus$', views.get_power_status),
-    url(r'^hosts/(?P<hostname>[a-zA-Z0-9_\-]+)/get_ipmi_info$', views.get_ipmi_info),
-    url(r'^hosts/(?P<hostname>[a-zA-Z0-9_\-]+)/set_ipmi_info$', views.set_ipmi_info),
+    url(r'^hosts/(?P<hostname>[a-zA-Z0-9_\-]+)/powerstatus$', views.get_power_status)
 ]

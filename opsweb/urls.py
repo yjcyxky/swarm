@@ -14,15 +14,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url, include
+from django.conf.urls.static import static
 from django.contrib import admin
-from django.contrib import staticfiles
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from opsweb import settings
 from opsweb import views
 
-# admin.autodiscover()
+admin.autodiscover()
 
 urlpatterns = [
-    # url(r'^admin/(.*)$', admin.site.root),
+    url(r'^admin/', include(admin.site.urls)),
     url(r'^$', views.index),
     url(r'^sscobbler/', include('sscobbler.urls')),
     url(r'^sshostmgt/', include('sshostmgt.urls'))
@@ -30,8 +31,10 @@ urlpatterns = [
 
 # This is only needed when using runserver.
 if settings.DEBUG:
-    urlpatterns = [
-        url(r'^media/(?P<path>.*)$', staticfiles.views.serve,
-            {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
-        url(r'^static/(?P<path>.*)$', staticfiles.views.serve,
-            {'document_root': settings.STATIC_URL, 'show_indexes': True}),] + urlpatterns
+    urlpatterns += staticfiles_urlpatterns()
+    urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
+    # urlpatterns = [
+    #     url(r'^media/(?P<path>.*)$', staticfiles.views.serve,
+    #         {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
+    #     url(r'^static/(?P<path>.*)$', staticfiles.views.serve,
+    #         {'document_root': settings.STATIC_URL, 'show_indexes': True}),] + urlpatterns
