@@ -4,7 +4,7 @@
 COBBLERD_DOMAIN = r"10.157.43.71"
 COBBLER_API_URL = "http://" + COBBLERD_DOMAIN + "/cobbler_api"
 
-# You can use "en" or "zh", that they means english or chinese, alternatively.
+# You can use "en" or "zh", that means english or chinese, alternatively.
 INTERFACE_LANG = "zh"
 
 COBBLER_USERNAME = "cobbler"
@@ -17,7 +17,7 @@ ZH_INTERFACE = {
     "website": "http://super-san.com/index.asp",
     "favicon": "images/favicon.png",
     "company_name": r"超存",
-    "production_abbr": r"SuperSAN vHPC", 
+    "production_abbr": r"SuperSAN vHPC",
     "production_name": r"vHPC自动化部署与数据分析平台",
     "production_link": r"http://super-san.com/pro.asp?classid=7",
     "actions": r"镜像与软件仓库",
@@ -104,7 +104,7 @@ EN_INTERFACE = {
     "website": "http://super-san.com/index.asp",
     "favicon": "images/favicon.png",
     "company_name": r"SuperSAN ",
-    "production_abbr": r"SuperSAN vHPC", 
+    "production_abbr": r"SuperSAN vHPC",
     "production_name": r"vHPC Automatic Deployment and Data Analysis Platform",
     "production_link": r"http://super-san.com/pro.asp?classid=7",
 

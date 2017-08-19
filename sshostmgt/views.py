@@ -1,9 +1,17 @@
 # -*- coding: utf-8 -*-
+import logging
 from django.http import JsonResponse
+from django.utils.http import urlencode
 from django.shortcuts import redirect, reverse
 from sshostmgt.dracclient.client import DRACClient
 from sshostmgt.exceptions import NoSuchHost, NoSuchField
 from sshostmgt.models import get_client, ping, get_ipmi_ipaddr, get_hosts
+from sshostmgt.utils import gen_dict
+
+logger = logging.getLogger(__name__)
+
+def url_for(base_uri, path, **query_args):
+    return u'%s/%s?%s' % (base_uri, path, urlencode(query_args))
 
 def get_ipmi_status(request, hostname = None):
     response_obj = {
@@ -13,49 +21,52 @@ def get_ipmi_status(request, hostname = None):
                 "ipmi_alive": "yes",
             }
         },
-        "api_uri": request.build_absolute_uri(reverse(get_ipmi_status, args = (hostname,)))
+        "api_uri": request.get_raw_uri()
     }
     try:
         ipmi_ipaddr = get_ipmi_ipaddr(hostname)
         if ipmi_ipaddr and ping(ipmi_ipaddr):
             logger.info("%s's IPMI is alive" % hostname)
             response_obj["message"] = "%s's IPMI is alive" % hostname
-            return JsonResponse(response_obj)
+            return JsonResponse(response_obj, status = 200)
         else:
             logger.info("%s's IPMI is not alive" % hostname)
             response_obj["message"] = "%s's IPMI is alive" % hostname
             response_obj["collections"][hostname]["ipmi_alive"] = "no"
-            return JsonResponse(response_obj)
+            return JsonResponse(response_obj, status = 404)
     except NoSuchHost as e:
         logger.warning(str(e))
         response_obj["message"] = str(e)
         response_obj["collections"][hostname]["ipmi_alive"] = "Unknown"
-        return JsonResponse(response_obj)
+        return JsonResponse(response_obj, status = 404)
 
 def get_all_hosts(request):
     response_obj = {
         "message": "Method Not Allowed.",
         "collections": {
         },
-        "api_uri": request.build_absolute_uri(reverse(get_all_hosts))
+        "api_uri": request.get_raw_uri()
     }
     if request.method == "POST":
         return JsonResponse(response_obj, status = 405)
     elif request.method == "GET":
+        logger.debug("Request: %s" % dir(request))
         query_args = request.GET
-        filters = query_args
-        order_by = query_args.get("order_by")
-        limiting = query_args.get("limiting")
-        which_page = query_args.get("which_page")
-        hosts = get_hosts(filters, order_by, limiting, which_page)
-        if isinstance(hosts, list):
+        logger.info("Query Args: %s, %s, %s" % (str(query_args), type(query_args), dir(query_args)))
+        filter_keys = ("host_uuid", "hostname", "tag_name")
+        filters = gen_dict(filter_keys, query_args)
+        keys = ("order_by", "limiting", "which_page")
+        hosts = get_hosts(filters, **gen_dict(keys, query_args))
+        logger.info("Host list: %s" % str(hosts))
+        logger.debug("The type of hosts: %s" % type(hosts))
+        if hosts:
             for item in hosts:
                 response_obj["collections"][item.get("hostname")] = item
             response_obj["message"] = "success"
-            return JsonResponse(response_obj)
+            return JsonResponse(response_obj, status = 200)
         else:
-            response_obj["message"] = "No Any Host in DB."
-            return JsonResponse(response_obj)
+            response_obj["message"] = "Can't get any host."
+            return JsonResponse(response_obj, status = 404)
 
 def get_host_info(request, hostname = None):
     client = get_client(hostname)
@@ -72,7 +83,7 @@ def get_host_info(request, hostname = None):
                 "physical_disks_info": []
             }
         },
-        "api_uri": request.build_absolute_uri(reverse(get_host_info, args = (hostname,)))
+        "api_uri": request.get_raw_uri()
     }
     host_collection = response_obj["collections"][hostname]
     if client:
@@ -82,7 +93,7 @@ def get_host_info(request, hostname = None):
         host_collection["nics_info"] = client.list_nics()
         host_collection["virtual_disks_info"] = client.list_virtual_disks()
         host_collection["physical_disks_info"] = client.list_physical_disks()
-        return JsonResponse(response_obj)
+        return JsonResponse(response_obj, status = 200)
     else:
         response_obj["message"] = "Some errors happen, not get any information."
         host_collection["status"] = "warning"
@@ -100,21 +111,21 @@ def shutdown(request, hostname = None):
                 "power_state": "POWER_OFF"
             }
         },
-        "api_uri": request.build_absolute_uri(reverse(shutdown, args = (hostname,)))
+        "api_uri": request.get_raw_uri()
     }
     host_collection = response_obj["collections"][hostname]
     if client:
         power_state = client.get_power_state()
         if power_state == "POWER_ON":
             client.set_power_state("POWER_OFF")
-            return JsonResponse(response_obj)
+            return JsonResponse(response_obj, status = 202)
         elif power_state == "POWER_OFF":
-            return JsonResponse(response_obj)
+            return JsonResponse(response_obj, status = 403)
         elif power_state == "REBOOT":
             host_collection["message"] = "reboot state, please retry later."
             host_collection["status"] = "warning"
             host_collection["power_state"] = "REBOOT"
-            return JsonResponse(response_obj)
+            return JsonResponse(response_obj, status = 403)
     else:
         host_collection["message"] = "No such host."
         host_collection["status"] = "warning"
@@ -133,20 +144,20 @@ def reboot(request, hostname = None):
                 "power_state": "REBOOT"
             }
         },
-        "api_uri": request.build_absolute_uri(reverse(reboot, args = (hostname,)))
+        "api_uri": request.get_raw_uri()
     }
     host_collection = response_obj["collections"][hostname]
     if client:
         power_state = client.get_power_state()
         if power_state == "POWER_ON":
             client.set_power_state("REBOOT")
-            return JsonResponse(response_obj)
+            return JsonResponse(response_obj, status = 202)
         elif power_state == "POWER_OFF":
             return redirect('wakeup', hostname = hostname)
         elif power_state == "REBOOT":
             host_collection["message"] = "reboot state, please retry later."
             host_collection["status"] = "warning"
-            return JsonResponse(response_obj)
+            return JsonResponse(response_obj, status = 403)
     else:
         host_collection["message"] = "No such host."
         host_collection["status"] = "warning"
@@ -165,7 +176,7 @@ def wakeup(request, hostname = None):
                 "power_state": "POWER_ON"
             }
         },
-        "api_uri": request.build_absolute_uri(reverse(wakeup, args = (hostname,)))
+        "api_uri": request.get_raw_uri()
     }
     host_collection = response_obj["collections"][hostname]
     if client:
@@ -173,16 +184,16 @@ def wakeup(request, hostname = None):
         if power_state == "POWER_ON":
             host_collection["message"] = "Power on, no any process."
             host_collection["status"] = "warning"
-            return JsonResponse(response_obj)
+            return JsonResponse(response_obj, status = 403)
         elif power_state == "POWER_OFF":
             client.set_power_state("POWER_ON")
             host_collection["message"] = "Wake up success"
-            return JsonResponse(response_obj)
+            return JsonResponse(response_obj, status = 202)
         elif power_state == "REBOOT":
             host_collection["message"] = "reboot state, please retry later."
             host_collection["power_state"] = "REBOOT"
             host_collection["status"] = "warning"
-            return JsonResponse(response_obj)
+            return JsonResponse(response_obj, status = 403)
     else:
         host_collection["message"] = "No such host."
         host_collection["status"] = "warning"
@@ -209,7 +220,7 @@ def get_power_status(request, hostname = None):
                 "power_state": ""
             }
         },
-        "api_uri": request.build_absolute_uri(reverse(get_power_status, args = (hostname,)))
+        "api_uri": request.get_raw_uri()
     }
     host_collection = response_obj["collections"][hostname]
     if client:
@@ -217,12 +228,12 @@ def get_power_status(request, hostname = None):
         if power_state:
             host_collection["message"] = "Power state: %s" % power_state.lower()
             host_collection["power_state"] = power_state
-            return JsonResponse(response_obj)
+            return JsonResponse(response_obj, status = 200)
         else:
             host_collection["message"] = "Can't get the power status"
             host_collection["status"] = "error"
             host_collection["power_state"] = "Unknown"
-            return JsonResponse(response_obj)
+            return JsonResponse(response_obj, status = 404)
     else:
         host_collection["message"] = "No such host."
         host_collection["status"] = "warning"
@@ -240,7 +251,7 @@ def add_host(request):
         "message": "Method Not Allowed.",
         "collections": {
         },
-        "api_uri": request.build_absolute_uri(reverse(add_host))
+        "api_uri": request.get_raw_uri()
     }
     if request.method == "GET":
         return JsonResponse(response_obj, status = 405)
@@ -248,22 +259,20 @@ def add_host(request):
         request_args = request.POST
         host_uuid = request_args.get("host_uuid", None)
         hostname = request_args.get("hostname", None)
-        host_info = {
-            "ipmi_mac": request_args.get("ipmi_mac"),
-            "ipmi_addr": request_args.get("ipmi_addr"),
-            "ipmi_username": request_args.get("ipmi_username") or "root",
-            "ipmi_passwd": request_args.get("ipmi_passwd") or "calvin",
-            "power_state": request_args.get("power_state"),
-            "host_uuid": host_uuid,
-            "hostname": request_args.get("hostname")
-        }
+        host_info_keys = ("ipmi_mac", "ipmi_addr", "ipmi_username", "ipmi_passwd"
+                          "power_state", "host_uuid", "hostname")
+        host_info = gen_dict(host_info_keys, request_args)
         try:
             if host_uuid and hostname:
                 set_host(**host_info)
-                return redirect("get_host_info", hostname = hostname)
+                response_obj["message"] = "Host created."
+                # TODO: Add host information
+                return JsonResponse(response_obj, status = 201)
+                # May be you want to redirect to "get_host_info" directly
+                # return redirect("get_host_info", hostname = hostname)
             else:
                 raise NoSuchField("You must specify a host_uuid.")
         except NoSuchField as e:
             logger.error(str(e))
             response_obj["message"] = str(e)
-            return JsonResponse(response_obj)
+            return JsonResponse(response_obj, status = 400)
