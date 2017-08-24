@@ -14,27 +14,42 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url, include
-from django.conf.urls.static import static
-from django.contrib import admin
-from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+# from django.contrib import admin
 from opsweb import settings
 from opsweb import views
 
-admin.autodiscover()
+# admin.autodiscover()
 
 urlpatterns = [
-    url(r'^admin/', include(admin.site.urls)),
-    url(r'^$', views.index),
-    url(r'^sscobbler/', include('sscobbler.urls')),
-    url(r'^sshostmgt/', include('sshostmgt.urls'))
-]
+    url(r'^api/v1/', include([
+        # url(r'^admin/', include(admin.site.urls)),
+        # Admin for user and group managing
+        url(r'^admin/create_user', views.create_user),
+        url(r'^admin/update_user', views.update_user),
+        url(r'^admin/delete_user', views.delete_user),
+        url(r'^admin/change_user_perm', views.change_user_perm),
+        url(r'^admin/create_group', views.create_group),
+        url(r'^admin/update_group', views.update_group),
+        url(r'^admin/delete_group', views.delete_group),
+        url(r'^admin/change_group_perm', views.change_group_perm),
 
-# This is only needed when using runserver.
-if settings.DEBUG:
-    urlpatterns += staticfiles_urlpatterns()
-    urlpatterns += static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
-    # urlpatterns = [
-    #     url(r'^media/(?P<path>.*)$', staticfiles.views.serve,
-    #         {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
-    #     url(r'^static/(?P<path>.*)$', staticfiles.views.serve,
-    #         {'document_root': settings.STATIC_URL, 'show_indexes': True}),] + urlpatterns
+        # User Information
+        url(r'^users', views.get_users),
+        url(r'^users/(?P<username>[a-zA-Z0-9_\-]+)/update', views.update_user),
+        url(r'^users/(?P<username>[a-zA-Z0-9_\-]+)/login', views.login, name = "user_login"),
+        url(r'^users/(?P<username>[a-zA-Z0-9_\-]+)/logout', views.logout),
+        url(r'^users/(?P<username>[a-zA-Z0-9_\-]+)', views.get_user),
+        url(r'^users/(?P<username>[a-zA-Z0-9_\-]+)/cgpasswd', views.change_passwd),
+
+        # Group Information
+        url(r'^groups', views.get_groups),
+        url(r'^groups/(?P<groupname>[a-zA-Z0-9_\-]+)/update', views.update_group),
+        url(r'^groups/(?P<groupname>[a-zA-Z0-9_\-]+)', views.get_group),
+
+        # Cobbler
+        url(r'^sscobbler/', include('sscobbler.urls')),
+
+        # Host Management
+        url(r'^sshostmgt/', include('sshostmgt.urls')),
+    ])),
+]
