@@ -12,7 +12,7 @@
 <body class="loginscreen">
   <div class="login">
     <img src="{% static interface.logo %}"/>
-    <form action="/sscobbler/do_login" method="post">
+    <form action="/login/" method="post">
       {% csrf_token %}
       {% if next %}<input type="hidden" name="next" value="{{ next|escape }}" />{% endif %}
       <input type="text" name="username" value="" id="username" placeholder="{{ interface.username }}" required>

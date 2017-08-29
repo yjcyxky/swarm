@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # User defined
-COBBLERD_DOMAIN = r"10.157.43.71"
+COBBLERD_DOMAIN = r"10.157.46.23"
 COBBLER_API_URL = "http://" + COBBLERD_DOMAIN + "/cobbler_api"
 
 # You can use "en" or "zh", that means english or chinese, alternatively.
@@ -18,7 +18,7 @@ ZH_INTERFACE = {
     "favicon": "images/favicon.png",
     "company_name": r"超存",
     "production_abbr": r"SuperSAN vHPC",
-    "production_name": r"vHPC自动化部署与数据分析平台",
+    "production_name": r"vHPC自动化部署平台",
     "production_link": r"http://super-san.com/pro.asp?classid=7",
     "actions": r"镜像与软件仓库",
     "add_filter": r"添加",

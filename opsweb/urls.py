@@ -21,6 +21,9 @@ from opsweb import views
 # admin.autodiscover()
 
 urlpatterns = [
+    url(r'^$', views.index),
+    url(r'^login/$', views.login),
+    url(r'^logout/$', views.logout),
     url(r'^api/v1/', include([
         # url(r'^admin/', include(admin.site.urls)),
         # Admin for user and group managing
@@ -45,11 +48,9 @@ urlpatterns = [
         url(r'^groups', views.get_groups),
         url(r'^groups/(?P<groupname>[a-zA-Z0-9_\-]+)/update', views.update_group),
         url(r'^groups/(?P<groupname>[a-zA-Z0-9_\-]+)', views.get_group),
-
-        # Cobbler
-        url(r'^sscobbler/', include('sscobbler.urls')),
-
-        # Host Management
-        url(r'^sshostmgt/', include('sshostmgt.urls')),
     ])),
+    # Cobbler
+    url(r'^sscobbler/', include('sscobbler.urls')),
+    # Host Management
+    url(r'^sshostmgt/', include('sshostmgt.urls')),
 ]

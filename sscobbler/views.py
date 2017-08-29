@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.http import HttpResponse, JsonResponse
 from django.http import HttpResponseRedirect
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render_to_response
 from django.shortcuts import render
 from django.template import RequestContext
@@ -66,6 +67,7 @@ def strip_none(data, omit_none=False):
 
     return data
 
+@login_required(login_url='/login/')
 def index(request):
     """
     This is the main greeting page for cobbler web.
@@ -1465,7 +1467,7 @@ def login(request, next=None, message=None, expired=False):
 
     content = {
         'interface': INTERFACE,
-        'next': next, 
+        'next': next,
         'message': message
     }
 

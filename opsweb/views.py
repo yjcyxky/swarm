@@ -2,11 +2,17 @@
 import logging
 from django.contrib import auth
 from django.contrib.auth.models import User, Group
-from django.http import JsonResponse, HttpRequest
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse, HttpRequest, HttpResponse
+from django.http import HttpResponseRedirect
+from django.shortcuts import render_to_response
+from django.shortcuts import render
+from django.template import RequestContext
+from django.template.loader import get_template
 from django.apps import apps
 from config import COBBLER_API_URL, INTERFACE_LANG, ZH_INTERFACE, EN_INTERFACE
 from config import SSHOSTMGT_DB_SETTINGS
-from opsweb.utils import login_required, login_permission_required, gen_dict, allNone
+from opsweb.utils import login_required_json, login_permission_required, gen_dict, allNone
 
 logger = logging.getLogger(__name__)
 
@@ -33,30 +39,63 @@ def gen_response_obj(request, message = None, collections = None, next = None):
         "next": next
     }
 
-def login(request, username = None):
-    response_obj = gen_response_obj(request)
+@login_required(login_url='/login')
+def index(request):
+    return HttpResponseRedirect("/sscobbler")
+
+def login(request, next=None, message=None, expired=False):
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
-        user = auth.authenticate(request, username = username, password = password)
+        user = auth.authenticate(username = username, password = password)
         if user is not None:
             auth.login(request, user)
-            response_obj["message"] = "Login success."
-            response_obj["collections"] = None
-            return JsonResponse(response_obj, status = 200)
+            return HttpResponseRedirect("/")
+        else:
+            return HttpResponseRedirect("/login")
     else:
-        return JsonResponse(response_obj, status = 405)
+        if expired and not message:
+            if INTERFACE_LANG == 'en':
+                message = r'Please Contact Administrator for username and password!'
+            else:
+                message = r"请联系管理员获取用户名与密码！"
 
-def logout(request, username = None):
-    response_obj = gen_response_obj(request)
-    if request.method == "POST":
-        auth.logout(request)
-        response_obj["message"] = "Logout success."
-        response_obj["next"] = request.build_absolute_uri(reverse("user_login"),
-                                        kwargs = {"username": username})
-        return JsonResponse(response_obj, status = 200)
-    else:
-        return JsonResponse(response_obj, status = 405)
+        content = {
+            'interface': INTERFACE,
+            'next': next,
+            'message': message
+        }
+        return render_to_response('login.tmpl', RequestContext(request, content))
+
+def logout(request):
+    print("request:%s" % request)
+    auth.logout(request)
+    return HttpResponseRedirect("/login/")
+
+# def login(request, username = None):
+#     response_obj = gen_response_obj(request)
+#     if request.method == "POST":
+#         username = request.POST.get("username")
+#         password = request.POST.get("password")
+#         user = auth.authenticate(request, username = username, password = password)
+#         if user is not None:
+#             auth.login(request, user)
+#             response_obj["message"] = "Login success."
+#             response_obj["collections"] = None
+#             return JsonResponse(response_obj, status = 200)
+#     else:
+#         return JsonResponse(response_obj, status = 405)
+#
+# def logout(request, username = None):
+#     response_obj = gen_response_obj(request)
+#     if request.method == "POST":
+#         auth.logout(request)
+#         response_obj["message"] = "Logout success."
+#         response_obj["next"] = request.build_absolute_uri(reverse("user_login"),
+#                                         kwargs = {"username": username})
+#         return JsonResponse(response_obj, status = 200)
+#     else:
+#         return JsonResponse(response_obj, status = 405)
 
 @login_permission_required('user.add_user')
 def create_user(request):
