@@ -21,10 +21,9 @@ from opsweb import views
 # admin.autodiscover()
 
 urlpatterns = [
-    url(r'^$', views.index),
-    url(r'^login/$', views.login),
-    url(r'^logout/$', views.logout),
     url(r'^api/v1/', include([
+        url(r'^$', views.index, name = "index"),
+
         # url(r'^admin/', include(admin.site.urls)),
         # Admin for user and group managing
         url(r'^admin/create_user', views.create_user),
@@ -36,11 +35,13 @@ urlpatterns = [
         url(r'^admin/delete_group', views.delete_group),
         url(r'^admin/change_group_perm', views.change_group_perm),
 
+        # User Login/Logout
+        url(r'^login$', views.login, name = "user_login"),
+        url(r'^logout$', views.logout, name = "user_logout"),
+
         # User Information
         url(r'^users', views.get_users),
         url(r'^users/(?P<username>[a-zA-Z0-9_\-]+)/update', views.update_user),
-        url(r'^users/(?P<username>[a-zA-Z0-9_\-]+)/login', views.login, name = "user_login"),
-        url(r'^users/(?P<username>[a-zA-Z0-9_\-]+)/logout', views.logout),
         url(r'^users/(?P<username>[a-zA-Z0-9_\-]+)', views.get_user),
         url(r'^users/(?P<username>[a-zA-Z0-9_\-]+)/cgpasswd', views.change_passwd),
 
@@ -48,9 +49,12 @@ urlpatterns = [
         url(r'^groups', views.get_groups),
         url(r'^groups/(?P<groupname>[a-zA-Z0-9_\-]+)/update', views.update_group),
         url(r'^groups/(?P<groupname>[a-zA-Z0-9_\-]+)', views.get_group),
+
+        # Cobbler
+        url(r'^sscobbler/', include('sscobbler.urls')),
+        # Host Management
+        url(r'^sshostmgt/', include('sshostmgt.urls')),
     ])),
-    # Cobbler
-    url(r'^sscobbler/', include('sscobbler.urls')),
-    # Host Management
-    url(r'^sshostmgt/', include('sshostmgt.urls')),
 ]
+
+handler404 = 'opsweb.views.custom404'

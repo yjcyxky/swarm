@@ -18,15 +18,16 @@ def test_user_passes(test_func):
                 "api_uri": request.get_raw_uri(),
             }
             from django.http import JsonResponse
+            if not request.user.is_authenticated:
+                response_obj["message"] = "Not Authorized."
+                response_obj["next"] = request.build_absolute_uri(reverse("user_login"))
+                return JsonResponse(response_obj, status = 401)
+
             if request.method == "POST":
                 username = request.POST.get("username")
                 if username is None or username == '':
                     response_obj["message"] = "Bad Request, Some Values Missed."
                     return JsonResponse(response_obj, status = 400)
-                response_obj["message"] = "Not Allowed to Access."
-                response_obj["next"] = request.build_absolute_uri(reverse("user_login",
-                                                kwargs = {"username": username}))
-                return JsonResponse(response_obj, status = 401)
             else:
                 return JsonResponse(response_obj, status = 405)
         return _wrapped_view

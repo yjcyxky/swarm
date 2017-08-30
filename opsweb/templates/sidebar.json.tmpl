@@ -1,0 +1,225 @@
+{
+    "dashboard": {
+        "link": "/",
+        "title": "{{ interface.dashboard }}",
+        "id": 1
+    },
+    "header": {
+        "link": "/",
+        "title": "{{ interface.production_abbr }}",
+        "id": 2
+    },
+    "treeitems": {
+        "{{ interface.system_deploy }}": {
+            "link": "",
+            "title": "{{ interface.system_deploy }}",
+            "id": 3,
+            "secondmenus": {
+                "{{ interface.configuration }}": {
+                    "link": "",
+                    "title": "{{ interface.configuration }}",
+                    "id": 5,
+                    "thirdmenus": {
+                        "{{ interface.distros }}": {
+                            "link": "javascript:loadurl('/sscobbler/distro/list')",
+                            "title": "{{ interface.distros }}",
+                            "id": 6
+                        },
+                        "{{ interface.profiles }}": {
+                            "link": "{{ interface.profiles }}",
+                            "title": "javascript:loadurl('/sscobbler/profile/list')",
+                            "id": 7
+                        },
+                        "{{ interface.systems }}": {
+                            "link": "javascript:loadurl('/sscobbler/system/list')",
+                            "title": "{{ interface.systems }}",
+                            "id": 8
+                        },
+                        "{{ interface.repos }}": {
+                            "link": "javascript:loadurl('/sscobbler/repo/list')",
+                            "title": "{{ interface.repos }}",
+                            "id": 9
+                        },
+                        "{{ interface.images }}": {
+                            "link": "javascript:loadurl('/sscobbler/image/list')",
+                            "title": "{{ interface.images }}",
+                            "id": 10
+                        },
+                        "{{ interface.auto_installation_templ }}": {
+                            "link": "javascript:loadurl('/sscobbler/aifile/list')",
+                            "title": "{{ interface.auto_installation_templ }}",
+                            "id": 11
+                        },
+                        "{{ interface.auto_installation_snip }}": {
+                            "link": "javascript:loadurl('/sscobbler/snippet/list')",
+                            "title": "{{ interface.auto_installation_snip }}",
+                            "id": 12
+                        },
+                        "{{ interface.mgmtclass }}": {
+                            "link": "javascript:loadurl('/sscobbler/mgmtclass/list')",
+                            "title": "{{ interface.mgmtclass }}",
+                            "id": 13
+                        },
+                        "{{ interface.settings }}": {
+                            "link": "javascript:loadurl('/sscobbler/setting/list')",
+                            "title": "{{ interface.settings }}",
+                            "id": 14
+                        }
+                    }
+                },
+                "{{ interface.resources }}": {
+                    "link": "",
+                    "title": "{{ interface.resources }}",
+                    "id": 15,
+                    "thirdmenus": {
+                        "{{ interface.packages }}": {
+                            "link": "javascript:loadurl('/sscobbler/package/list')",
+                            "title": "{{ interface.packages }}",
+                            "id": 16
+                        },
+                        "{{ interface.files }}": {
+                            "link": "javascript:loadurl('/sscobbler/file/list')",
+                            "title": "{{ interface.files }}",
+                            "id": 17
+                        }
+                    }
+                },
+                "{{ interface.actions }}": {
+                    "link": "",
+                    "title": "{{ interface.actions }}",
+                    "id": 18,
+                    "thirdmenus": {
+                        "{{ interface.sync }}": {
+                            "link": "javascript:menuaction('/sscobbler/sync');",
+                            "title": "{{ interface.sync }}",
+                            "id": 19
+                        },
+                        "{{ interface.reposync }}": {
+                            "link": "javascript:menuaction('/sscobbler/reposync');",
+                            "title": "{{ interface.reposync }}",
+                            "id": 20
+                        },
+                        "{{ interface.hardlink }}": {
+                            "link": "javascript:menuaction('/sscobbler/hardlink');",
+                            "title": "{{ interface.hardlink }}",
+                            "id": 21
+                        },
+                        "{{ interface.build_iso }}": {
+                            "link": "javascript:menuaction('/sscobbler/buildiso');",
+                            "title": "{{ interface.build_iso }}",
+                            "id": 22
+                        }
+                    }
+                },
+                "{{ interface.others }}": {
+                    "link": "",
+                    "title": "{{ interface.others }}",
+                    "id": 23,
+                    "thirdmenus": {
+                        "{{ interface.check }}": {
+                            "link": "javascript:loadurl('/sscobbler/check')",
+                            "title": "{{ interface.check }}",
+                            "id": 24
+                        },
+                        "{{ interface.events }}": {
+                            "link": "javascript:loadurl('/sscobbler/events')",
+                            "title": "{{ interface.events }}",
+                            "id": 25
+                        }
+                    }
+                }
+            }
+        },
+        "{{ interface.service_deploy }}": {
+            "link": "",
+            "title": "{{ interface.service_deploy }}",
+            "id": 26,
+            "secondmenus": {
+                "软件安装": {
+                    "link": "",
+                    "title": "软件安装",
+                    "id": 27
+                },
+                "服务部署": {
+                    "link": "",
+                    "title": "服务部署",
+                    "id": 28
+                },
+                "主机信息": {
+                    "link": "",
+                    "title": "",
+                    "id": 29
+                },
+                "其它": {
+                    "link": "",
+                    "title": "",
+                    "id": 30
+                }
+            }
+        },
+        "{{ interface.monitoring }}": {
+            "link": "",
+            "title": "{{ interface.monitoring }}",
+            "id": 31,
+            "secondmenus": {
+                "主机监控": {
+                    "link": "",
+                    "title": "主机监控",
+                    "id": 32
+                },
+                "网络监控": {
+                    "link": "",
+                    "title": "网络监控",
+                    "id": 33,
+                    "thirdmenus": {
+                        "交换机": {
+                            "link": "",
+                            "title": "交换机",
+                            "id": 34
+                        },
+                        "路由器": {
+                            "link": "",
+                            "title": "路由器",
+                            "id": 35
+                        },
+                        "IB交换机": {
+                            "link": "",
+                            "title": "IB交换机",
+                            "id": 36
+                        }
+                    }
+                },
+                "事件": {
+                    "link": "",
+                    "title": "事件",
+                    "id": 37
+                },
+                "其它": {
+                    "link": "",
+                    "title": "其它",
+                    "id": 38
+                }
+            }
+        },
+        "使用指南": {
+            "link": "",
+            "title": "使用指南",
+            "id": 39
+        },
+        "错误": {
+            "link": "",
+            "title": "错误",
+            "id": 40
+        },
+        "警告": {
+            "link": "",
+            "title": "警告",
+            "id": 41
+        },
+        "信息": {
+            "link": "",
+            "title": "信息",
+            "id": 42
+        }
+    }
+}
