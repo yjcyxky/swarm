@@ -22,6 +22,8 @@ from opsweb import views
 
 urlpatterns = [
     url(r'^api/v1/', include([
+        url(r'^apis$', views.get_apis, name = "apis"),
+
         url(r'^$', views.index, name = "index"),
 
         # url(r'^admin/', include(admin.site.urls)),

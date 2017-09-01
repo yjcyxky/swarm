@@ -42,21 +42,38 @@ def gen_response_obj(request, message = None, collections = None, next = None):
         "next": next
     }
 
-@login_required_json
+def get_apis(request):
+    response_obj = gen_response_obj(request)
+    if request.method == "GET":
+        t = get_template('apis.json.tmpl')
+        api_prefix = request.get_host()
+        api_pool = t.render({"api_prefix": api_prefix})
+        response_obj["message"] = "success."
+        response_obj["collections"] = {
+            "apiPool": json.loads(api_pool)
+        }
+        return JsonResponse(response_obj, status = 200)
+    else:
+        return JsonResponse(response_obj, status = 405)
+
+# @login_required_json
 def index(request):
     response_obj = gen_response_obj(request)
     if request.method == "GET":
         t = get_template('sidebar.json.tmpl')
+        sidebar = t.render({'interface': INTERFACE})
         # TODO: 设置用户信息
         # interface['username'] = username
+        t = get_template('home.json.tmpl')
+        home = t.render({'interface': INTERFACE, "api_prefix": request.get_host()})
         footer = {'version': "v1.0"}
-        navbar = {'username': request.user.username}
-        sidebar = t.render({'interface': INTERFACE})
+        t = get_template('navbar.json.tmpl')
+        navbar = t.render({'username': request.user.username})
         response_obj["message"] = "success."
         response_obj["collections"] = {
             "sidebar": json.loads(sidebar),
-            "navbar": navbar,
-            "footer": footer
+            "navbar": json.loads(navbar),
+            "home": json.loads(home)
         }
         return JsonResponse(response_obj, status = 200)
     else:

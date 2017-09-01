@@ -1,0 +1,11 @@
+{
+    {% block welcome %}
+    {% load static %}
+    "company_link": "{{ interface.website }}",
+    "logo": "http://{{ api_prefix }}{% static interface.logo %}",
+    "welcome": "{{ interface.welcome }}",
+    "production_link": "{{ interface.production_link }}",
+    "company_name": "{{ interface.company_name }}",
+    "production_name": "{{ interface.production_name }}"
+    {% endblock %}
+}
