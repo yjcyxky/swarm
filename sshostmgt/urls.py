@@ -2,11 +2,8 @@
 """sshostmgt URL Configuration
 """
 from django.conf.urls import url
-from django.contrib import admin
 from django.contrib import staticfiles
 from sshostmgt import views
-
-admin.autodiscover()
 
 urlpatterns = [
     url(r'^$', views.get_all_hosts),

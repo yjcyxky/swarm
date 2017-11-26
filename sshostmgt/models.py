@@ -6,7 +6,7 @@ from django.apps import apps
 from django.core.exceptions import ObjectDoesNotExist
 from sshostmgt.dracclient.client import DRACClient
 from sshostmgt.exceptions import NoSuchField, FormatError
-from utils import gen_dict, isNone, merge_dicts
+from utils import gen_dict, isNone, merge_dicts, allNone
 
 logger = logging.getLogger(__name__)
 

@@ -2,11 +2,8 @@
 """sscobbler URL Configuration
 """
 from django.conf.urls import url
-from django.contrib import admin
 from django.contrib import staticfiles
 from sscobbler import views
-
-admin.autodiscover()
 
 urlpatterns = [
     url(r'^$', views.index),

@@ -1,237 +1,125 @@
-# -*- coding: utf-8 -*-
-import logging, json
-from django.contrib import auth
-from django.contrib.auth.models import User, Group
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpRequest
-from django.shortcuts import render_to_response
-from django.shortcuts import render
-from django.template import RequestContext
-from django.template.loader import get_template
-from django.apps import apps
-from config import COBBLER_API_URL, INTERFACE_LANG, ZH_INTERFACE, EN_INTERFACE
-from config import SSHOSTMGT_DB_SETTINGS
-from opsweb.utils import login_required_json, login_permission_required, gen_dict, allNone
+import logging
+from django.contrib.auth.models import User
+from django.http import Http404
+from rest_framework.views import APIView
+from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework import permissions
+from opsweb.serializers import UserSerializer, PasswordSerializer
+from opsweb.permissions import IsOwnerOrAdmin
+from opsweb.pagination import CustomPagination
+from opsweb.exceptions import CustomException
 
 logger = logging.getLogger(__name__)
 
-if INTERFACE_LANG == "en":
-    INTERFACE = EN_INTERFACE
-elif INTERFACE_LANG == "zh":
-    INTERFACE = ZH_INTERFACE
-else:
-    INTERFACE = ZH_INTERFACE
+class UserList(generics.GenericAPIView):
+    """
+    List all users, or create a new user.
+    """
+    pagination_class = CustomPagination
+    serializer_class = UserSerializer
+    # permission_classes = (permissions.IsAuthenticated,
+    #                       permissions.DjangoModelPermissions,
+    #                       permissions.IsAdminUser)
+    queryset = User.objects.all().order_by("username")
 
-apps.get_app_config("sshostmgt").db_settings = SSHOSTMGT_DB_SETTINGS
-apps.get_app_config("sscobbler").settings = {
-    "cobbler_api_url": COBBLER_API_URL,
-    "interface_lang": INTERFACE_LANG,
-    "zh_interface": ZH_INTERFACE,
-    "en_interface": EN_INTERFACE
-}
+    def get(self, request, format = None):
+        """
+        Get all users.
+        """
+        queryset = self.paginate_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many = True,
+                                    context = {'request': request})
+        return self.get_paginated_response(serializer.data)
 
-def custom404(request):
-    response_obj = gen_response_obj(request, message = "Not Found.")
-    return JsonResponse(response_obj, status = 404)
+    def post(self, request):
+        """
+        Create a user instance.
+        """
+        serializer = UserSerializer(data = request.data,
+                                    context = {'request': request})
+        if serializer.is_valid():
+            serializer.create(serializer.validated_data)
+            return Response({
+                "status": "Created Success",
+                "status_code": status.HTTP_201_CREATED,
+                "user_info": serializer.data
+            })
+        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
-def gen_response_obj(request, message = None, collections = None, next = None):
-    return {
-        "message": message or "Method Not Allowed.",
-        "collections": collections,
-        "api_uri": request.get_raw_uri() if isinstance(request, HttpRequest) else None,
-        "next": next
-    }
+    def put(self, request):
+        """
+        Modify account information for the user.
+        """
+        try:
+            username = request.data.get("username")
+            if username is None:
+                raise CustomException("You need to set username in post.",
+                                      status_code = status.HTTP_400_BAD_REQUEST)
+            user = self.queryset.get(username = username)
+            serializer = UserSerializer(user, data = request.data, context = {'request': request})
+            if serializer.is_valid():
+                serializer.update(user, serializer.validated_data)
+                return Response({
+                    "status": "Updated Success",
+                    "status_code": status.HTTP_200_OK,
+                    "user_info": serializer.data
+               })
+            return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            raise Http404
 
-def get_apis(request):
-    response_obj = gen_response_obj(request)
-    if request.method == "GET":
-        t = get_template('apis.json.tmpl')
-        api_prefix = request.get_host()
-        api_pool = t.render({"api_prefix": api_prefix})
-        response_obj["message"] = "success."
-        response_obj["collections"] = {
-            "apiPool": json.loads(api_pool)
-        }
-        return JsonResponse(response_obj, status = 200)
-    else:
-        return JsonResponse(response_obj, status = 405)
 
-# @login_required_json
-def index(request):
-    response_obj = gen_response_obj(request)
-    if request.method == "GET":
-        t = get_template('sidebar.json.tmpl')
-        sidebar = t.render({'interface': INTERFACE})
-        # TODO: 设置用户信息
-        # interface['username'] = username
-        t = get_template('home.json.tmpl')
-        home = t.render({'interface': INTERFACE, "api_prefix": request.get_host()})
-        footer = {'version': "v1.0"}
-        t = get_template('navbar.json.tmpl')
-        navbar = t.render({'username': request.user.username})
-        response_obj["message"] = "success."
-        response_obj["collections"] = {
-            "sidebar": json.loads(sidebar),
-            "navbar": json.loads(navbar),
-            "home": json.loads(home)
-        }
-        return JsonResponse(response_obj, status = 200)
-    else:
-        return JsonResponse(response_obj, status = 405)
+class UserDetail(APIView):
+    """
+    Retrieve, update a user instance.
+    """
+    # permission_classes = (permissions.IsAuthenticated,
+    #                       IsOwnerOrAdmin)
+    queryset = User.objects
+    def get_object(self, pk):
+        try:
+            return self.queryset.get(pk = pk)
+        except User.DoesNotExist:
+            raise Http404
 
-def login(request, username = None):
-    response_obj = gen_response_obj(request)
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        user = auth.authenticate(username = username, password = password)
-        if user is not None:
-            auth.login(request, user)
-            response_obj["message"] = "Login success."
-            response_obj["collections"] = None
-            return JsonResponse(response_obj, status = 200)
-        else:
-            response_obj["message"] = "Unauthorized."
-            return JsonResponse(response_obj, status = 401)
-    else:
-        return JsonResponse(response_obj, status = 405)
+    def get(self, request, pk):
+        """
+        Retrieve account information for a specified user.
+        """
+        user = self.get_object(pk)
+        # 用于自定义permission的主动检查
+        self.check_object_permissions(request, user)
+        serializer = UserSerializer(user, context = {'request': request})
+        return Response({
+            "status": "Success",
+            "status_code": status.HTTP_200_OK,
+            "user_info": serializer.data
+       })
 
-def logout(request, username = None):
-    response_obj = gen_response_obj(request)
-    if request.method == "POST":
-        auth.logout(request)
-        response_obj["message"] = "Logout success."
-        response_obj["next"] = request.build_absolute_uri(reverse("user_login"),
-                                        kwargs = {"username": username})
-        return JsonResponse(response_obj, status = 200)
-    else:
-        return JsonResponse(response_obj, status = 405)
-
-@login_permission_required('user.add_user')
-def create_user(request):
-    response_obj = gen_response_obj(request)
-    if request.method == "POST":
-        post_dict = request.POST
-        args = ("username", "password", "email", "first_name", "last_name")
-        username = post_dict.get("username")
-        email = post_dict.get("email")
-        user_info = gen_dict(args, post_dict)
-        logger.debug("Create a user: %s" % str(user_info))
-        if not allNone(user_info):
-            if User.objects.filter(username = username).exists() or \
-               User.objects.filter(email = email).exists():
-                response_obj["message"] = "Bad Request, user or email exists."
-                return JsonResponse(response_obj, status = 400)
-            user = User.objects.create_user(**user_info)
-            user.save()
-            response_obj["collections"][username] = {
-                "username": username,
-                "email": email
-            }
-            response_obj["message"] = "User created successful."
-            return JsonResponse(response_obj, status = 201)
-        else:
-            response_obj["message"] = "Bad Request, Some Values Missed."
-            return JsonResponse(response_obj, status = 400)
-    else:
-        return JsonResponse(response_obj, status = 405)
-
-@login_permission_required('user.update_user')
-def update_user(request):
-    response_obj = gen_response_obj(request)
-    if request.method == "POST":
-        post_dict = request.POST
-        args = ("username", "password", "email", "first_name", "last_name")
-        username = post_dict.get("username")
-        email = post_dict.get("email")
-        user_info = gen_dict(args, post_dict)
-        logger.debug("Update the user: %s" % str(user_info))
-        if not allNone(user_info):
-            user, created = User.objects.update_or_create(**user_info)
-            user.save()
-            response_obj["collections"][username] = {
-                "username": username,
-                "email": email
-            }
-            if created:
-                response_obj["message"] = "User created successful."
-            else:
-                response_obj["message"] = "User updated successful."
-            return JsonResponse(response_obj, status = 201)
-        else:
-            response_obj["message"] = "Bad Request, Some Values Missed."
-            return JsonResponse(response_obj, status = 400)
-    else:
-        return JsonResponse(response_obj, status = 405)
-
-@login_permission_required
-def delete_user(request):
-    pass
-
-@login_permission_required
-def change_user_perm(request):
-    pass
-
-@login_permission_required
-def create_group(request):
-    pass
-
-@login_permission_required
-def update_group(request):
-    pass
-
-@login_permission_required
-def delete_group(request):
-    pass
-
-@login_permission_required
-def change_group_perm(request):
-    pass
-
-@login_permission_required
-def get_users(request):
-    response_obj = gen_response_obj(request)
-    if request.method == "GET":
-        logger.debug("Request: %s" % dir(request))
-        query_args = request.GET
-        logger.info("Query Args: %s, %s, %s" % (str(query_args), type(query_args), dir(query_args)))
-        filter_keys = ("email", "username", "name")
-        filters = gen_dict(filter_keys, query_args)
-        keys = ("order_by", "limiting", "which_page")
-        users = get_users(filters, **gen_dict(keys, query_args))
-        logger.info("User list: %s" % str(users))
-        logger.debug("The type of users: %s" % type(users))
-        if users:
-            for item in users:
-                response_obj["collections"][item.get("username")] = item
-            response_obj["message"] = "success"
-            return JsonResponse(response_obj, status = 200)
-        else:
-            response_obj["message"] = "Can't get any user."
-            return JsonResponse(response_obj, status = 404)
-    else:
-        return JsonResponse(response_obj, status = 405)
-
-@login_permission_required
-def update_user(request, username = None):
-    pass
-
-@login_permission_required
-def get_user(request, username = None):
-    pass
-
-@login_permission_required
-def change_passwd(request, username = None):
-    pass
-
-@login_permission_required
-def get_groups(request):
-    pass
-
-@login_permission_required
-def update_group(request, groupname = None):
-    pass
-
-@login_permission_required
-def get_group(request, groupname = None):
-    pass
+    def put(self, request, pk):
+        """
+        Modify password for the user.
+        """
+        # 普通用户无法access PUT方法
+        user = self.get_object(pk)
+        self.check_object_permissions(request, user)
+        serializer = PasswordSerializer(user, data = request.data, context = {'request': request})
+        if serializer.is_valid():
+            password = serializer.validated_data.get("password")
+            serializer.update(user, password)
+            user_info = serializer.data
+            user_info.update({
+                "username": user.get_username(),
+                "last_login": user.last_login,
+                "email": user.email,
+                "is_active": user.is_active,
+                "is_staff": user.is_staff
+            })
+            return Response({
+                "status": "Updated Success",
+                "status_code": 200,
+                "user_info": user_info
+            })
+        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)

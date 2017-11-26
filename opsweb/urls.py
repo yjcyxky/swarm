@@ -14,49 +14,29 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url, include
-# from django.contrib import admin
-from opsweb import settings
+from rest_framework import routers
+from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
+from rest_framework_jwt.views import verify_jwt_token
 from opsweb import views
-
-# admin.autodiscover()
 
 urlpatterns = [
     url(r'^api/v1/', include([
-        url(r'^apis$', views.get_apis, name = "apis"),
+        url(r'^users$',
+            views.UserList.as_view(),
+            name = "user-list"),
+        url(r'^users/(?P<pk>[0-9]+)$',
+            views.UserDetail.as_view(),
+            name = "user-detail"),
+        # For API Documentation
+        url(r'^api-auth/',
+            include('rest_framework.urls', namespace = 'rest_framework')),
+        url(r'^api-token-auth$', obtain_jwt_token),
+        url(r'^api-token-refresh$', refresh_jwt_token),
+        url(r'^api-token-verify$', verify_jwt_token),
 
-        url(r'^$', views.index, name = "index"),
-
-        # url(r'^admin/', include(admin.site.urls)),
-        # Admin for user and group managing
-        url(r'^admin/create_user', views.create_user),
-        url(r'^admin/update_user', views.update_user),
-        url(r'^admin/delete_user', views.delete_user),
-        url(r'^admin/change_user_perm', views.change_user_perm),
-        url(r'^admin/create_group', views.create_group),
-        url(r'^admin/update_group', views.update_group),
-        url(r'^admin/delete_group', views.delete_group),
-        url(r'^admin/change_group_perm', views.change_group_perm),
-
-        # User Login/Logout
-        url(r'^login$', views.login, name = "user_login"),
-        url(r'^logout$', views.logout, name = "user_logout"),
-
-        # User Information
-        url(r'^users', views.get_users),
-        url(r'^users/(?P<username>[a-zA-Z0-9_\-]+)/update', views.update_user),
-        url(r'^users/(?P<username>[a-zA-Z0-9_\-]+)', views.get_user),
-        url(r'^users/(?P<username>[a-zA-Z0-9_\-]+)/cgpasswd', views.change_passwd),
-
-        # Group Information
-        url(r'^groups', views.get_groups),
-        url(r'^groups/(?P<groupname>[a-zA-Z0-9_\-]+)/update', views.update_group),
-        url(r'^groups/(?P<groupname>[a-zA-Z0-9_\-]+)', views.get_group),
-
-        # Cobbler
-        url(r'^sscobbler/', include('sscobbler.urls')),
-        # Host Management
+        # # Cobbler
+        # url(r'^sscobbler/', include('sscobbler.urls')),
+        # # Host Management
         url(r'^sshostmgt/', include('sshostmgt.urls')),
     ])),
 ]
-
-handler404 = 'opsweb.views.custom404'

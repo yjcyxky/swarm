@@ -31,9 +31,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -41,10 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'corsheaders',
     'sscobbler.apps.SscobblerConfig',
-    'opsweb',
     'sshostmgt.apps.SshostmgtConfig',
+    'opsweb',
 ]
 
 MIDDLEWARE = [
@@ -52,7 +51,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-#    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -78,6 +77,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'opsweb.wsgi.application'
 
+# REST FRAMEWORK
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        # 'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        # 'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.BasicAuthentication',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'EXCEPTION_HANDLER': 'opsweb.exceptions.custom_exception_handler',
+    'PAGE_SIZE': 10
+}
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
