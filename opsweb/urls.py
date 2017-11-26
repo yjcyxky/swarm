@@ -17,10 +17,15 @@ from django.conf.urls import url, include
 from rest_framework import routers
 from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
 from rest_framework_jwt.views import verify_jwt_token
+from rest_framework.schemas import get_schema_view
+from rest_framework_swagger.renderers import SwaggerUIRenderer, OpenAPIRenderer
 from opsweb import views
+
+schema_view = get_schema_view(title='Opsweb APIs', renderer_classes=[OpenAPIRenderer, SwaggerUIRenderer])
 
 urlpatterns = [
     url(r'^api/v1/', include([
+        url(r'^docs/', schema_view, name="docs"),
         url(r'^users$',
             views.UserList.as_view(),
             name = "user-list"),
