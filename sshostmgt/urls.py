@@ -20,10 +20,22 @@ from sshostmgt import views
 urlpatterns = [
     url(r'^ipmi$',
         views.IPMIList.as_view(),
-        name = "ipmi-list"),
-    url(r'^ipmi/(?P<pk>[0-9]+)$',
+        name = 'ipmi-list'),
+    url(r'^ipmi/(?P<ipmi_uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
         views.IPMIDetail.as_view(),
-        name = "ipmi-detail"),
+        name = 'ipmi-detail'),
+    url(r'^tags$',
+        views.TagList.as_view(),
+        name = 'tag-list'),
+    url(r'^tags/(?P<tag_uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
+        views.TagDetail.as_view(),
+        name = 'tag-detail'),
+    url(r'^hosts$',
+        views.HostList.as_view(),
+        name = 'host-list'),
+    url(r'^hosts/(?P<host_uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
+        views.HostDetail.as_view(),
+        name = 'host-detail'),
 ]
 
 # urlpatterns = [

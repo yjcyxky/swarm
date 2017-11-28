@@ -6,6 +6,3 @@ from django.apps import AppConfig
 
 class SshostmgtConfig(AppConfig):
     name = "sshostmgt"
-    settings = {
-
-    }

@@ -15,7 +15,7 @@ import os, sys
 import logging
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 
 # print sys.path
@@ -76,7 +76,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'opsweb.wsgi.application'
+WSGI_APPLICATION = 'wsgi.application'
 
 # REST FRAMEWORK
 REST_FRAMEWORK = {
