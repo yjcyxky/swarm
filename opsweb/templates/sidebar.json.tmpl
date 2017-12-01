@@ -1,138 +1,133 @@
 {
     "dashboard": {
-        "link": "/",
-        "title": "{{ interface.dashboard }}",
+        "link": "/dashboard",
+        "title": "Dashboard",
         "id": 1
     },
-    "header": {
-        "link": "/",
-        "title": "{{ interface.production_abbr }}",
-        "id": 2
-    },
     "treeitems": {
-        "{{ interface.system_deploy }}": {
+        "系统部署": {
             "link": "",
-            "title": "{{ interface.system_deploy }}",
+            "title": "系统部署",
             "id": 3,
             "secondmenus": {
-                "{{ interface.configuration }}": {
+                "配置与定义": {
                     "link": "",
-                    "title": "{{ interface.configuration }}",
+                    "title": "配置与定义",
                     "id": 5,
                     "thirdmenus": {
-                        "{{ interface.distros }}": {
+                        "Distros": {
                             "link": "javascript:loadurl('/sscobbler/distro/list')",
-                            "title": "{{ interface.distros }}",
+                            "title": "Distros",
                             "id": 6
                         },
-                        "{{ interface.profiles }}": {
-                            "link": "{{ interface.profiles }}",
+                        "Profiles": {
+                            "link": "Profiles",
                             "title": "javascript:loadurl('/sscobbler/profile/list')",
                             "id": 7
                         },
-                        "{{ interface.systems }}": {
+                        "操作系统": {
                             "link": "javascript:loadurl('/sscobbler/system/list')",
-                            "title": "{{ interface.systems }}",
+                            "title": "操作系统",
                             "id": 8
                         },
-                        "{{ interface.repos }}": {
+                        "软件仓库": {
                             "link": "javascript:loadurl('/sscobbler/repo/list')",
-                            "title": "{{ interface.repos }}",
+                            "title": "软件仓库",
                             "id": 9
                         },
-                        "{{ interface.images }}": {
+                        "系统镜像": {
                             "link": "javascript:loadurl('/sscobbler/image/list')",
-                            "title": "{{ interface.images }}",
+                            "title": "系统镜像",
                             "id": 10
                         },
-                        "{{ interface.auto_installation_templ }}": {
+                        "自动安装模板": {
                             "link": "javascript:loadurl('/sscobbler/aifile/list')",
-                            "title": "{{ interface.auto_installation_templ }}",
+                            "title": "自动安装模板",
                             "id": 11
                         },
-                        "{{ interface.auto_installation_snip }}": {
+                        "自动安装Snippets": {
                             "link": "javascript:loadurl('/sscobbler/snippet/list')",
-                            "title": "{{ interface.auto_installation_snip }}",
+                            "title": "自动安装Snippets",
                             "id": 12
                         },
-                        "{{ interface.mgmtclass }}": {
+                        "管理类": {
                             "link": "javascript:loadurl('/sscobbler/mgmtclass/list')",
-                            "title": "{{ interface.mgmtclass }}",
+                            "title": "管理类",
                             "id": 13
                         },
-                        "{{ interface.settings }}": {
+                        "配置": {
                             "link": "javascript:loadurl('/sscobbler/setting/list')",
-                            "title": "{{ interface.settings }}",
+                            "title": "配置",
                             "id": 14
                         }
                     }
                 },
-                "{{ interface.resources }}": {
+                "资源": {
                     "link": "",
-                    "title": "{{ interface.resources }}",
+                    "title": "资源",
                     "id": 15,
                     "thirdmenus": {
-                        "{{ interface.packages }}": {
+                        "Packages": {
                             "link": "javascript:loadurl('/sscobbler/package/list')",
-                            "title": "{{ interface.packages }}",
+                            "title": "Packages",
                             "id": 16
                         },
-                        "{{ interface.files }}": {
+                        "Files": {
                             "link": "javascript:loadurl('/sscobbler/file/list')",
-                            "title": "{{ interface.files }}",
+                            "title": "Files",
                             "id": 17
                         }
                     }
                 },
-                "{{ interface.actions }}": {
+                "动作": {
                     "link": "",
-                    "title": "{{ interface.actions }}",
+                    "title": "动作",
                     "id": 18,
                     "thirdmenus": {
-                        "{{ interface.sync }}": {
+                        "部署系统同步": {
                             "link": "javascript:menuaction('/sscobbler/sync');",
-                            "title": "{{ interface.sync }}",
+                            "title": "部署系统同步",
                             "id": 19
                         },
-                        "{{ interface.reposync }}": {
+                        "软件仓库同步": {
                             "link": "javascript:menuaction('/sscobbler/reposync');",
-                            "title": "{{ interface.reposync }}",
+                            "title": "软件仓库同步",
                             "id": 20
                         },
-                        "{{ interface.hardlink }}": {
+                        "HardLink": {
                             "link": "javascript:menuaction('/sscobbler/hardlink');",
-                            "title": "{{ interface.hardlink }}",
+                            "title": "HardLink",
                             "id": 21
                         },
-                        "{{ interface.build_iso }}": {
+                        "构建ISO": {
                             "link": "javascript:menuaction('/sscobbler/buildiso');",
-                            "title": "{{ interface.build_iso }}",
+                            "title": "构建ISO",
                             "id": 22
                         }
                     }
                 },
-                "{{ interface.others }}": {
+                "其它": {
                     "link": "",
-                    "title": "{{ interface.others }}",
+                    "title": "其它",
                     "id": 23,
                     "thirdmenus": {
-                        "{{ interface.check }}": {
+                        "检测": {
                             "link": "javascript:loadurl('/sscobbler/check')",
-                            "title": "{{ interface.check }}",
+                            "title": "检测",
                             "id": 24
                         },
-                        "{{ interface.events }}": {
+                        "事件": {
                             "link": "javascript:loadurl('/sscobbler/events')",
-                            "title": "{{ interface.events }}",
+                            "title": "事件",
                             "id": 25
                         }
                     }
                 }
             }
         },
-        "{{ interface.service_deploy }}": {
+        "软件与服务": {
             "link": "",
-            "title": "{{ interface.service_deploy }}",
+            "title": "软件与服务",
             "id": 26,
             "secondmenus": {
                 "软件安装": {
@@ -157,9 +152,9 @@
                 }
             }
         },
-        "{{ interface.monitoring }}": {
+        "监控管理": {
             "link": "",
-            "title": "{{ interface.monitoring }}",
+            "title": "监控管理",
             "id": 31,
             "secondmenus": {
                 "主机监控": {

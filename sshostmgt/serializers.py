@@ -129,6 +129,18 @@ class TagSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+class HostListSerializer(serializers.HyperlinkedModelSerializer):
+    ipmi = IPMISerializer(read_only = True)
+    host_uuid = serializers.UUIDField(format = 'hex_verbose')
+    mgmt_ip_addr = serializers.IPAddressField()
+    hostname = serializers.CharField(validators = [check_hostname], max_length = 64)
+    tags = TagSerializer(many = True, read_only = True)
+
+    class Meta:
+        model = Host
+        fields = ('host_uuid', 'mgmt_ip_addr', 'hostname', 'ipmi', 'tags')
+        lookup_field = 'host_uuid'
+
 class HostSerializer(serializers.HyperlinkedModelSerializer):
     ipmi = serializers.PrimaryKeyRelatedField(queryset = IPMI.objects.all(),
                                               pk_field = serializers.UUIDField(format='hex_verbose'))

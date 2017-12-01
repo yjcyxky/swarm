@@ -7,6 +7,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 class CustomPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
     def get_paginated_response(self, data):
         query_params = data.serializer.context.get('request').query_params
         total = self.page.paginator.count
@@ -20,9 +24,9 @@ class CustomPagination(PageNumberPagination):
         except ValueError:
             raise CustomException("Invalid query parameters.",
                                   status_code = status.HTTP_400_BAD_REQUEST)
-        last_page =  total // page_size + total % page_size
+        last_page =  total // page_size + 1
         from_pos = (which_page - 1) * page_size + 1
-        to_pos = which_page * page_size
+        to_pos = which_page * page_size if total // page_size >= which_page else total % page_size
         logger.debug("which_page: %s" % which_page)
         return Response({
             'total': total,

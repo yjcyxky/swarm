@@ -3,9 +3,6 @@ import logging, copy
 from datetime import datetime
 from django.db import models
 from django.apps import apps
-from django.core.exceptions import ObjectDoesNotExist
-# from sshostmgt.exceptions import NoSuchField, FormatError
-from utils import gen_dict, isNone, merge_dicts, allNone
 
 logger = logging.getLogger(__name__)
 

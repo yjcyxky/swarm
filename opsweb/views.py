@@ -1,13 +1,17 @@
-import logging
+import logging, json
 from django.contrib.auth.models import User
 from django.http import Http404
+from django.template.loader import get_template
+from django.http import JsonResponse
+from rest_framework.decorators import (api_view, permission_classes)
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
+from rest_framework.request import Request
 from rest_framework import status
 from rest_framework import permissions
-from opsweb.serializers import UserSerializer, PasswordSerializer
-from opsweb.permissions import IsOwnerOrAdmin
+from opsweb.serializers import (UserSerializer, PasswordSerializer)
+from opsweb.permissions import (IsOwnerOrAdmin, IsOwner)
 from opsweb.pagination import CustomPagination
 from opsweb.exceptions import CustomException
 
@@ -19,9 +23,9 @@ class UserList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = UserSerializer
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.DjangoModelPermissions,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          permissions.DjangoModelPermissions,
+                          permissions.IsAdminUser)
     queryset = User.objects.all().order_by("username")
 
     def get(self, request, format = None):
@@ -30,7 +34,7 @@ class UserList(generics.GenericAPIView):
         """
         queryset = self.paginate_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many = True,
-                                    context = {'request': request})
+                                         context = {'request': request})
         return self.get_paginated_response(serializer.data)
 
     def post(self, request):
@@ -40,11 +44,12 @@ class UserList(generics.GenericAPIView):
         serializer = UserSerializer(data = request.data,
                                     context = {'request': request})
         if serializer.is_valid():
-            serializer.create(serializer.validated_data)
+            user = serializer.create(serializer.validated_data)
+            serializer = UserSerializer(user, context = {'request': request})
             return Response({
                 "status": "Created Success",
                 "status_code": status.HTTP_201_CREATED,
-                "user_info": serializer.data
+                "data": serializer.data
             })
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
@@ -60,11 +65,12 @@ class UserList(generics.GenericAPIView):
             user = self.queryset.get(username = username)
             serializer = UserSerializer(user, data = request.data, context = {'request': request})
             if serializer.is_valid():
-                serializer.update(user, serializer.validated_data)
+                user = serializer.update(user, serializer.validated_data)
+                serializer = UserSerializer(user, context = {'request': request})
                 return Response({
                     "status": "Updated Success",
                     "status_code": status.HTTP_200_OK,
-                    "user_info": serializer.data
+                    "data": serializer.data
                })
             return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
@@ -75,8 +81,8 @@ class UserDetail(APIView):
     """
     Retrieve, update a user instance.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       IsOwnerOrAdmin)
+    permission_classes = (permissions.IsAuthenticated,
+                          IsOwnerOrAdmin)
     queryset = User.objects
     def get_object(self, pk):
         try:
@@ -95,7 +101,7 @@ class UserDetail(APIView):
         return Response({
             "status": "Success",
             "status_code": status.HTTP_200_OK,
-            "user_info": serializer.data
+            "data": serializer.data
        })
 
     def put(self, request, pk):
@@ -123,3 +129,61 @@ class UserDetail(APIView):
                 "user_info": user_info
             })
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+
+
+class APIDetail(APIView):
+    """
+    Retrieve a specified API instance.
+    """
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def gen_response_obj(self, request, message = None,
+                         collections = None, next = None):
+        collections.update({
+            "api_uri": request.get_raw_uri() if isinstance(request, Request) else None,
+            "next": next
+        })
+        return {
+            "status": message,
+            "data": collections,
+            "status_code": status.HTTP_200_OK
+        }
+
+    def get(self, request, api_name):
+        logger.debug('API_NAME: %s' % api_name)
+        logger.debug(request.get_raw_uri())
+        user = request.user
+        if api_name in ('apis', 'navbar', 'sidebar', 'welcome'):
+            t = get_template('%s.json.tmpl' % api_name)
+            api_prefix = request.get_host()
+            api_pool = t.render({"api_prefix": api_prefix, "user": user})
+            collections = {
+                'apiData': json.loads(api_pool)
+            }
+            response_obj = self.gen_response_obj(request, message = 'Success.',
+                                                 collections = collections)
+            return JsonResponse(response_obj, status = 200)
+        else:
+            raise Http404
+
+def custom404(request):
+    return JsonResponse({
+        'status_code': 404,
+        'details': 'The resource was not found.',
+        'status': 'Failed'
+    }, status = status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated, ))
+def current_user(request):
+        """
+        Retrieve account information for current user.
+        """
+        user = request.user
+        serializer = UserSerializer(user, context = {'request': request})
+        return Response({
+            "status": "Success",
+            "status_code": status.HTTP_200_OK,
+            "data": serializer.data
+       })

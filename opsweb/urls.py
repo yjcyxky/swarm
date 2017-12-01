@@ -15,26 +15,34 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from rest_framework import routers
-from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
-from rest_framework_jwt.views import verify_jwt_token
+from rest_framework_jwt.views import (obtain_jwt_token, refresh_jwt_token, verify_jwt_token)
 from rest_framework.schemas import get_schema_view
 from rest_framework_swagger.renderers import SwaggerUIRenderer, OpenAPIRenderer
+from django.contrib.auth import views as auth_views
 from opsweb import views
 
 schema_view = get_schema_view(title='Opsweb APIs', renderer_classes=[OpenAPIRenderer, SwaggerUIRenderer])
 
 urlpatterns = [
+    # For API Documentation
+    url(r'^$', schema_view, name="docs"),
+    url(r'^api-auth/',
+        include('rest_framework.urls', namespace = 'rest_framework')),
+    url(r'^accounts/login/$', auth_views.login, name='login'),
     url(r'^api/v1/', include([
-        url(r'^docs/', schema_view, name="docs"),
+        url(r'^auth/user$',
+            views.current_user,
+            name = "current-user"),
+        url(r'^apis/(?P<api_name>[a-zA-Z0-9]+)$',
+            views.APIDetail.as_view(),
+            name = "api-list"),
         url(r'^users$',
             views.UserList.as_view(),
             name = "user-list"),
         url(r'^users/(?P<pk>[0-9]+)$',
             views.UserDetail.as_view(),
             name = "user-detail"),
-        # For API Documentation
-        url(r'^api-auth/',
-            include('rest_framework.urls', namespace = 'rest_framework')),
+
         url(r'^api-token-auth$', obtain_jwt_token),
         url(r'^api-token-refresh$', refresh_jwt_token),
         url(r'^api-token-verify$', verify_jwt_token),
@@ -43,5 +51,7 @@ urlpatterns = [
         # url(r'^sscobbler/', include('sscobbler.urls')),
         # # Host Management
         url(r'^sshostmgt/', include('sshostmgt.urls')),
-    ])),
+        url(r'^ssfalcon/', include('ssfalcon.urls')),
+        url(r'^.*/$', views.custom404)
+    ]))
 ]

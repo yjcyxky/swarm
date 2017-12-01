@@ -9,7 +9,7 @@ from sshostmgt.models import (IPMI, Host, Tag)
 from sshostmgt.pagination import CustomPagination
 from sshostmgt.permissions import IsOwnerOrAdmin
 from sshostmgt.exceptions import CustomException
-from sshostmgt.serializers import (IPMISerializer, TagSerializer, HostSerializer)
+from sshostmgt.serializers import (IPMISerializer, TagSerializer, HostSerializer, HostListSerializer)
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class IPMIList(generics.GenericAPIView):
             return Response({
                 "status": "success",
                 "status_code": status.HTTP_201_CREATED,
-                "ipmi_info": serializer.data
+                "data": serializer.data
             })
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
@@ -69,7 +69,7 @@ class IPMIList(generics.GenericAPIView):
                 return Response({
                     "status": "Updated Success",
                     "status_code": status.HTTP_200_OK,
-                    "ipmi_info": serializer.data
+                    "data": serializer.data
                })
             return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
         except IPMI.DoesNotExist:
@@ -101,7 +101,7 @@ class IPMIDetail(generics.GenericAPIView):
         return Response({
             "status": "Success",
             "status_code": status.HTTP_200_OK,
-            "ipmi_info": serializer.data
+            "data": serializer.data
        })
 
     def put(self, request, ipmi_uuid):
@@ -119,7 +119,7 @@ class IPMIDetail(generics.GenericAPIView):
             return Response({
                 "status": "Updated Success",
                 "status_code": status.HTTP_200_OK,
-                "ipmi_info": serializer.data
+                "data": serializer.data
             })
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
@@ -157,7 +157,7 @@ class TagList(generics.GenericAPIView):
             return Response({
                 "status": "success",
                 "status_code": status.HTTP_201_CREATED,
-                "tag_info": serializer.data
+                "data": serializer.data
             })
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
@@ -187,7 +187,7 @@ class TagDetail(generics.GenericAPIView):
         return Response({
             "status": "Success",
             "status_code": status.HTTP_200_OK,
-            "tag_info": serializer.data
+            "data": serializer.data
        })
 
     def put(self, request, tag_uuid):
@@ -204,7 +204,7 @@ class TagDetail(generics.GenericAPIView):
             return Response({
                 "status": "Updated Success",
                 "status_code": status.HTTP_200_OK,
-                "tag_info": serializer.data
+                "data": serializer.data
             })
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
@@ -214,7 +214,7 @@ class HostList(generics.GenericAPIView):
     List all host objects, or create a new host.
     """
     pagination_class = CustomPagination
-    serializer_class = HostSerializer
+    serializer_class = HostListSerializer
     # permission_classes = (permissions.IsAuthenticated,
     #                       permissions.DjangoModelPermissions,
     #                       permissions.IsAdminUser)
@@ -227,7 +227,7 @@ class HostList(generics.GenericAPIView):
         """
         queryset = self.paginate_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many = True,
-                                    context = {'request': request})
+                                         context = {'request': request})
         return self.get_paginated_response(serializer.data)
 
     def post(self, request):
@@ -242,7 +242,7 @@ class HostList(generics.GenericAPIView):
             return Response({
                 "status": "success",
                 "status_code": status.HTTP_201_CREATED,
-                "host_info": serializer.data
+                "data": serializer.data
             })
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
@@ -271,7 +271,7 @@ class HostDetail(generics.GenericAPIView):
         return Response({
             "status": "Success",
             "status_code": status.HTTP_200_OK,
-            "host_info": serializer.data
+            "data": serializer.data
        })
 
     def put(self, request, host_uuid):
@@ -288,6 +288,6 @@ class HostDetail(generics.GenericAPIView):
             return Response({
                 "status": "Updated Success",
                 "status_code": status.HTTP_200_OK,
-                "host_info": serializer.data
+                "data": serializer.data
             })
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)

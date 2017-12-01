@@ -33,28 +33,32 @@
             "name": "主机监控"
         }
     },
-    "loginItems": {
-        "user": {
-            "href": "#/user/info",
-            "name": "{{ username }}",
-            "show": ""
+    "loginItems": [
+        {
+            "href": "auth/user",
+            "title": "{{ user.username }}",
+            "show": "T",
+            "name": "user"
         },
-        "login": {
-            "href": "#/login",
-            "name": "登录",
-            "show": "T"
+        {
+            "href": "login",
+            "title": "登录",
+            "show": "",
+            "name": "login"
         },
-        "registry": {
-            "href": "#/registry",
-            "name": "注册",
-            "show": "T"
+        {
+            "href": "registry",
+            "title": "注册",
+            "show": "",
+            "name": "registry"
         },
-        "logout": {
-            "href": "#/logout",
-            "name": "退出",
-            "show": ""
+        {
+            "href": "#logout#",
+            "title": "退出",
+            "show": "T",
+            "name": "logout"
         }
-    },
+    ],
     "website": {
         "href": "http://www.super-san.com",
         "name": "SuperSAN"
