@@ -36,4 +36,10 @@ urlpatterns = [
     url(r'^hosts/(?P<host_uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
         views.HostDetail.as_view(),
         name = 'host-detail'),
+    url(r'^storages$',
+        views.StorageList.as_view(),
+        name = 'storage-list'),
+    url(r'^storages/(?P<storage_uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
+        views.StorageDetail.as_view(),
+        name = 'host-detail'),
 ]

@@ -52,6 +52,7 @@ urlpatterns = [
         # # Host Management
         url(r'^sshostmgt/', include('sshostmgt.urls')),
         url(r'^ssfalcon/', include('ssfalcon.urls')),
+        url(r'^sscluster/', include('sscluster.urls')),
         url(r'^.*/$', views.custom404)
     ]))
 ]

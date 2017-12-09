@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
 from rest_framework import permissions
-from opsweb.serializers import (UserSerializer, PasswordSerializer)
+from opsweb.serializers import (UserSerializer)
 from opsweb.permissions import (IsOwnerOrAdmin, IsOwner)
 from opsweb.pagination import CustomPagination
 from opsweb.exceptions import CustomException
@@ -24,18 +24,53 @@ class UserList(generics.GenericAPIView):
     pagination_class = CustomPagination
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticated,
-                          permissions.DjangoModelPermissions,
+                          # permissions.DjangoModelPermissions,
                           permissions.IsAdminUser)
     queryset = User.objects.all().order_by("username")
+
+    def exist_object(self, **kwargs):
+        new_kwargs = {}
+        for key in kwargs.keys():
+            if key in ('user_id', 'username', 'email'):
+                if len(kwargs.get(key)) > 1:
+                    return False
+                else:
+                    new_kwargs[key] = kwargs.get(key)[0]
+
+        if new_kwargs:
+            try:
+                logger.debug("UserList@exist_object@new_kwargs:%s" % str(new_kwargs))
+                logger.debug("UserList@exist_object@objects:%s" % str(self.queryset.get(**new_kwargs)))
+                return self.queryset.get(**new_kwargs)
+            except User.DoesNotExist:
+                return False
 
     def get(self, request, format = None):
         """
         Get all users.
         """
-        queryset = self.paginate_queryset(self.get_queryset())
-        serializer = self.get_serializer(queryset, many = True,
-                                         context = {'request': request})
-        return self.get_paginated_response(serializer.data)
+        query_params = request.query_params
+        if query_params and (query_params.get('user_id') or \
+                             query_params.get('username') or \
+                             query_params.get('email')):
+            if not self.exist_object(**query_params):
+                # raise Http404
+                return Response({
+                    "status": "Not Found.",
+                    "status_code": status.HTTP_404_NOT_FOUND,
+                    "data": []
+                })
+            else:
+                return Response({
+                    "status": "Success.",
+                    "status_code": status.HTTP_200_OK,
+                    "data": []
+                })
+        else:
+            queryset = self.paginate_queryset(self.get_queryset())
+            serializer = self.get_serializer(queryset, many = True,
+                                             context = {'request': request})
+            return self.get_paginated_response(serializer.data)
 
     def post(self, request):
         """
@@ -63,7 +98,9 @@ class UserList(generics.GenericAPIView):
                 raise CustomException("You need to set username in post.",
                                       status_code = status.HTTP_400_BAD_REQUEST)
             user = self.queryset.get(username = username)
-            serializer = UserSerializer(user, data = request.data, context = {'request': request})
+            serializer = UserSerializer(user, data = request.data,
+                                        context = {'request': request},
+                                        partial = True)
             if serializer.is_valid():
                 user = serializer.update(user, serializer.validated_data)
                 serializer = UserSerializer(user, context = {'request': request})
@@ -71,10 +108,14 @@ class UserList(generics.GenericAPIView):
                     "status": "Updated Success",
                     "status_code": status.HTTP_200_OK,
                     "data": serializer.data
-               })
+                })
             return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
-            raise Http404
+            return Response({
+                "status": "Not Found.",
+                "status_code": status.HTTP_404_NOT_FOUND,
+                "data": []
+            })
 
 
 class UserDetail(APIView):
@@ -88,7 +129,11 @@ class UserDetail(APIView):
         try:
             return self.queryset.get(pk = pk)
         except User.DoesNotExist:
-            raise Http404
+            return Response({
+                "status": "Not Found.",
+                "status_code": status.HTTP_404_NOT_FOUND,
+                "data": []
+            })
 
     def get(self, request, pk):
         """
@@ -102,7 +147,7 @@ class UserDetail(APIView):
             "status": "Success",
             "status_code": status.HTTP_200_OK,
             "data": serializer.data
-       })
+        })
 
     def put(self, request, pk):
         """
@@ -111,25 +156,46 @@ class UserDetail(APIView):
         # 普通用户无法access PUT方法
         user = self.get_object(pk)
         self.check_object_permissions(request, user)
-        serializer = PasswordSerializer(user, data = request.data, context = {'request': request})
+        serializer = UserSerializer(user, data = request.data,
+                                    context = {'request': request},
+                                    partial = True)
         if serializer.is_valid():
-            password = serializer.validated_data.get("password")
-            serializer.update(user, password)
-            user_info = serializer.data
-            user_info.update({
-                "username": user.get_username(),
-                "last_login": user.last_login,
-                "email": user.email,
-                "is_active": user.is_active,
-                "is_staff": user.is_staff
-            })
+            query_params = request.query_params
+            if query_params.get("resetPassword"):
+                password = user.username
+                logger.debug("UserDetail@put@password@%s" % password)
+            else:
+                password = None
+
+            user = serializer.update(user, serializer.validated_data,
+                                     password = password)
+            serializer = UserSerializer(user, context = {'request': request})
             return Response({
                 "status": "Updated Success",
                 "status_code": 200,
-                "user_info": user_info
+                "data": serializer.data
             })
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request, pk):
+        """
+        Delete the user.
+        """
+        try:
+            user = self.get_object(pk)
+            self.check_object_permissions(request, user)
+            user.delete()
+            return Response({
+                "status_code": status.HTTP_204_NO_CONTENT,
+                "status": "No Content.",
+                "data": []
+            })
+        except:
+            return Response({
+                "status": "Not Found.",
+                "status_code": status.HTTP_404_NOT_FOUND,
+                "data": []
+            })
 
 class APIDetail(APIView):
     """
@@ -164,7 +230,11 @@ class APIDetail(APIView):
                                                  collections = collections)
             return JsonResponse(response_obj, status = 200)
         else:
-            raise Http404
+            return Response({
+                "status": "Not Found.",
+                "status_code": status.HTTP_404_NOT_FOUND,
+                "data": []
+            })
 
 def custom404(request):
     return JsonResponse({
@@ -186,4 +256,4 @@ def current_user(request):
             "status": "Success",
             "status_code": status.HTTP_200_OK,
             "data": serializer.data
-       })
+        })

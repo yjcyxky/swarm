@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'sscobbler.apps.SscobblerConfig',
     'sshostmgt.apps.SshostmgtConfig',
     'ssfalcon.apps.SsfalconConfig',
+    'ssnagios.apps.SsnagiosConfig',
+    'sscluster.apps.SsclusterConfig',
     'opsweb',
 ]
 

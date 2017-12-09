@@ -1,43 +1,59 @@
 {
-    "navItems": {
-        "project": {
-            "href": "#project",
-            "name": "项目管理"
-        },
-        "workflow": {
+    "navItems": [
+        {
             "href": "#add-workflow",
-            "name": "新建工作流"
+            "title": "新建工作流",
+            "show": true,
+            "name": "workflow"
         },
-        "task": {
+        {
+            "href": "#project",
+            "title": "项目管理",
+            "show": true,
+            "name": "project"
+        },
+        {
             "href": "#task",
-            "name": "查看任务"
+            "title": "查看任务",
+            "show": true,
+            "name": "task"
         },
-        "results": {
+        {
             "href": "#results",
-            "name": "查看结果"
+            "title": "查看结果",
+            "show": true,
+            "name": "results"
         },
-        "runinfo": {
+        {
             "href": "#runinfo",
-            "name": "查看监控"
+            "title": "查看监控",
+            "show": true,
+            "name": "runinfo"
         },
-        "filemgmt": {
-            "href": "#filemgmt",
-            "name": "文件管理"
-        },
-        "help": {
-            "href": "#help",
-            "name": "帮助"
-        },
-        "hosts": {
+        {
             "href": "#/hosts/info",
-            "name": "主机监控"
+            "title": "主机监控",
+            "show": true,
+            "name": "hosts"
+        },
+        {
+            "href": "#filemgmt",
+            "title": "文件管理",
+            "show": true,
+            "name": "filemgmt"
+        },
+        {
+            "href": "#help",
+            "title": "帮助",
+            "show": true,
+            "name": "help"
         }
-    },
+    ],
     "loginItems": [
         {
             "href": "auth/user",
             "title": "{{ user.username }}",
-            "show": "T",
+            "show": true,
             "name": "user"
         },
         {
@@ -55,7 +71,7 @@
         {
             "href": "#logout#",
             "title": "退出",
-            "show": "T",
+            "show": true,
             "name": "logout"
         }
     ],

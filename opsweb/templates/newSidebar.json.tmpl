@@ -1,0 +1,272 @@
+[
+    {
+        "href": "/dashboard",
+        "title": "Dashboard",
+        "name": "Dashboard",
+        "show": true
+    },
+    {
+        "href": "/header",
+        "title": "Header",
+        "name": "header",
+        "show": false
+    },
+    {
+        "href": "/tree",
+        "title": "TreeItem",
+        "name": "tree-item",
+        "show": true,
+        "children": [
+            {
+                "href": "",
+                "name": "system_deploy",
+                "title": "系统部署",
+                "show": true,
+                "children": [
+                    {
+                        "href": "",
+                        "name": "configuration",
+                        "title": "配置与定义",
+                        "show": true,
+                        "children": [
+                            {
+                                "href": "javascript:loadurl('/sscobbler/distro/list')",
+                                "title": "Distros",
+                                "name": "distros",
+                                "show": true
+                            },
+                            {
+                                "href": "Profiles",
+                                "name": "Profiles",
+                                "title": "javascript:loadurl('/sscobbler/profile/list')",
+                                "show": true
+                            },
+                            {
+                                "href": "javascript:loadurl('/sscobbler/system/list')",
+                                "title": "操作系统",
+                                "name": "systems",
+                                "show": true
+                            },
+                            {
+                                "href": "javascript:loadurl('/sscobbler/repo/list')",
+                                "title": "软件仓库",
+                                "name": "repos",
+                                "show": true
+                            },
+                            {
+                                "href": "javascript:loadurl('/sscobbler/image/list')",
+                                "title": "系统镜像",
+                                "name": "system_image",
+                                "show": true
+                            },
+                            {
+                                "href": "javascript:loadurl('/sscobbler/aifile/list')",
+                                "title": "自动安装模板",
+                                "name": "auto_installation_templ",
+                                "show": true
+                            },
+                            {
+                                "href": "javascript:loadurl('/sscobbler/snippet/list')",
+                                "title": "自动安装Snippets",
+                                "name": "auto_installation_snip",
+                                "show": true
+                            },
+                            {
+                                "href": "javascript:loadurl('/sscobbler/mgmtclass/list')",
+                                "title": "管理类",
+                                "name": "mgmtclass",
+                                "show": true
+                            },
+                            {
+                                "href": "javascript:loadurl('/sscobbler/setting/list')",
+                                "title": "配置",
+                                "name": "settings",
+                                "show": true
+                            }
+                        ]
+                    },
+                    {
+                        "href": "",
+                        "title": "资源",
+                        "name": "resources",
+                        "show": true,
+                        "children": [
+                            {
+                                "href": "javascript:loadurl('/sscobbler/package/list')",
+                                "title": "Packages",
+                                "name": "packages",
+                                "show": true
+                            },
+                            {
+                                "href": "javascript:loadurl('/sscobbler/file/list')",
+                                "title": "Files",
+                                "name": "files",
+                                "show": true
+                            }
+                        ]
+                    },
+                    {
+                        "href": "",
+                        "title": "动作",
+                        "name": "actions",
+                        "show": true,
+                        "children": [
+                            {
+                                "href": "javascript:menuaction('/sscobbler/sync');",
+                                "title": "部署系统同步",
+                                "name": "sync",
+                                "show": true
+                            },
+                            {
+                                "href": "javascript:menuaction('/sscobbler/reposync');",
+                                "title": "软件仓库同步",
+                                "name": "reposync",
+                                "show": true
+                            },
+                            {
+                                "href": "javascript:menuaction('/sscobbler/hardlink');",
+                                "title": "HardLink",
+                                "name": "hardlink",
+                                "show": true
+                            },
+                            {
+                                "href": "javascript:menuaction('/sscobbler/buildiso');",
+                                "title": "构建ISO",
+                                "name": "buildiso",
+                                "show": true
+                            }
+                        ]
+                    },
+                    {
+                        "href": "",
+                        "title": "其它",
+                        "name": "others",
+                        "show": true,
+                        "children": [
+                            {
+                                "href": "javascript:loadurl('/sscobbler/check')",
+                                "title": "检测",
+                                "name": "check",
+                                "show": true
+                            },
+                            {
+                                "href": "javascript:loadurl('/sscobbler/events')",
+                                "title": "事件",
+                                "name": "events",
+                                "show": true
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "href": "",
+                "title": "软件与服务",
+                "name": "software_service",
+                "show": true,
+                "children": [
+                    {
+                        "href": "",
+                        "title": "软件安装",
+                        "name": "software_arrangement",
+                        "show": true
+                    },
+                    {
+                        "href": "",
+                        "title": "服务部署",
+                        "name": "service_deploy",
+                        "show": true
+                    },
+                    {
+                        "href": "",
+                        "title": "主机信息",
+                        "name": "host_info",
+                        "show": true
+                    },
+                    {
+                        "href": "",
+                        "title": "其它",
+                        "name": "others",
+                        "show": true
+                    }
+                ]
+            },
+            {
+                "href": "",
+                "title": "监控管理",
+                "name": "monitor_mgmt",
+                "show": true,
+                "children": [
+                    {
+                        "href": "#/hosts/info",
+                        "title": "主机监控",
+                        "name": "host_monitor",
+                        "show": true
+                    },
+                    {
+                        "href": "",
+                        "title": "网络监控",
+                        "name": "network_monitor",
+                        "show": true,
+                        "children": [
+                            {
+                                "href": "",
+                                "title": "交换机",
+                                "name": "switchboard",
+                                "show": true
+                            },
+                            {
+                                "href": "",
+                                "title": "路由器",
+                                "name": "router",
+                                "show": true
+                            },
+                            {
+                                "href": "",
+                                "title": "IB交换机",
+                                "name": "ib-switchboard",
+                                "show": true
+                            }
+                        ]
+                    },
+                    {
+                        "href": "",
+                        "title": "事件",
+                        "name": "events",
+                        "show": true
+                    },
+                    {
+                        "href": "",
+                        "title": "其它",
+                        "name": "others",
+                        "show": true
+                    }
+                ]
+            },
+            {
+                "href": "",
+                "title": "使用指南",
+                "name": "documentation",
+                "show": true
+            },
+            {
+                "href": "#/notification/errors",
+                "title": "错误",
+                "name": "error_msg",
+                "show": true
+            },
+            {
+                "href": "",
+                "title": "警告",
+                "name": "warning_msg",
+                "show": true
+            },
+            {
+                "href": "",
+                "title": "信息",
+                "name": "info_msg",
+                "show": true
+            }
+        ]
+    }
+]

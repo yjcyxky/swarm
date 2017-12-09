@@ -34,7 +34,7 @@ class CustomPagination(PageNumberPagination):
             'current_page': which_page,
             'last_page': last_page,
             'next_page_url': self.get_next_link(),
-            'previous_page_url': self.get_previous_link(),
+            'prev_page_url': self.get_previous_link(),
             'from': from_pos,
             'to': to_pos,
             'data': data

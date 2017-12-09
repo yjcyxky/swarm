@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework.validators import UniqueValidator
 from django.core.validators import RegexValidator
-from sshostmgt.models import (IPMI, Host, Tag)
+from sshostmgt.models import (IPMI, Host, Tag, Storage)
 from sshostmgt.power_mgmt import get_ipmi_client
 
 logger = logging.getLogger(__name__)
@@ -20,24 +20,33 @@ def check_mac(mac):
     if match is None:
         raise serializers.ValidationError("Not a mac address.")
 
-def check_hostname(hostname):
-    HOST_RE = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-\_]*[A-Za-z0-9])$")
-    match = re.match(HOST_RE, hostname)
+def check_name(name, msg = 'Not a valid name.'):
+    RE = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-\_]*[A-Za-z0-9])$")
+    match = re.match(RE, name)
     if match is None:
-        raise serializers.ValidationError("Not a valid host name.")
+        raise serializers.ValidationError(msg)
+
+def check_hostname(hostname):
+    check_name(hostname, 'Not a valid host name.')
 
 def check_tag_name(tag_name):
-    TAG_RE = re.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-\_]*[A-Za-z0-9])$")
-    match = re.match(TAG_RE, tag_name)
+    check_name(tag_name, 'Not a valid tag name.')
+
+def check_storage_name(storage_name):
+    check_name(storage_name, 'Not a valid storage name.')
+
+def check_path(path):
+    RE = re.compile("^/[a-zA-Z0-9\-_/]+$")
+    match = re.match(RE, path)
     if match is None:
-        raise serializers.ValidationError("Not a valid tag name.")
+        raise serializers.ValidationError('Not a valid path, you must specify the path as an unix absolute path')
 
 def check_label_color(color_name):
     COLOR_RE = re.compile('^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
     RegexValidator(COLOR_RE, 'Enter a valid color.', status.HTTP_400_BAD_REQUEST)
 
 class IPMISerializer(serializers.ModelSerializer):
-    ipmi_passwd = serializers.CharField(write_only = True)
+    ipmi_passwd = serializers.CharField()
     last_update_time = serializers.DateTimeField()
     first_add_time = serializers.DateTimeField()
     ipmi_addr = serializers.IPAddressField(validators = [UniqueValidator(queryset=IPMI.objects.all())])
@@ -47,8 +56,8 @@ class IPMISerializer(serializers.ModelSerializer):
     class Meta:
         model = IPMI
         fields = ('ipmi_uuid', 'ipmi_mac', 'ipmi_addr', 'ipmi_username', 'ipmi_passwd',
-                  'power_state', 'last_update_time', 'first_add_time')
-        extra_kwargs = {'ipmi_passwd': {'write_only': True}}
+                  'power_state', 'last_update_time', 'first_add_time', 'ipmi_desc')
+        # extra_kwargs = {'ipmi_passwd': {'write_only': True}}
         lookup_field = 'ipmi_uuid'
 
     def create(self, validated_data):
@@ -110,7 +119,7 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = ('tag_uuid', 'tag_name', 'label_color', 'common_used', 'tag_name_alias')
+        fields = ('tag_uuid', 'tag_desc', 'tag_name', 'label_color', 'common_used', 'tag_name_alias')
         lookup_field = 'tag_uuid'
 
     def create(self, validated_data):
@@ -133,12 +142,15 @@ class HostListSerializer(serializers.HyperlinkedModelSerializer):
     ipmi = IPMISerializer(read_only = True)
     host_uuid = serializers.UUIDField(format = 'hex_verbose')
     mgmt_ip_addr = serializers.IPAddressField()
+    mgmt_mac = serializers.CharField(min_length = 17, max_length = 17,
+                                     validators = [check_mac, UniqueValidator(queryset=Host.objects.all())])
     hostname = serializers.CharField(validators = [check_hostname], max_length = 64)
     tags = TagSerializer(many = True, read_only = True)
 
     class Meta:
         model = Host
-        fields = ('host_uuid', 'mgmt_ip_addr', 'hostname', 'ipmi', 'tags')
+        fields = ('host_uuid', 'host_desc', 'mgmt_ip_addr', 'mgmt_mac',
+                  'hostname', 'ipmi', 'tags')
         lookup_field = 'host_uuid'
 
 class HostSerializer(serializers.HyperlinkedModelSerializer):
@@ -154,7 +166,7 @@ class HostSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Host
-        fields = ('host_uuid', 'mgmt_ip_addr', 'hostname', 'ipmi', 'tags')
+        fields = ('host_uuid', 'host_desc', 'mgmt_ip_addr', 'hostname', 'ipmi', 'tags')
         lookup_field = 'host_uuid'
 
     def create(self, validated_data):
@@ -176,11 +188,43 @@ class NetworkSerializer(serializers.ModelSerializer):
 class CPUSerializer(serializers.ModelSerializer):
     pass
 
-class Storage(serializers.ModelSerializer):
+class StorageSerializer(serializers.HyperlinkedModelSerializer):
+    storage_name = serializers.CharField(validators = [check_storage_name, UniqueValidator(queryset=Storage.objects.all())])
+    host = serializers.PrimaryKeyRelatedField(queryset = Host.objects.all(),
+                                              pk_field = serializers.UUIDField(format='hex_verbose'))
+    storage_path = serializers.CharField(validators = [check_path, UniqueValidator(queryset = Storage.objects.all())])
+
+    class Meta:
+        model = Storage
+        fields = ('storage_uuid', 'storage_desc', 'storage_name', 'storage_path',
+                  'total_size', 'remaining_size', 'host', 'username', 'groupname')
+        lookup_field = 'storage_uuid'
+
+    def create(self, validated_data):
+        storage = Storage.objects.create(**validated_data)
+        storage.save()
+        return storage
+
+    def update(self, instance, validated_data):
+        instance.storage_desc = validated_data.get('storage_desc', instance.storage_desc)
+        instance.username = validated_data.get('username', instance.username)
+        instance.groupname = validated_data.get('groupname', instance.groupname)
+        instance.remaining_size = validated_data.get('remaining_size', instance.remaining_size)
+        instance.total_size = validated_data.get('total_size', instance.total_size)
+        instance.save()
+        return instance
+
+    def validate(self, data):
+        """
+        Check that the total_size is greater or equal than the remaining_size.
+        """
+        if data.get('total_size') and data.get('remaining_size'):
+            if data.get('remaining_size') > data.get('total_size'):
+                raise serializer.ValidationError("remaining_size must be equal or less than total_size.")
+        return data
+
+class SystemSerializer(serializers.ModelSerializer):
     pass
 
-class System(serializers.ModelSerializer):
-    pass
-
-class RAID(serializers.ModelSerializer):
+class RAIDSerializer(serializers.ModelSerializer):
     pass

@@ -24,6 +24,7 @@ class IPMI(models.Model):
     ipmi_addr = models.CharField(max_length = 15, unique = True)
     ipmi_username = models.CharField(max_length = 32, default = 'root')
     ipmi_passwd = models.CharField(max_length = 32, default = 'calvin')
+    ipmi_desc = models.CharField(max_length = 256, null = True)
     power_state = models.CharField(max_length = 10, choices = POWER_STATE, default = 'POWER_OFF')
     last_update_time = models.DateTimeField()
     first_add_time = models.DateTimeField()
@@ -47,6 +48,7 @@ class Tag(models.Model):
     tag_uuid = models.CharField(max_length = 128, primary_key = True)
     tag_name_alias = models.CharField(max_length = 32, null = True)
     tag_name = models.CharField(max_length = 32, unique = True)
+    tag_desc = models.CharField(max_length = 256, null = True)
     # label by choosed color
     label_color = models.CharField(max_length = 32, default = '#23d7bc')
     common_used = models.BooleanField()
@@ -60,9 +62,12 @@ class Tag(models.Model):
 class Host(models.Model):
     host_uuid = models.CharField(max_length = 128, primary_key = True)
     hostname = models.CharField(max_length = 64, unique = True)
+    host_desc = models.CharField(max_length = 256, null = True)
     mgmt_ip_addr = models.CharField(max_length = 16, unique = True)
+    mgmt_mac = models.CharField(max_length = 17, unique = True)
     ipmi = models.OneToOneField(IPMI, on_delete = models.CASCADE)
     tags = models.ManyToManyField(Tag)
+    cluster_uuid = models.CharField(max_length = 128, null = True)
     # bios = models.OneToOneField(BIOS, on_delete = models.CASCADE)
     # system = models.OneToOneField(System, on_delete = models.CASCADE)
 
@@ -79,10 +84,20 @@ class CPU(models.Model):
 class Network(models.Model):
     network_uuid = models.CharField(max_length = 128, primary_key = True)
     host = models.ForeignKey(Host, on_delete = models.CASCADE)
+    network_name = models.CharField(max_length = 128, unique = True)
+    mac_addr =  models.CharField(max_length = 17, unique = True)
+    ip_addr = models.CharField(max_length = 16, unique = True)
 
 class Storage(models.Model):
     storage_uuid = models.CharField(max_length = 128, primary_key = True)
     host = models.ForeignKey(Host, on_delete = models.CASCADE)
+    storage_name = models.CharField(max_length = 128, unique = True)
+    storage_path = models.CharField(max_length = 256, unique = True)
+    storage_desc = models.CharField(max_length = 256, null = True)
+    total_size = models.PositiveIntegerField()
+    remaining_size = models.PositiveIntegerField()
+    username = models.CharField(max_length = 16)
+    groupname = models.CharField(max_length = 16)
 
 class Memory(models.Model):
     memory_uuid = models.CharField(max_length = 128, primary_key = True)
