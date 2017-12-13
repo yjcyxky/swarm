@@ -92,7 +92,7 @@ class Storage(models.Model):
     storage_uuid = models.CharField(max_length = 128, primary_key = True)
     host = models.ForeignKey(Host, on_delete = models.CASCADE)
     storage_name = models.CharField(max_length = 128, unique = True)
-    storage_path = models.CharField(max_length = 256, unique = True)
+    storage_path = models.CharField(max_length = 255, unique = True)
     storage_desc = models.CharField(max_length = 256, null = True)
     total_size = models.PositiveIntegerField()
     remaining_size = models.PositiveIntegerField()

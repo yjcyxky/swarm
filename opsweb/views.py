@@ -27,6 +27,7 @@ class UserList(generics.GenericAPIView):
                           # permissions.DjangoModelPermissions,
                           permissions.IsAdminUser)
     queryset = User.objects.all().order_by("username")
+    lookup_field = 'id'
 
     def exist_object(self, **kwargs):
         new_kwargs = {}
@@ -54,7 +55,6 @@ class UserList(generics.GenericAPIView):
                              query_params.get('username') or \
                              query_params.get('email')):
             if not self.exist_object(**query_params):
-                # raise Http404
                 return Response({
                     "status": "Not Found.",
                     "status_code": status.HTTP_404_NOT_FOUND,
@@ -111,11 +111,7 @@ class UserList(generics.GenericAPIView):
                 })
             return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
-            return Response({
-                "status": "Not Found.",
-                "status_code": status.HTTP_404_NOT_FOUND,
-                "data": []
-            })
+            raise CustomException("Not Found the User.", status_code = status.HTTP_200_OK)
 
 
 class UserDetail(APIView):
@@ -125,15 +121,13 @@ class UserDetail(APIView):
     permission_classes = (permissions.IsAuthenticated,
                           IsOwnerOrAdmin)
     queryset = User.objects
+    lookup_field = 'id'
+
     def get_object(self, pk):
         try:
             return self.queryset.get(pk = pk)
         except User.DoesNotExist:
-            return Response({
-                "status": "Not Found.",
-                "status_code": status.HTTP_404_NOT_FOUND,
-                "data": []
-            })
+            raise CustomException("Not Found the User.", status_code = status.HTTP_200_OK)
 
     def get(self, request, pk):
         """

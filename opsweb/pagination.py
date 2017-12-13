@@ -21,6 +21,8 @@ class CustomPagination(PageNumberPagination):
             page_size =  int(query_params.get('page_size')) \
                             if query_params.get('page_size') \
                                 else self.page_size
+            if page_size == 0:
+                page_size = 10
         except ValueError:
             raise CustomException("Invalid query parameters.",
                                   status_code = status.HTTP_400_BAD_REQUEST)

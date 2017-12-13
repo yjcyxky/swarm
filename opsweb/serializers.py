@@ -29,6 +29,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         if kwargs.get('password') is not None:
             # 重置密码为用户名
             instance.set_password(kwargs.get('password'))
+            logger.debug("UserSerializer@update@reset_password@%s" % kwargs.get('password'))
 
         logger.debug("UserSerializer@update@validated_data.password@%s" % validated_data.get('password'))
         logger.debug("UserSerializer@update@intance.password@%s" % instance.password)

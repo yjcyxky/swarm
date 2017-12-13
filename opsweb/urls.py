@@ -54,5 +54,6 @@ urlpatterns = [
         url(r'^ssfalcon/', include('ssfalcon.urls')),
         url(r'^sscluster/', include('sscluster.urls')),
         url(r'^.*/$', views.custom404)
-    ]))
+    ])),
+    url(r'^.*/$', views.custom404)
 ]
