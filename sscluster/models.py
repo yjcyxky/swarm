@@ -61,7 +61,7 @@ class JobLog(models.Model):
     session = models.CharField(max_length = 32, null = True)
     unique_node_count = models.PositiveIntegerField(null = True)
     exit_status = models.IntegerField(null = True)
-    resources_used_cput = models.CharField(max_length = 16, null = True)
+    resources_used_cput = models.PositiveIntegerField(null = True)
     resources_used_mem = models.PositiveIntegerField(null = True)
     resources_used_vmem = models.PositiveIntegerField(null = True)
     resources_used_walltime = models.CharField(max_length = 16, null = True)

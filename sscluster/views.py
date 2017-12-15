@@ -6,7 +6,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
-from django.db.models import Count
+from django.db.models import (Count, Sum)
 import django_filters.rest_framework
 from sscluster.models import (Cluster, JobLog, ToDoList)
 from sscluster.pagination import CustomPagination
@@ -159,10 +159,23 @@ class JobLogList(generics.GenericAPIView):
         Get all joblog objects.
         """
         query_params = request.query_params
+
         filters = {
             'start__gt': query_params.get('start', '2012-12-12 08:00:00'),
-            'end__lt': query_params.get('end', '2100-12-12 08:00:00')
+            'end__lt': query_params.get('end', '2100-12-12 08:00:00'),
         }
+
+        try:
+            exit_status = query_params.get('exit_status')
+            if exit_status:
+                filters.update({'exit_status': int(exit_status)})
+        except ValueError:
+            raise CustomException("Bad Request.", status_code = status.HTTP_400_BAD_REQUEST)
+
+        username = query_params.get('user')
+        if username:
+            filters.update({'user__username': username})
+
         queryset = self.paginate_queryset(self.get_queryset(filters))
         serializer = self.get_serializer(queryset, many = True,
                                          context = {'request': request})
@@ -273,7 +286,10 @@ class JobLogCount(generics.GenericAPIView):
                 return self.queryset.extra(select=selections.get(select_by))\
                                     .filter(**filters)\
                                     .values(*selected_values.get(select_by))\
-                                    .annotate(records_count = Count('joblog'))
+                                    .annotate(records_count = Count('joblog'),
+                                              used_cput = Sum('joblog__resources_used_cput'),
+                                              used_mem = Sum('joblog__resources_used_mem'),
+                                              used_vmem = Sum('joblog__resources_used_vmem'))
             else:
                 return self.queryset.extra(select=selections.get(select_by))\
                                     .values(*selected_values.get(select_by))\
@@ -289,10 +305,16 @@ class JobLogCount(generics.GenericAPIView):
         # 防止用户输入引号空格等
         group_by = query_params.get('group_by', 'owner').strip(' \'"')
         select_by = query_params.get('select_by', 'year').strip(' \'"')
+        try:
+            exit_status = int(query_params.get('exit_status', 0))
+        except ValueError:
+            raise CustomException("Bad Request.", status_code = status.HTTP_400_BAD_REQUEST)
+
         print(query_params, select_by, group_by)
         filters = {
             'joblog__start__gt': query_params.get('start', '2012-12-12 08:00:00'),
-            'joblog__end__lt': query_params.get('end', '2100-12-12 08:00:00')
+            'joblog__end__lt': query_params.get('end', '2100-12-12 08:00:00'),
+            'joblog__exit_status': exit_status
         }
 
         queryset = self.paginate_queryset(self.get_queryset(group_by, filters, select_by))

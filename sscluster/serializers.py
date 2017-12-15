@@ -115,6 +115,9 @@ class JobLogCountSerializer(serializers.ModelSerializer):
             'owner': instance.get('joblog__owner'),
             'cluster_uuid': instance.get('joblog__cluster_uuid'),
             'records_count': instance.get('records_count'),
+            'used_cput': instance.get('used_cput'),
+            'used_mem': instance.get('used_mem'),
+            'used_vmem': instance.get('used_vmem'),
             'month': instance.get('month', None),
             'year': instance.get('year', None),
             'week': instance.get('week', None),
@@ -125,5 +128,7 @@ class JobLogCountSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('records_count', 'owner', 'group', 'cluster_uuid', 'start', 'end')
-        read_only_fields = ('records_count', 'owner', 'group', 'cluster_uuid', 'start', 'end')
+        fields = ('records_count', 'owner', 'group', 'cluster_uuid', 'start',
+                  'end', 'used_cput', 'used_mem', 'used_vmem')
+        read_only_fields = ('records_count', 'owner', 'group', 'cluster_uuid',
+                            'start', 'end', 'used_cput', 'used_mem', 'used_vmem')
