@@ -10,6 +10,19 @@ from sscobweb.models import (Channel, Package)
 
 logger = logging.getLogger(__name__)
 
+def check_channel_path(channel_path):
+    scheme_dict = {
+        "http": r"^https?:/{2}\w.+$",
+        "ftp": r"^ftp:/{2}\w.+$",
+        "file": r"^file:/{3}\w.+$"
+    }
+    for (key, pattern) in scheme_dict.items():
+        if re.match(pattern, channel_path):
+            return True
+        else:
+            return False
+
+
 class ChannelSerializer(serializers.HyperlinkedModelSerializer):
     md5sum = serializers.CharField(max_length = 32, allow_null = True, read_only = True)
     channel_uuid = serializers.UUIDField(format = 'hex_verbose', read_only = True)
@@ -20,6 +33,16 @@ class ChannelSerializer(serializers.HyperlinkedModelSerializer):
                   'md5sum', 'created_time', 'updated_time', 'is_active', 'summary',
                   'priority_level', 'is_alive', 'total_pkgs_num')
         lookup_field = 'channel_uuid'
+
+    def validate_channel_path(self, channel_path):
+        """
+        Check that the channel path is valid
+        """
+        channel_path_lst = channel_path.split('/')
+        if 'repodata.json' in channel_path_lst or 'repodata' in channel_path_lst:
+            raise serializers.ValidationError("Not valid channel path, Don't contain repodata/repodata.json.")
+        if not check_channel_path(channel_path):
+            raise serializers.ValidationError("Not valid channel path. Only support http/https/ftp/file")
 
     def create(self, validated_data):
         channel = Channel.objects.create(**validated_data)
@@ -47,9 +70,10 @@ class PackageSerializer(serializers.HyperlinkedModelSerializer):
     """
     pkg_uuid = serializers.UUIDField(format = 'hex_verbose', read_only = True)
     channels = ChannelSerializer(many = True, read_only = True)
-    # channels = serializers.PrimaryKeyRelatedField(many=True,
-    #                                               queryset = Channel.objects.all(),
-    #                                               pk_field = serializers.UUIDField(format='hex_verbose'))
+    channels_uuid = serializers.PrimaryKeyRelatedField(many=True,
+                                                       queryset = Channel.objects.all(),
+                                                       pk_field = serializers.UUIDField(format='hex_verbose'),
+                                                       source = 'channels')
 
     class Meta:
         model = Package
@@ -58,7 +82,7 @@ class PackageSerializer(serializers.HyperlinkedModelSerializer):
                   'size', 'version', 'summary', 'url', 'refereces', 'is_workflow',
                   'is_cluster_pkg', 'created_author', 'frontend_templ', 'output_templ',
                   'report_templ', 'spider_templ', 'module_templ', 'is_installed',
-                  'channels', 'depends', 'first_channel')
+                  'depends', 'first_channel', 'env_name', 'channels', 'channels_uuid')
         lookup_field = 'pkg_uuid'
 
     def create(self, validated_data):
@@ -70,6 +94,9 @@ class PackageSerializer(serializers.HyperlinkedModelSerializer):
 
     def update(self, instance, validated_data):
         instance.is_installed = validated_data.get('is_installed', instance.is_installed)
-        instance.channels = validated_data.get('channels', instance.channels)
+        channels = validated_data.get('channels', None)
         instance.save()
+        if channels:
+            instance.channels.clear()
+            instance.channels.add(*channels)
         return instance

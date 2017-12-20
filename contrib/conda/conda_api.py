@@ -5,7 +5,7 @@ import json
 from subprocess import Popen, PIPE
 from os.path import basename, isdir, join
 
-
+ROOT_PREFIX = None
 __version__ = '1.2.1'
 
 class CondaError(Exception):
@@ -38,12 +38,16 @@ def _call_conda(extra_args, abspath=True):
         p = Popen(cmd_list, stdout=PIPE, stderr=PIPE)
     except OSError:
         raise Exception("could not invoke %r\n" % args)
-    return p.communicate()
+    stddata = list(p.communicate())
+    returncode = p.wait()
+    stddata.append(returncode)
+    return stddata
 
 
 def _call_and_parse(extra_args, abspath=True):
-    stdout, stderr = _call_conda(extra_args, abspath=abspath)
-    if stderr.decode().strip():
+    (stdout, stderr, returncode) = _call_conda(extra_args, abspath=abspath)
+    print(stdout, stderr, returncode)
+    if stderr.decode().strip() and returncode != 0:
         raise Exception('conda %r:\nSTDERR:\n%s\nEND' % (extra_args,
                                                          stderr.decode()))
     return json.loads(stdout.decode())
@@ -93,7 +97,7 @@ def get_conda_version():
     return the version of conda being used (invoked) as a string
     """
     pat = re.compile(r'conda:?\s+(\d+\.\d\S+|unknown)')
-    stdout, stderr = _call_conda(['--version'])
+    stdout, stderr, returncode = _call_conda(['--version'])
     # argparse outputs version to stderr in Python < 3.4.
     # http://bugs.python.org/issue18920
     m = pat.match(stderr.decode().strip())
@@ -216,7 +220,7 @@ def create(name=None, prefix=None, pkgs=None):
         raise CondaEnvExistsError('Conda environment [%s] already exists' % ref)
 
     cmd_list.extend(pkgs)
-    (out, err) = _call_conda(cmd_list)
+    (out, err, returncode) = _call_conda(cmd_list)
     if err.decode().strip():
         raise CondaError('conda %s: %s' % (" ".join(cmd_list), err.decode()))
     return out
@@ -240,7 +244,7 @@ def install(name=None, prefix=None, pkgs=None):
         pass
 
     cmd_list.extend(pkgs)
-    (out, err) = _call_conda(cmd_list)
+    (out, err, returncode) = _call_conda(cmd_list)
     if err.decode().strip():
         raise CondaError('conda %s: %s' % (" ".join(cmd_list), err.decode()))
     return out

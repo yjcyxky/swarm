@@ -33,3 +33,12 @@ class CobwebNoChannel(CustomException):
 
 class CobwebExistChannel(CustomException):
     pass
+
+class CobwebNoSuchPackages(CustomException):
+    pass
+
+class CobwebPkgExistsError(CustomException):
+    pass
+
+class CobwebWrongSetting(CustomException):
+    pass

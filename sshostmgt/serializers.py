@@ -102,7 +102,7 @@ class IPMISerializer(serializers.ModelSerializer):
         """
         if data.get('first_add_time') and data.get('last_update_time'):
             if data.get('first_add_time') > data.get('last_update_time'):
-                raise serializer.ValidationError("last_update_time must occur after first_add_time.")
+                raise serializers.ValidationError("last_update_time must occur after first_add_time.")
         return data
 
     def validate_power_state(self, value):
@@ -159,10 +159,11 @@ class HostSerializer(serializers.HyperlinkedModelSerializer):
     host_uuid = serializers.UUIDField(format = 'hex_verbose')
     mgmt_ip_addr = serializers.IPAddressField()
     hostname = serializers.CharField(validators = [check_hostname], max_length = 64)
-    # tags = TagSerializer(many = True, read_only = True)
+    tags_uuid = TagSerializer(many = True, read_only = True)
     tags = serializers.PrimaryKeyRelatedField(many=True,
                                               queryset = Tag.objects.all(),
-                                              pk_field = serializers.UUIDField(format='hex_verbose'))
+                                              pk_field = serializers.UUIDField(format='hex_verbose'),
+                                              source = 'tags')
 
     class Meta:
         model = Host
@@ -177,6 +178,20 @@ class HostSerializer(serializers.HyperlinkedModelSerializer):
         tags = validated_data.pop('tags')
         host.tags.add(*tags)
         return host
+
+    def update(self, instance, validated_data):
+        instance.cluster_uuid = validated_data.get('cluster_uuid', instance.cluster_uuid)
+        instance.host_desc = validated_data.get('host_desc', instance.host_desc)
+        instance.hostname = validated_data.get('hostname', instance.hostname)
+        instance.mgmt_ip_addr = validated_data.get('mgmt_ip_addr', instance.mgmt_ip_addr)
+        instance.mgmt_mac = validated_data.get('mgmt_mac', instance.mgmt_mac)
+        instance.ipmi = validated_data.get('ipmi', instance.ipmi)
+        tags = validated_data.get('tags', None)
+        instance.save()
+        if tags:
+            instance.tags.clear()
+            instance.tags.add(*tags)
+        return instance
 
 class BIOSSerializer(serializers.ModelSerializer):
     pass

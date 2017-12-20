@@ -8,6 +8,40 @@ from django.core.validators import MaxValueValidator
 
 logger = logging.getLogger(__name__)
 
+class Setting(models.Model):
+    ENVS = (
+        ('production', 'PRODUCTION'),
+        ('PRODUCTION', 'PRODUCTION'),
+        ('TEST', 'TEST'),
+        ('test', 'TEST'),
+    )
+    PLATFORMS = (
+        ('Linux', 'Linux'),
+        ('linux', 'Linux'),
+        ('osx', 'OSX'),
+        ('OSX', 'OSX'),
+        ('win', 'WIN'),
+        ('WIN', 'WIN')
+    )
+    ARCHS = (
+        ('X86_64', 'X86_64'),
+        ('x86_64', 'x86_64'),
+        ('x86', 'X86'),
+        ('X86', 'X86')
+    )
+    name = models.CharField(max_length = 16, primary_key = True, choices = ENVS)
+    cobweb_root_prefix = models.CharField(max_length = 255, default = '/opt/local/cobweb')
+    cobweb_platform = models.CharField(max_length = 8, default = 'Linux', choices = PLATFORMS)
+    cobweb_arch = models.CharField(max_length = 8, default = 'X86_64', choices = ARCHS)
+    is_active = models.BooleanField(null = False, default = False)
+
+    class Meta:
+        ordering = ('name',)
+
+    def __str__(self):
+        return "%s" % (self.name)
+
+
 class Channel(models.Model):
     ARCHS = (
         ('x86_64', 'X86_64'),
@@ -43,12 +77,15 @@ class Channel(models.Model):
         ordering = ('is_active', 'is_alive', 'channel_name', 'updated_time')
 
 class Package(models.Model):
+    """
+    Package的管理是以Conda Environment的安装为对象，不考虑依赖安装，只考虑以create -n方式
+    独立安装的Package(类似于360软件管家)
+    """
     pkg_uuid = models.CharField(max_length = 128, primary_key = True)
     md5sum = models.CharField(max_length = 32, unique = True)
     build = models.CharField(max_length = 128, null = True)
     build_number = models.PositiveIntegerField(null = True)
     created_date = models.DateField(null = True)
-    installed_time = models.DateTimeField(null = True)
     license = models.CharField(max_length = 255, null = True)
     license_family = models.CharField(max_length = 255, null = True)
     name = models.CharField(max_length = 128)
@@ -73,6 +110,8 @@ class Package(models.Model):
     # Module File模板(描述Module Environment配置文件)
     module_templ = models.CharField(max_length = 255, null = True)
     is_installed = models.BooleanField(null = False, default = False)
+    env_name = models.CharField(max_length = 255, null = True)
+    installed_time = models.DateTimeField(null = True)
     first_channel = models.CharField(max_length = 128)
     channels = models.ManyToManyField(Channel)
 

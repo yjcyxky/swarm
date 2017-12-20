@@ -10,11 +10,22 @@ from errno import ENOENT
 from urllib.error import HTTPError
 from rest_framework import status
 from django.db.models import Q
-from sscobweb.exceptions import (CobwebNoChannel, CobwebExistChannel)
+from sscobweb.exceptions import (CobwebNoChannel, CobwebExistChannel,
+                                 CobwebPkgExistsError, CobwebNoSuchPackages,
+                                 CobwebWrongSetting)
 from sscobweb.models import Channel as ChannelModel
 from sscobweb.models import Package
+from sscobweb.models import Setting
 
 logger = logging.getLogger(__name__)
+
+def get_settings():
+    try:
+        settings = Setting.objects.filter(is_active = 1).order_by('is_active')
+        current_setting = settings[0]
+        return current_setting
+    except Setting.DoesNotExist:
+        raise CobwebWrongSetting('Cobweb Wrong Setting.')
 
 class Channel:
     def __init__(self, channel_name, channel_path, dest_dir):
@@ -144,7 +155,6 @@ class Channel:
         relations = []
         ChannelPackageRelation = Package.channels.through
         pkgs = Package.objects.filter(first_channel = channel_uuid)
-        print(pkgs)
         for pkg in pkgs:
             relations.append(ChannelPackageRelation(channel_id = channel_uuid,
                                                     package_id = pkg.pkg_uuid))
@@ -274,3 +284,101 @@ class Channel:
             if re.match(pattern, self._channel_path):
                 return key
         return 'local'
+
+
+class Conda:
+    def __init__(self, pkg_uuid, prefix = None,
+                 conda_api_path = 'contrib.conda'):
+        # TODO: 如何解决同一版本Package多个build的问题？
+        self._pkg_uuid = pkg_uuid
+        self.settings = get_settings()
+
+        try:
+            self._pkg = Package.objects.get(pkg_uuid = self._pkg_uuid)
+            self._env_name = '%s-%s' % (self._pkg.name, self._pkg.version)
+        except Package.DoesNotExist:
+            logger.error("No such Package %s." % self._pkg_uuid)
+            raise Package.DoesNotExist
+
+        try:
+            self.conda_api = self._load_loader(conda_api_path)
+        except ImportError:
+            logger.debug("No such Module: %s." % conda_api_path)
+
+        if self.conda_api.ROOT_PREFIX is None:
+            self._prefix = self.settings.cobweb_root_prefix
+            self.conda_api.set_root_prefix(prefix = self._prefix)
+
+    def _load_loader(self, name):
+        loader = __import__(name, fromlist=['conda_api'])
+        return loader.conda_api
+
+    def _get_channels(self):
+        # TODO: 增加过滤，.condarc文件只添加package相关的库与base库
+        # 所有自定义软件依赖的包均放置在base库中
+        arch = self.settings.cobweb_arch
+        platform = self.settings.cobweb_platform
+        filters = (Q(is_active__exact = 1),
+                   Q(is_alive__exact = 1),
+                   Q(arch__exact = arch),
+                   Q(platform__exact = platform))
+        channels = ChannelModel.objects.filter(*filters) \
+                                       .order_by('priority_level')
+        if channels:
+            valid_channels = self._pkg.channels
+            logger.debug('Cobweb@utils@_get_channels@valid_channels@%s', str(valid_channels))
+            return [channel.channel_path for channel in channels]
+        else:
+            return []
+
+    def _update_status(self, is_installed):
+        """
+        更新安装状态
+        """
+        logger.debug('Cobweb@utils@_update_status@is_installed@%s to %s' % (self._pkg.is_installed, is_installed))
+        self._pkg.is_installed = bool(is_installed)
+        if is_installed:
+            self._pkg.env_name = self._env_name
+            self._pkg.installed_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
+        else:
+            self._pkg.env_name = None
+            self._pkg.installed_time = None
+        self._pkg.save()
+
+    def get_env_name(self):
+        return self._env_name
+
+    def reset_channels(self):
+        try:
+            if self.conda_api.config_get('channels'):
+                warnings = self.conda_api.config_delete('channels')
+                logger.debug("Conda@reset_channels@warnings@%s" % str(warnings))
+
+            channels = self._get_channels()
+            for channel in channels:
+                self.conda_api.config_add('channels', channel)
+                logger.debug("Conda@reset_channels@channel@%s" % str(channel))
+        except self.conda_api.CondaError as e:
+            logger.debug("Conda@reset_channels@%s" % str(e))
+
+    def install(self):
+        """
+        所有的Package均以create -n env_name的形式安装，以尽可能的保证互不干扰，类似于Windows安装包
+        """
+        try:
+            pkg = '%s=%s' % (self._pkg.name, self._pkg.version)
+            out = self.conda_api.create(name = self._env_name, pkgs = (pkg,))
+            self._update_status(is_installed = True)
+            return self._pkg
+        except (TypeError, self.conda_api.CondaEnvExistsError) as err:
+            raise CobwebPkgExistsError('%s already exists' % self._env_name,
+                                       status_code = status.HTTP_400_BAD_REQUEST)
+
+    def remove(self):
+        try:
+            out = self.conda_api.remove_environment(name = self._env_name)
+            self._update_status(is_installed = False)
+            logger.debug("Conda@remove@env_name@%s" % self._env_name)
+            return self._pkg
+        except self.conda_api.CondaError as e:
+            raise CobwebNoSuchPackages("No Such Installed Packages.")

@@ -12,6 +12,7 @@ from sscobweb.permissions import IsOwnerOrAdmin
 from sscobweb.exceptions import CustomException
 from sscobweb.serializers import (ChannelSerializer, PackageSerializer)
 from sscobweb.utils import Channel as ChannelImporter
+from sscobweb.utils import Conda
 from django.db import connection
 
 logger = logging.getLogger(__name__)
@@ -139,8 +140,6 @@ class ChannelDetail(generics.GenericAPIView):
                                        partial = True)
         query_params = request.query_params
         if serializer.is_valid():
-            channel = serializer.update(channel, serializer.validated_data)
-            serializer = ChannelSerializer(channel, context = {'request': request})
             logger.debug(query_params.get('update_repodata'))
             if query_params.get('update_repodata', 'False').upper() == 'TRUE':
                 validated_data = serializer.data
@@ -150,6 +149,10 @@ class ChannelDetail(generics.GenericAPIView):
                 channel_importer = ChannelImporter(channel_name, channel_path, dest_dir)
                 channel_importer.fetch_repodata()
                 channel_importer.sync()
+
+            channel = serializer.update(channel, serializer.validated_data)
+            serializer = ChannelSerializer(channel, context = {'request': request})
+
             return Response({
                 "status": "Updated Success",
                 "status_code": status.HTTP_200_OK,
@@ -263,8 +266,20 @@ class PackageDetail(generics.GenericAPIView):
         serializer = PackageSerializer(package, data = request.data,
                                        context = {'request': request},
                                        partial = True)
+        query_params = request.query_params
         if serializer.is_valid():
-            package = serializer.update(package, serializer.validated_data)
+            if query_params.get('install_pkg', 'False').upper() == 'TRUE':
+                pkg_uuid = package.pkg_uuid
+                conda = Conda(pkg_uuid = pkg_uuid)
+                conda.reset_channels()
+                package = conda.install()
+            elif query_params.get('remove_pkg', 'False').upper() == 'TRUE':
+                pkg_uuid = package.pkg_uuid
+                conda = Conda(pkg_uuid = pkg_uuid)
+                package = conda.remove()
+            else:
+                package = serializer.update(package, serializer.validated_data)
+
             serializer = PackageSerializer(package, context = {'request': request})
             return Response({
                 "status": "Updated Success",
