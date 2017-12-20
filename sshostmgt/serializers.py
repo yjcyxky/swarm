@@ -170,11 +170,10 @@ class HostSerializer(serializers.HyperlinkedModelSerializer):
         lookup_field = 'host_uuid'
 
     def create(self, validated_data):
-        print(dir(validated_data))
-        print(validated_data)
         ipmi = validated_data.pop('ipmi')
         host = Host.objects.create(ipmi = ipmi, **validated_data)
         host.save()
+        # 必须先保存才可添加
         tags = validated_data.pop('tags')
         host.tags.add(*tags)
         return host

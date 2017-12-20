@@ -49,7 +49,9 @@ INSTALLED_APPS = [
     'ssfalcon.apps.SsfalconConfig',
     'ssnagios.apps.SsnagiosConfig',
     'sscluster.apps.SsclusterConfig',
+    'sscobweb.apps.SscobwebConfig',
     'opsweb',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -61,6 +63,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'opsweb.urls'
@@ -227,6 +230,16 @@ LOGGING = {
             'propagate': True,
         },
         'ssfalcon': {
+            'handlers': ['file', 'stream'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'sscluster': {
+            'handlers': ['file', 'stream'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'sscobweb': {
             'handlers': ['file', 'stream'],
             'level': 'DEBUG',
             'propagate': True,

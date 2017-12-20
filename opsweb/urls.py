@@ -53,7 +53,15 @@ urlpatterns = [
         url(r'^sshostmgt/', include('sshostmgt.urls')),
         url(r'^ssfalcon/', include('ssfalcon.urls')),
         url(r'^sscluster/', include('sscluster.urls')),
+        url(r'^sscobweb/', include('sscobweb.urls')),
         url(r'^.*/$', views.custom404)
     ])),
     url(r'^.*/$', views.custom404)
 ]
+
+import settings
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
