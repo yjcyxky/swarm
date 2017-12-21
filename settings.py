@@ -19,16 +19,21 @@ import datetime
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 
-# print sys.path
+from bin.configuration import conf as settings
+from bin import configuration as conf
+
+RUNMODE = settings.get('core', 'run_mode').strip("'\"")
+SCOUTS_LOG = os.path.join(os.path.expanduser(conf.SCOUTS_LOG), "scouts-webserver-{}.log".format(RUNMODE.lower()))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'f^vpavbiaroy(-8@#65$-0j!xa@e+6rgclyg!9&enlup$t+j_1'
+# SECRET_KEY = 'f^vpavbiaroy(-8@#65$-0j!xa@e+6rgclyg!9&enlup$t+j_1'
+SECRET_KEY = settings.get('webserver', 'secret_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True if settings.get('core', 'run_mode').upper() == 'DEBUG' else False
 
 ALLOWED_HOSTS = ['*']
 
@@ -123,21 +128,25 @@ JWT_AUTH = {
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
-# 使用MongoDB存储以下信息：
-# 1. 语言字典转化表
-# 2. cobbler主机信息+动态主机信息，当cobbler更新时触发数据库更新；
-#    其它子系统依赖于数据库中主机信息，而不直接从cobbler获取；以避免cobbler无法与主机信息同步
-DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': os.path.join(BASE_DIR, 'db.sqlite3')
-    # }
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'scouts',
-        'USER': 'root',
-        'PASSWORD': 'yjc040653'
+
+scouts_db_engine = settings.get('core', 'scouts_db_engine')
+if scouts_db_engine == 'django.db.backends.sqlite3':
+    DATABASES_CONFIG = {
+        'ENGINE': settings.get('core', 'scouts_db_engine'),
+        'NAME': settings.get('core', 'scouts_db_name'),
     }
+else:
+    DATABASES_CONFIG = {
+        'ENGINE': settings.get('core', 'scouts_db_engine'),
+        'NAME': settings.get('core', 'scouts_db_name'),
+        'USER': settings.get('core', 'scouts_db_user'),
+        'PASSWORD': settings.get('core', 'scouts_db_password'),
+        'HOST': settings.get('core', 'scouts_db_host'),   # Or an IP Address that your DB is hosted on
+        'PORT': settings.get('core', 'scouts_db_port'),
+    }
+
+DATABASES = {
+    'default': DATABASES_CONFIG
 }
 
 # Password validation
@@ -202,13 +211,13 @@ LOGGING = {
     },
     'handlers': {
         'file': {
-            'level': 'DEBUG',
+            'level': RUNMODE.upper(),
             'class': 'logging.FileHandler',
-            'filename': 'debug.log',
+            'filename': '%s' % SCOUTS_LOG,
             'formatter': 'verbose'
         },
         'stream': {
-            'level': 'DEBUG',
+            'level': RUNMODE.upper(),
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         }
@@ -216,32 +225,32 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['file', 'stream'],
-            'level': 'DEBUG',
+            'level': RUNMODE.upper(),
             'propagate': True,
         },
         'sshostmgt': {
             'handlers': ['file', 'stream'],
-            'level': 'DEBUG',
+            'level': RUNMODE.upper(),
             'propagate': True,
         },
         'opsweb': {
             'handlers': ['file', 'stream'],
-            'level': 'DEBUG',
+            'level': RUNMODE.upper(),
             'propagate': True,
         },
         'ssfalcon': {
             'handlers': ['file', 'stream'],
-            'level': 'DEBUG',
+            'level': RUNMODE.upper(),
             'propagate': True,
         },
         'sscluster': {
             'handlers': ['file', 'stream'],
-            'level': 'DEBUG',
+            'level': RUNMODE.upper(),
             'propagate': True,
         },
         'sscobweb': {
             'handlers': ['file', 'stream'],
-            'level': 'DEBUG',
+            'level': RUNMODE.upper(),
             'propagate': True,
         }
     },

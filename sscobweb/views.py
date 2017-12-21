@@ -87,8 +87,7 @@ class ChannelList(generics.GenericAPIView):
             validated_data = serializer.validated_data
             channel_name = validated_data.get('channel_name')
             channel_path = validated_data.get('channel_path')
-            dest_dir = '/Users/FK/Downloads/Test'
-            channel_importer = ChannelImporter(channel_name, channel_path, dest_dir)
+            channel_importer = ChannelImporter(channel_name, channel_path)
             channel_importer.fetch_repodata()
             channel_importer.sync()
             # channel = serializer.create(serializer.validated_data)
@@ -145,8 +144,7 @@ class ChannelDetail(generics.GenericAPIView):
                 validated_data = serializer.data
                 channel_name = validated_data.get('channel_name')
                 channel_path = validated_data.get('channel_path')
-                dest_dir = '/Users/FK/Downloads/Test'
-                channel_importer = ChannelImporter(channel_name, channel_path, dest_dir)
+                channel_importer = ChannelImporter(channel_name, channel_path)
                 channel_importer.fetch_repodata()
                 channel_importer.sync()
 

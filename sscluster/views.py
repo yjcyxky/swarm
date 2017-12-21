@@ -280,7 +280,7 @@ class JobLogCount(generics.GenericAPIView):
                 'day': connection.ops.date_trunc_sql('day', 'start')
             },
         }
-        print('JobLogCount@get_count@selected_values@', selected_values.get(select_by), select_by)
+        logger.debug('JobLogCount@get_count@selected_values@', selected_values.get(select_by), select_by)
         try:
             if filters:
                 return self.queryset.extra(select=selections.get(select_by))\
@@ -289,11 +289,16 @@ class JobLogCount(generics.GenericAPIView):
                                     .annotate(records_count = Count('joblog'),
                                               used_cput = Sum('joblog__resources_used_cput'),
                                               used_mem = Sum('joblog__resources_used_mem'),
-                                              used_vmem = Sum('joblog__resources_used_vmem'))
+                                              used_vmem = Sum('joblog__resources_used_vmem'))\
+                                    .order_by('joblog__owner')
             else:
                 return self.queryset.extra(select=selections.get(select_by))\
                                     .values(*selected_values.get(select_by))\
-                                    .annotate(records_count = Count('joblog'))
+                                    .annotate(records_count = Count('joblog'),
+                                              used_cput = Sum('joblog__resources_used_cput'),
+                                              used_mem = Sum('joblog__resources_used_mem'),
+                                              used_vmem = Sum('joblog__resources_used_vmem'))\
+                                    .order_by('joblog__owner')
         except User.DoesNotExist:
             raise CustomException("Not Found the JobLog.", status_code = status.HTTP_200_OK)
 
@@ -310,7 +315,7 @@ class JobLogCount(generics.GenericAPIView):
         except ValueError:
             raise CustomException("Bad Request.", status_code = status.HTTP_400_BAD_REQUEST)
 
-        print(query_params, select_by, group_by)
+        logger.debug("sscluster@JobLogCount@%s-%s-%s" % (query_params, select_by, group_by))
         filters = {
             'joblog__start__gt': query_params.get('start', '2012-12-12 08:00:00'),
             'joblog__end__lt': query_params.get('end', '2100-12-12 08:00:00'),

@@ -33,6 +33,7 @@ class Setting(models.Model):
     cobweb_root_prefix = models.CharField(max_length = 255, default = '/opt/local/cobweb')
     cobweb_platform = models.CharField(max_length = 8, default = 'Linux', choices = PLATFORMS)
     cobweb_arch = models.CharField(max_length = 8, default = 'X86_64', choices = ARCHS)
+    cobweb_home = models.CharField(max_length = 255, default = '.')
     is_active = models.BooleanField(null = False, default = False)
 
     class Meta:

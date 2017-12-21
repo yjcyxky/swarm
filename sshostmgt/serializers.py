@@ -159,15 +159,15 @@ class HostSerializer(serializers.HyperlinkedModelSerializer):
     host_uuid = serializers.UUIDField(format = 'hex_verbose')
     mgmt_ip_addr = serializers.IPAddressField()
     hostname = serializers.CharField(validators = [check_hostname], max_length = 64)
-    tags_uuid = TagSerializer(many = True, read_only = True)
-    tags = serializers.PrimaryKeyRelatedField(many=True,
+    tags = TagSerializer(many = True, read_only = True)
+    tags_uuid = serializers.PrimaryKeyRelatedField(many=True,
                                               queryset = Tag.objects.all(),
                                               pk_field = serializers.UUIDField(format='hex_verbose'),
                                               source = 'tags')
 
     class Meta:
         model = Host
-        fields = ('host_uuid', 'host_desc', 'mgmt_ip_addr', 'hostname', 'ipmi', 'tags')
+        fields = ('host_uuid', 'host_desc', 'mgmt_ip_addr', 'hostname', 'ipmi', 'tags', 'tags_uuid')
         lookup_field = 'host_uuid'
 
     def create(self, validated_data):

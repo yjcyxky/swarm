@@ -28,9 +28,13 @@ def get_settings():
         raise CobwebWrongSetting('Cobweb Wrong Setting.')
 
 class Channel:
-    def __init__(self, channel_name, channel_path, dest_dir):
+    def __init__(self, channel_name, channel_path, dest_dir = None):
+        self.settings = get_settings()
         self._channel_name = channel_name
-        self._dest_dir = dest_dir
+        if dest_dir:
+            self._dest_dir = dest_dir
+        else:
+            self._dest_dir = self.settings.cobweb_home
         self._new_pkgs = None
         self._existed_pkgs = None
         self._created_time = None
