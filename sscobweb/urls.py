@@ -27,7 +27,13 @@ urlpatterns = [
     url(r'^packages$',
         views.PackageList.as_view(),
         name = 'package-list'),
-    url(r'^packages/(?P<pk>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
+    url(r'^packages/(?P<pkg_uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
         views.PackageDetail.as_view(),
-        name = 'package-detail')
+        name = 'package-detail'),
+    url(r'^settings$',
+        views.SettingList.as_view(),
+        name = 'setting-list'),
+    url(r'^settings/(?P<setting_uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
+        views.SettingDetail.as_view(),
+        name = 'setting-detail'),
 ]

@@ -17,7 +17,7 @@ def check_name(name, msg = 'Not a valid name.'):
         raise serializers.ValidationError(msg)
 
 def check_job_name(job_name):
-    check_name(hostname, 'Not a valid job name.')
+    check_name(job_name, 'Not a valid job name.')
 
 def check_cluster_name(cluster_name):
     check_name(cluster_name, 'Not a valid cluster name.')

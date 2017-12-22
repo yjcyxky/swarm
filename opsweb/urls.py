@@ -54,6 +54,7 @@ urlpatterns = [
         url(r'^ssfalcon/', include('ssfalcon.urls')),
         url(r'^sscluster/', include('sscluster.urls')),
         url(r'^sscobweb/', include('sscobweb.urls')),
+        url(r'^ssadvisor/', include('ssadvisor.urls')),
         url(r'^.*/$', views.custom404)
     ])),
     url(r'^.*/$', views.custom404)
@@ -61,7 +62,8 @@ urlpatterns = [
 
 import settings
 if settings.DEBUG:
+    from django.conf.urls.static import static
     import debug_toolbar
     urlpatterns = [
         url(r'^__debug__/', include(debug_toolbar.urls)),
-    ] + urlpatterns
+    ] + urlpatterns + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

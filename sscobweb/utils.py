@@ -10,6 +10,7 @@ from errno import ENOENT
 from urllib.error import HTTPError
 from rest_framework import status
 from django.db.models import Q
+from django.db import transaction
 from sscobweb.exceptions import (CobwebNoChannel, CobwebExistChannel,
                                  CobwebPkgExistsError, CobwebNoSuchPackages,
                                  CobwebWrongSetting)
@@ -105,6 +106,7 @@ class Channel:
         # logger.debug("sscobweb@utils@Channel@fetch_repodata@new_pkgs@%s" % str(self._new_pkgs))
         # logger.debug("sscobweb@utils@Channel@fetch_repodata@repodata@%s" % str(self._repodata))
 
+    @transaction.atomic
     def sync(self):
         if not self._new_pkgs:
             self.fetch_repodata()

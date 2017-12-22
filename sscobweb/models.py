@@ -9,12 +9,6 @@ from django.core.validators import MaxValueValidator
 logger = logging.getLogger(__name__)
 
 class Setting(models.Model):
-    ENVS = (
-        ('production', 'PRODUCTION'),
-        ('PRODUCTION', 'PRODUCTION'),
-        ('TEST', 'TEST'),
-        ('test', 'TEST'),
-    )
     PLATFORMS = (
         ('Linux', 'Linux'),
         ('linux', 'Linux'),
@@ -29,10 +23,14 @@ class Setting(models.Model):
         ('x86', 'X86'),
         ('X86', 'X86')
     )
-    name = models.CharField(max_length = 16, primary_key = True, choices = ENVS)
+    setting_uuid = models.CharField(max_length = 36, primary_key = True)
+    name = models.CharField(max_length = 16)
+    summary = models.TextField(null = True)
+    # For conda ROOT_PREFIX
     cobweb_root_prefix = models.CharField(max_length = 255, default = '/opt/local/cobweb')
     cobweb_platform = models.CharField(max_length = 8, default = 'Linux', choices = PLATFORMS)
     cobweb_arch = models.CharField(max_length = 8, default = 'X86_64', choices = ARCHS)
+    # For saving repodata.json and total_pkgs.json
     cobweb_home = models.CharField(max_length = 255, default = '.')
     is_active = models.BooleanField(null = False, default = False)
 
@@ -56,7 +54,7 @@ class Channel(models.Model):
         ('osx', 'OSX'),
         ('OSX', 'OSX'),
     )
-    channel_uuid = models.CharField(max_length = 128, primary_key = True)
+    channel_uuid = models.CharField(max_length = 36, primary_key = True)
     channel_name = models.CharField(max_length = 32, unique = True, db_index = True)
     arch = models.CharField(max_length = 16, choices = ARCHS)
     platform = models.CharField(max_length = 8, choices = PLATFORMS)
@@ -82,7 +80,7 @@ class Package(models.Model):
     Package的管理是以Conda Environment的安装为对象，不考虑依赖安装，只考虑以create -n方式
     独立安装的Package(类似于360软件管家)
     """
-    pkg_uuid = models.CharField(max_length = 128, primary_key = True)
+    pkg_uuid = models.CharField(max_length = 36, primary_key = True)
     md5sum = models.CharField(max_length = 32, unique = True)
     build = models.CharField(max_length = 128, null = True)
     build_number = models.PositiveIntegerField(null = True)

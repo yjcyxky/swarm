@@ -19,12 +19,12 @@ class IPMI(models.Model):
         ('UNKNOWN', 'UNKNOWN'),
         ('CHANGED', 'CHANGED')
     )
-    ipmi_uuid = models.CharField(max_length = 128, primary_key = True)
+    ipmi_uuid = models.CharField(max_length = 36, primary_key = True)
     ipmi_mac = models.CharField(max_length = 17, unique = True)
     ipmi_addr = models.CharField(max_length = 15, unique = True)
     ipmi_username = models.CharField(max_length = 32, default = 'root')
     ipmi_passwd = models.CharField(max_length = 32, default = 'calvin')
-    ipmi_desc = models.CharField(max_length = 256, null = True)
+    ipmi_desc = models.CharField(max_length = 255, null = True)
     power_state = models.CharField(max_length = 10, choices = POWER_STATE, default = 'POWER_OFF')
     last_update_time = models.DateTimeField()
     first_add_time = models.DateTimeField()
@@ -36,19 +36,19 @@ class IPMI(models.Model):
         ordering = ('ipmi_addr',)
 
 class BIOS(models.Model):
-    bios_uuid = models.CharField(max_length = 128, primary_key = True)
+    bios_uuid = models.CharField(max_length = 36, primary_key = True)
 
 class RAID(models.Model):
-    raid_uuid = models.CharField(max_length = 128, primary_key = True)
+    raid_uuid = models.CharField(max_length = 36, primary_key = True)
 
 class System(models.Model):
-    system_uuid = models.CharField(max_length = 128, primary_key = True)
+    system_uuid = models.CharField(max_length = 36, primary_key = True)
 
 class Tag(models.Model):
-    tag_uuid = models.CharField(max_length = 128, primary_key = True)
+    tag_uuid = models.CharField(max_length = 36, primary_key = True)
     tag_name_alias = models.CharField(max_length = 32, null = True)
     tag_name = models.CharField(max_length = 32, unique = True)
-    tag_desc = models.CharField(max_length = 256, null = True)
+    tag_desc = models.CharField(max_length = 255, null = True)
     # label by choosed color
     label_color = models.CharField(max_length = 32, default = '#23d7bc')
     common_used = models.BooleanField()
@@ -60,9 +60,9 @@ class Tag(models.Model):
         ordering = ('tag_name',)
 
 class Host(models.Model):
-    host_uuid = models.CharField(max_length = 128, primary_key = True)
+    host_uuid = models.CharField(max_length = 36, primary_key = True)
     hostname = models.CharField(max_length = 64, unique = True)
-    host_desc = models.CharField(max_length = 256, null = True)
+    host_desc = models.CharField(max_length = 255, null = True)
     mgmt_ip_addr = models.CharField(max_length = 16, unique = True)
     mgmt_mac = models.CharField(max_length = 17, unique = True)
     ipmi = models.OneToOneField(IPMI, on_delete = models.CASCADE)
@@ -78,27 +78,27 @@ class Host(models.Model):
         ordering = ('hostname',)
 
 class CPU(models.Model):
-    cpu_uuid = models.CharField(max_length = 128, primary_key = True)
+    cpu_uuid = models.CharField(max_length = 36, primary_key = True)
     host = models.ForeignKey(Host, on_delete = models.CASCADE)
 
 class Network(models.Model):
-    network_uuid = models.CharField(max_length = 128, primary_key = True)
+    network_uuid = models.CharField(max_length = 36, primary_key = True)
     host = models.ForeignKey(Host, on_delete = models.CASCADE)
     network_name = models.CharField(max_length = 128, unique = True)
     mac_addr =  models.CharField(max_length = 17, unique = True)
     ip_addr = models.CharField(max_length = 16, unique = True)
 
 class Storage(models.Model):
-    storage_uuid = models.CharField(max_length = 128, primary_key = True)
+    storage_uuid = models.CharField(max_length = 36, primary_key = True)
     host = models.ForeignKey(Host, on_delete = models.CASCADE)
     storage_name = models.CharField(max_length = 128, unique = True)
     storage_path = models.CharField(max_length = 255, unique = True)
-    storage_desc = models.CharField(max_length = 256, null = True)
+    storage_desc = models.CharField(max_length = 255, null = True)
     total_size = models.PositiveIntegerField()
     remaining_size = models.PositiveIntegerField()
     username = models.CharField(max_length = 16)
     groupname = models.CharField(max_length = 16)
 
 class Memory(models.Model):
-    memory_uuid = models.CharField(max_length = 128, primary_key = True)
+    memory_uuid = models.CharField(max_length = 36, primary_key = True)
     host = models.ForeignKey(Host, on_delete = models.CASCADE)

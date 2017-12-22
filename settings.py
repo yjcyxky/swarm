@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'ssnagios.apps.SsnagiosConfig',
     'sscluster.apps.SsclusterConfig',
     'sscobweb.apps.SscobwebConfig',
+    'ssadvisor.apps.SsadvisorConfig',
     'opsweb',
     'debug_toolbar',
 ]
@@ -198,6 +199,18 @@ SESSION_FILE_PATH = '/var/lib/cobbler_sessions'
 # )
 CORS_ORIGIN_ALLOW_ALL = True
 
+def get_loggers(level):
+    loggers = {}
+    for logger in ('django', 'sscluster', 'sshostmgt', 'ssadvisor', 'sscobweb'):
+        loggers.update({
+            logger: {
+                'handlers': ['file', 'stream'],
+                'level': level,
+                'propagate': True,
+            }
+        })
+    return loggers
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -222,36 +235,5 @@ LOGGING = {
             'formatter': 'verbose'
         }
     },
-    'loggers': {
-        'django': {
-            'handlers': ['file', 'stream'],
-            'level': RUNMODE.upper(),
-            'propagate': True,
-        },
-        'sshostmgt': {
-            'handlers': ['file', 'stream'],
-            'level': RUNMODE.upper(),
-            'propagate': True,
-        },
-        'opsweb': {
-            'handlers': ['file', 'stream'],
-            'level': RUNMODE.upper(),
-            'propagate': True,
-        },
-        'ssfalcon': {
-            'handlers': ['file', 'stream'],
-            'level': RUNMODE.upper(),
-            'propagate': True,
-        },
-        'sscluster': {
-            'handlers': ['file', 'stream'],
-            'level': RUNMODE.upper(),
-            'propagate': True,
-        },
-        'sscobweb': {
-            'handlers': ['file', 'stream'],
-            'level': RUNMODE.upper(),
-            'propagate': True,
-        }
-    },
+    'loggers': get_loggers(RUNMODE.upper()),
 }

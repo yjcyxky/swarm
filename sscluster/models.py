@@ -23,7 +23,7 @@ class ToDoList(models.Model):
         ordering = ('checked_status', 'created_time', 'user')
 
 class Cluster(models.Model):
-    cluster_uuid = models.CharField(max_length = 128, primary_key = True)
+    cluster_uuid = models.CharField(max_length = 36, primary_key = True)
     cluster_name = models.CharField(max_length = 32)
     total_nodes = models.PositiveIntegerField()
     server_status = models.CharField(max_length = 10)
@@ -38,7 +38,7 @@ class Cluster(models.Model):
         ordering = ('cluster_name',)
 
 class JobLog(models.Model):
-    job_uuid = models.CharField(max_length = 128, primary_key = True)
+    job_uuid = models.CharField(max_length = 36, primary_key = True)
     jobid = models.CharField(max_length = 32, unique = True)
     jobname = models.CharField(max_length = 128)
     user = models.ForeignKey(User)

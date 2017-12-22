@@ -6,7 +6,8 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework.validators import UniqueValidator
 from django.core.validators import RegexValidator
-from sscobweb.models import (Channel, Package)
+from sscobweb.models import (Channel, Package, Setting)
+from django.db import transaction
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +22,37 @@ def check_channel_path(channel_path):
             return True
         else:
             return False
+
+class SettingSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Setting
+        fields = ('setting_uuid', 'name', 'summary', 'cobweb_root_prefix',
+                  'cobweb_platform', 'cobweb_arch', 'cobweb_home', 'is_active')
+        lookup_field = 'setting_uuid'
+
+    def create(self, validated_data):
+        setting = Setting.objects.create(**validated_data)
+        setting.save()
+        return setting
+
+    def change_is_active(self, raw_is_active, is_active):
+        if raw_is_active is True and is_active is False:
+            raise CustomException('Valid Constraint: Must Be Sure that Only One Setting is Valid.')
+        else:
+            Setting.objects.all().update(is_active = False)
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        self.change_is_active(instance.is_active, validated_data.get('is_active'))
+        instance.is_active = validated_data.get('is_active', instance.is_active)
+        instance.summary = validated_data.get('summary', instance.summary)
+        instance.cobweb_root_prefix = validated_data.get('cobweb_root_prefix', instance.cobweb_root_prefix)
+        instance.cobweb_platform = validated_data.get('cobweb_platform', instance.cobweb_platform)
+        instance.cobweb_arch = validated_data.get('cobweb_arch', instance.cobweb_arch)
+        instance.cobweb_home = validated_data.get('cobweb_home', instance.cobweb_home)
+        instance.save()
+        return instance
 
 
 class ChannelSerializer(serializers.HyperlinkedModelSerializer):
@@ -85,6 +117,7 @@ class PackageSerializer(serializers.HyperlinkedModelSerializer):
                   'depends', 'first_channel', 'env_name', 'channels', 'channels_uuid')
         lookup_field = 'pkg_uuid'
 
+    @transaction.atomic
     def create(self, validated_data):
         package = Package.objects.create(**validated_data)
         package.save()
@@ -92,6 +125,7 @@ class PackageSerializer(serializers.HyperlinkedModelSerializer):
         package.channels.add(*channels)
         return package
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         instance.is_installed = validated_data.get('is_installed', instance.is_installed)
         channels = validated_data.get('channels', None)
