@@ -16,7 +16,7 @@ import logging
 import datetime
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 
 from bin.configuration import conf as settings
@@ -237,3 +237,10 @@ LOGGING = {
     },
     'loggers': get_loggers(RUNMODE.upper()),
 }
+
+
+# Celery Configuration
+CELERY_BROKER_URL = conf.get('celery', 'broker_url')
+CELERY_ACCEPT_CONTENT = [conf.get('celery', 'accept_content')]
+CELERY_RESULT_BACKEND = conf.get('celery', 'result_backend')
+CELERY_TASK_SERIALIZER = conf.get('celery', 'task_serializer')

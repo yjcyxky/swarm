@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-import logging, copy
+import logging
+import copy
+import uuid
+import os
 from datetime import datetime
 from django.db import models
 from django.apps import apps
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator
-import uuid
-import os
+from sscobweb.models import Package
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +23,8 @@ class Setting(models.Model):
     advisor_home = models.CharField(max_length = 255)
     is_active = models.BooleanField(null = False, default = False)
     bash_templ = models.FileField(max_length = 32, upload_to = get_templ_path)
+    max_task_num = models.PositiveSmallIntegerField(default = 10,
+                                                    validators=[MaxValueValidator(100),])
 
     class Meta:
         ordering = ('name',)
@@ -79,11 +83,12 @@ class Task(models.Model):
                                                            validators=[MaxValueValidator(100),])
     status_code = models.IntegerField()
     msg = models.TextField(null = True)
+    args = models.TextField(null = True)
     config_path = models.CharField(max_length = 255, unique = True)
     output_path = models.CharField(max_length = 255, unique = True)
     log_path = models.CharField(max_length = 255, unique = True)
     files = models.ManyToManyField(File)
-    package_uuid = models.CharField(max_length = 128)
+    package = models.ForeignKey(Package, on_delete = models.CASCADE) # One patient vs. Several tasks
     owners = models.ManyToManyField(
         User,
         through = 'UserTask',
@@ -96,6 +101,20 @@ class Task(models.Model):
 
     class Meta:
         ordering = ('created_time', 'task_name')
+
+
+class TaskPool(models.Model):
+    """
+    保持与SGE队列一致，用于循环查询更新任务状态
+    TaskPool最大行数即任务数由Settings.max_task_num指定，默认为10
+    """
+    task_pool_uuid = models.CharField(max_length = 36, primary_key = True)
+    task = models.OneToOneField(Task, on_delete = models.CASCADE)
+    # Drmaa Job ID
+    job_id = models.CharField(max_length = 32, unique = True)
+
+    class Meta:
+        ordering = ('job_id', )
 
 
 class Report(models.Model):

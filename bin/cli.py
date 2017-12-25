@@ -26,6 +26,8 @@ from configuration import conf as settings
 from version import (get_version, get_company_name)
 from exceptions import ScoutsException
 
+def sigint_handler(sig, frame):
+    sys.exit(0)
 
 def initdb(args):
     print("Initialize database...")
@@ -91,6 +93,37 @@ def flower(args):
         signal.signal(signal.SIGTERM, sigint_handler)
 
         os.execvp("flower", ['flower', '-b', broka, address, port, api, flower_conf])
+
+def celery(args):
+    BASE_DIR = conf.BASE_DIR
+    env = {}
+    env.update({
+        'PYTHONPATH': BASE_DIR,
+        'PATH': os.environ.get('PATH'),
+    })
+
+    if args.daemon:
+        pid, stdout, stderr, log_file = setup_locations("celery", args.pid, args.stdout, args.stderr, args.log_file)
+        stdout = open(stdout, 'w+')
+        stderr = open(stderr, 'w+')
+
+        ctx = daemon.DaemonContext(
+            pidfile=TimeoutPIDLockFile(pid, -1),
+            stdout=stdout,
+            stderr=stderr,
+        )
+
+        with ctx:
+            os.execvpe("celery", ['celery', '-A', args.module_name, 'worker',
+                                  '--loglevel=info'], env)
+
+        stdout.close()
+        stderr.close()
+    else:
+        signal.signal(signal.SIGINT, sigint_handler)
+        signal.signal(signal.SIGTERM, sigint_handler)
+
+        os.execvpe("celery", ['celery', '-A', args.module_name, 'worker', '--loglevel=info'], env)
 
 def setup_locations(process, pid=None, stdout=None, stderr=None, log=None):
     if not stderr:
@@ -387,7 +420,9 @@ class CLIFactory(object):
         'task_params': Arg(
             ("-tp", "--task_params"),
             help="Sends a JSON params dict to the task"),
-        # DB
+        'module_name': Arg(
+            ("-m", "--module_name"),
+            help="The name of the current module for Celery."),
     }
     subparsers = (
         {
@@ -409,6 +444,10 @@ class CLIFactory(object):
             'help': "Start a Celery Flower",
             'args': ('flower_hostname', 'flower_port', 'flower_conf', 'broker_api',
                      'pid', 'daemon', 'stdout', 'stderr', 'log_file'),
+        }, {
+            'func': celery,
+            'help': "Start a Celery Worker",
+            'args': ('module_name', 'pid', 'daemon', 'stdout', 'stderr', 'log_file'),
         }, {
             'func': version,
             'help': "Show the version",

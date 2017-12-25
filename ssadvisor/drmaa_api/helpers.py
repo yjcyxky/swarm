@@ -31,9 +31,9 @@ from collections import namedtuple
 from ctypes import (byref, c_uint, create_string_buffer, POINTER, pointer,
                     sizeof)
 
-from drmaa.const import ATTR_BUFFER, ENCODING, NO_MORE_ELEMENTS
-from drmaa.errors import error_buffer
-from drmaa.wrappers import (drmaa_attr_names_t, drmaa_attr_values_t,
+from .const import ATTR_BUFFER, ENCODING, NO_MORE_ELEMENTS
+from .errors import error_buffer
+from .wrappers import (drmaa_attr_names_t, drmaa_attr_values_t,
                             drmaa_get_attribute, drmaa_get_attribute_names,
                             drmaa_get_next_attr_name,
                             drmaa_get_next_attr_value,

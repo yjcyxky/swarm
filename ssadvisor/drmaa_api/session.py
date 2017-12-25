@@ -26,7 +26,7 @@ import sys
 from collections import namedtuple
 from ctypes import byref, c_int, create_string_buffer, pointer, POINTER, sizeof
 
-from drmaa.const import (BLOCK_EMAIL, DEADLINE_TIME, DURATION_HLIMIT,
+from .const import (BLOCK_EMAIL, DEADLINE_TIME, DURATION_HLIMIT,
                          DURATION_SLIMIT, ENCODING, ERROR_PATH, INPUT_PATH,
                          JOB_CATEGORY, JOB_IDS_SESSION_ALL, JOB_IDS_SESSION_ANY,
                          JOB_NAME, JobState, JobControlAction,
@@ -36,12 +36,12 @@ from drmaa.const import (BLOCK_EMAIL, DEADLINE_TIME, DURATION_HLIMIT,
                          string_to_control_action, TIMEOUT_NO_WAIT,
                          TIMEOUT_WAIT_FOREVER, TRANSFER_FILES, V_ARGV, V_EMAIL,
                          V_ENV, WCT_HLIMIT, WCT_SLIMIT, WD)
-from drmaa.helpers import (adapt_rusage, Attribute, attribute_names_iterator,
+from .helpers import (adapt_rusage, Attribute, attribute_names_iterator,
                            BoolConverter, c, DictAttribute, IntConverter,
                            run_bulk_job, SessionStringAttribute,
                            SessionVersionAttribute, string_vector,
                            VectorAttribute, Version)
-from drmaa.wrappers import (drmaa_allocate_job_template, drmaa_attr_values_t,
+from .wrappers import (drmaa_allocate_job_template, drmaa_attr_values_t,
                             drmaa_control, drmaa_delete_job_template,
                             drmaa_get_contact, drmaa_get_DRM_system,
                             drmaa_get_DRMAA_implementation, drmaa_job_ps,

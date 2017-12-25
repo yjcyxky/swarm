@@ -294,7 +294,7 @@ class Channel:
 
 class Conda:
     def __init__(self, pkg_uuid, prefix = None,
-                 conda_api_path = 'contrib.conda'):
+                 conda_api_path = 'sscobweb.conda_api'):
         # TODO: 如何解决同一版本Package多个build的问题？
         self._pkg_uuid = pkg_uuid
         self.settings = get_settings()

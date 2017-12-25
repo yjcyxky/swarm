@@ -1,3 +1,6 @@
+amqp==2.2.2
+billiard==3.5.0.3
+celery==4.1.0
 certifi==2017.11.5
 chardet==3.0.4
 confusable-homoglyphs==2.0.2
@@ -17,6 +20,7 @@ gunicorn==19.7.1
 idna==2.6
 itypes==1.1.0
 Jinja2==2.10
+kombu==4.1.0
 lockfile==0.12.2
 lxml==4.1.1
 Markdown==2.6.9
@@ -27,9 +31,11 @@ psutil==5.4.2
 PyJWT==1.5.3
 python-daemon==2.1.2
 pytz==2017.3
+redis==2.10.6
 requests==2.18.4
 setproctitle==1.1.10
 simplejson==3.13.2
 sqlparse==0.2.4
 uritemplate==3.0.0
 urllib3==1.22
+vine==1.1.4

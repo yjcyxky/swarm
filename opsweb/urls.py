@@ -60,7 +60,7 @@ urlpatterns = [
     url(r'^.*/$', views.custom404)
 ]
 
-import settings
+from opsweb import settings
 if settings.DEBUG:
     from django.conf.urls.static import static
     import debug_toolbar

@@ -1,4 +1,5 @@
 import logging
+import uuid
 from django.http import Http404
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
@@ -10,14 +11,18 @@ from rest_framework.parsers import (MultiPartParser, FormParser)
 from django.db.models import (Count, Sum)
 import django_filters.rest_framework
 from ssadvisor.models import (Patient, Report, UserReport, File, UserFile,
-                              Task, UserTask, Setting)
+                              Task, TaskPool, UserTask, Setting)
 from ssadvisor.pagination import CustomPagination
 from ssadvisor.permissions import IsOwnerOrAdmin
-from ssadvisor.exceptions import CustomException
+from ssadvisor.exceptions import (CustomException, AdvisorWrongSetting)
 from ssadvisor.serializers import (PatientSerializer, ReportSerializer,
                                    UserReportSerializer, FileSerializer,
                                    UserFileSerializer, TaskSerializer,
-                                   UserTaskSerializer, SettingSerializer)
+                                   UserTaskSerializer, SettingSerializer,
+                                   TaskPoolSerializer,)
+from ssadvisor.utils import get_settings
+from sscobweb.models import Setting as CobwebSetting
+from ssadvisor.tasks import submit_job
 
 logger = logging.getLogger(__name__)
 
@@ -461,13 +466,17 @@ class TaskList(generics.GenericAPIView):
     List all task objects, or create a new task.
     """
     pagination_class = CustomPagination
-    serializer_class = TaskSerializer
     # permission_classes = (permissions.IsAuthenticated,
     #                       permissions.DjangoModelPermissions,
     #                       permissions.IsAdminUser)
     queryset = Task.objects.all().order_by('-created_time')
     lookup_field = 'task_uuid'
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+
+    def get_serializer_class(self):
+        if self.request.query_params.get('queue'):
+            return TaskPoolSerializer
+        return TaskSerializer
 
     def exist_object(self, **kwargs):
         new_kwargs = {}
@@ -492,11 +501,7 @@ class TaskList(generics.GenericAPIView):
         except Task.DoesNotExist:
             raise CustomException("Not Found the Tasks.", status_code = status.HTTP_200_OK)
 
-    def get(self, request, format = None):
-        """
-        Get all task objects.
-        """
-        query_params = request.query_params
+    def get_filters(self, query_params):
         filters = {}
         created_time = query_params.get('created_time')
         finished_time = query_params.get('finished_time')
@@ -504,6 +509,7 @@ class TaskList(generics.GenericAPIView):
         patient_uuid = query_params.get('patient_uuid')
         username = query_params.get('username')
         relationship = query_params.get('relationship')
+
         if created_time:
             filters.update({
                 'created_time__gt': created_time,
@@ -528,6 +534,32 @@ class TaskList(generics.GenericAPIView):
             filters.update({'user__username': username})
         if relationship:
             filters.update({'usertask__relationship': relationship})
+        return filters
+
+    def check_task_pool_valid(self, max_task_num):
+        try:
+            if TaskPool.objects.count() < max_task_num:
+                return True
+            else:
+                return False
+        except AdvisorWrongSetting as e:
+            raise CustomException(str(e), status_code = status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, format = None):
+        """
+        Get all task objects.
+        """
+        query_params = request.query_params
+        filters = self.get_filters(query_params)
+        queue = query_params.get('queue')
+        if queue:
+            taskpool_queryset = TaskPool.objects.all()
+            queryset = self.paginate_queryset(taskpool_queryset)
+            serializer = self.get_serializer(queryset, many = True,
+                                             context = {'request': request})
+            return self.get_paginated_response(serializer.data)
+
+
         if query_params and query_params.get('task_uuid'):
             if not self.exist_object(**query_params):
                 return Response({
@@ -591,6 +623,9 @@ class TaskDetail(generics.GenericAPIView):
         """
         task = self.get_object(task_uuid)
         serializer = TaskSerializer(task, context = {'request': request})
+        package = task.package
+        print('testestsetet')
+        print(submit_job.delay(task.task_uuid, None, package.pkg_uuid, None))
         return Response({
             "status": "Success",
             "status_code": status.HTTP_200_OK,
@@ -722,3 +757,172 @@ class SettingDetail(generics.GenericAPIView):
                 "data": serializer.data
             })
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+
+
+class TaskPoolList(generics.GenericAPIView):
+    """
+    List all task objects, or create a new task.
+    """
+    pagination_class = CustomPagination
+    # permission_classes = (permissions.IsAuthenticated,
+    #                       permissions.DjangoModelPermissions,
+    #                       permissions.IsAdminUser)
+    queryset = Task.objects.all().order_by('-created_time')
+    lookup_field = 'task_uuid'
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+
+    def get_serializer_class(self):
+        if self.request.query_params.get('queue'):
+            return TaskPoolSerializer
+        return TaskSerializer
+
+    def exist_object(self, **kwargs):
+        new_kwargs = {}
+        for key in kwargs.keys():
+            if key in ('task_uuid'):
+                if len(kwargs.get(key)) > 1:
+                    return False
+                else:
+                    new_kwargs[key] = kwargs.get(key)[0]
+
+        if new_kwargs:
+            try:
+                logger.debug("TaskList@exist_object@new_kwargs:%s" % str(new_kwargs))
+                logger.debug("TaskList@exist_object@objects:%s" % str(self.queryset.get(**new_kwargs)))
+                return self.queryset.get(**new_kwargs)
+            except Task.DoesNotExist:
+                return False
+
+    def get_queryset(self, filters):
+        try:
+            return Task.objects.all().filter(**filters).order_by('-created_time')
+        except Task.DoesNotExist:
+            raise CustomException("Not Found the Tasks.", status_code = status.HTTP_200_OK)
+
+    def get_filters(self, query_params):
+        filters = {}
+        created_time = query_params.get('created_time')
+        finished_time = query_params.get('finished_time')
+        progress_percentage = query_params.get('progress', 0)
+        patient_uuid = query_params.get('patient_uuid')
+        username = query_params.get('username')
+        relationship = query_params.get('relationship')
+
+        if created_time:
+            filters.update({
+                'created_time__gt': created_time,
+            })
+        if finished_time:
+            filters.update({
+                'finished_time__lt': finished_time,
+            })
+        if patient_uuid:
+            filters.update({
+                'patient__patient_uuid__lt': patient_uuid,
+            })
+        if progress_percentage is not None:
+            try:
+                filters.update({
+                    'progress_percentage__gte': int(progress_percentage)
+                })
+            except:
+                raise CustomException('Wrong query_params: progress.',
+                                      status_code = status.HTTP_400_BAD_REQUEST)
+        if username:
+            filters.update({'user__username': username})
+        if relationship:
+            filters.update({'usertask__relationship': relationship})
+        return filters
+
+    def check_task_pool_valid(self, max_task_num):
+        try:
+            if TaskPool.objects.count() < max_task_num:
+                return True
+            else:
+                return False
+        except AdvisorWrongSetting as e:
+            raise CustomException(str(e), status_code = status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, format = None):
+        """
+        Get all task objects.
+        """
+        query_params = request.query_params
+        filters = self.get_filters(query_params)
+        queue = query_params.get('queue')
+        if queue:
+            taskpool_queryset = TaskPool.objects.all()
+            queryset = self.paginate_queryset(taskpool_queryset)
+            serializer = self.get_serializer(queryset, many = True,
+                                             context = {'request': request})
+            return self.get_paginated_response(serializer.data)
+
+
+        if query_params and query_params.get('task_uuid'):
+            if not self.exist_object(**query_params):
+                return Response({
+                    "status": "Not Found.",
+                    "status_code": status.HTTP_404_NOT_FOUND,
+                    "data": []
+                })
+            else:
+                return Response({
+                    "status": "Success.",
+                    "status_code": status.HTTP_200_OK
+                })
+        else:
+            logger.debug("ssadvisor@views@TaskList@get@filters@%s" % filters)
+            print(filters)
+            queryset = self.paginate_queryset(self.get_queryset(filters))
+            serializer = self.get_serializer(queryset, many = True,
+                                             context = {'request': request})
+            return self.get_paginated_response(serializer.data)
+
+    def post(self, request):
+        """
+        Create a task instance.
+        """
+        serializer = TaskSerializer(data = request.data,
+                                    context = {'request': request})
+        if serializer.is_valid():
+            task = serializer.create(serializer.validated_data)
+            serializer = TaskSerializer(task, context = {'request': request})
+            return Response({
+                "status": "success",
+                "status_code": status.HTTP_201_CREATED,
+                "data": serializer.data
+            })
+        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+
+
+class TaskPoolDetail(generics.GenericAPIView):
+    """
+    Retrieve, update a taskpool instance.
+    """
+    # permission_classes = (permissions.IsAuthenticated,
+    #                       permissions.IsAdminUser)
+    serializer_class = TaskPoolSerializer
+    queryset = TaskPool.objects
+    lookup_field = 'taskpool_uuid'
+
+    def get_object(self, taskpool_uuid):
+        try:
+            return self.queryset.get(taskpool_uuid = taskpool_uuid)
+        except TaskPool.DoesNotExist:
+            return Response({
+                "status": "Not Found.",
+                "status_code": status.HTTP_404_NOT_FOUND,
+                "data": []
+            })
+
+    def get(self, request, taskpool_uuid):
+        """
+        Retrieve taskpool information for a specified taskpool instance.
+        """
+        taskpool = self.get_object(taskpool_uuid)
+        serializer = TaskPoolSerializer(taskpool, context = {'request': request})
+        return Response({
+            "status": "Success",
+            "status_code": status.HTTP_200_OK,
+            "data": serializer.data
+        })

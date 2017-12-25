@@ -29,8 +29,8 @@ from ctypes import (c_char_p, c_int, c_long, c_size_t, c_uint, c_ulong, CDLL,
                     POINTER, RTLD_GLOBAL, sizeof, Structure)
 from ctypes.util import find_library
 
-from drmaa.const import ENCODING
-from drmaa.errors import error_check, error_buffer
+from .const import ENCODING
+from .errors import error_check, error_buffer
 
 
 # Python 3 compatability help

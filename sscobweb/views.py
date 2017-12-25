@@ -11,8 +11,8 @@ from sscobweb.pagination import CustomPagination
 from sscobweb.permissions import IsOwnerOrAdmin
 from sscobweb.exceptions import CustomException
 from sscobweb.serializers import (ChannelSerializer, PackageSerializer, SettingSerializer)
-from sscobweb.utils import Channel as ChannelImporter
-from sscobweb.utils import Conda
+from sscobweb.conda import Channel as ChannelImporter
+from sscobweb.conda import Conda
 from django.db import connection
 
 logger = logging.getLogger(__name__)

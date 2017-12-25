@@ -8,7 +8,7 @@ from rest_framework.validators import UniqueValidator
 from django.db import transaction
 from django.core.validators import RegexValidator
 from ssadvisor.models import (Patient, UserReport, Report, UserFile, File,
-                              UserTask, Task, User, Setting)
+                              UserTask, Task, TaskPool, User, Setting)
 from ssadvisor.exceptions import CustomException
 from django.db import transaction
 
@@ -35,7 +35,7 @@ class SettingSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Setting
         fields = ('setting_uuid', 'name', 'summary', 'is_active', 'advisor_home',
-                  'bash_templ')
+                  'bash_templ', 'max_task_num')
         lookup_field = 'setting_uuid'
 
     def create(self, validated_data):
@@ -57,6 +57,7 @@ class SettingSerializer(serializers.HyperlinkedModelSerializer):
         instance.summary = validated_data.get('summary', instance.summary)
         instance.advisor_home = validated_data.get('advisor_home', instance.advisor_home)
         instance.bash_templ = validated_data.get('bash_templ', instance.bash_templ)
+        instance.max_task_num = validated_data.get('max_task_num', instance.max_task_num)
         instance.save()
         return instance
 
@@ -97,7 +98,7 @@ class UserTaskSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('user', 'task', 'relationship', 'mode')
 
 
-class TaskSerializer(serializers.HyperlinkedModelSerializer):
+class TaskSerializer(serializers.ModelSerializer):
     patient = serializers.PrimaryKeyRelatedField(queryset = Patient.objects.all(),
                                                  pk_field = serializers.UUIDField(format='hex_verbose'))
     owners = UserTaskSerializer(source = 'usertask_set', many = True,
@@ -107,7 +108,7 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
         model = Task
         fields = ('task_uuid', 'task_name', 'summary', 'created_time', 'finished_time',
                   'progress_percentage', 'status_code', 'msg', 'config_path',
-                  'output_path', 'log_path', 'files', 'package_uuid', 'owners', 'patient')
+                  'output_path', 'log_path', 'files', 'package', 'owners', 'patient')
         lookup_field = 'task_uuid'
         depth = 1
 
@@ -160,6 +161,19 @@ class TaskSerializer(serializers.HyperlinkedModelSerializer):
         instance.__dict__.update(**validated_data)
         instance.save()
         return instance
+
+
+class TaskPoolSerializer(serializers.ModelSerializer):
+    task = TaskSerializer(read_only = True)
+
+    class Meta:
+        model = TaskPool
+        fields = ('task_pool_uuid', 'task', 'job_id')
+
+    def create(self, validated_data):
+        taskpool = TaskPool.objects.create(**validated_data)
+        taskpool.save()
+        return taskpool
 
 
 class UserFileSerializer(serializers.HyperlinkedModelSerializer):

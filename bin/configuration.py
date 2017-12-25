@@ -165,29 +165,14 @@ hide_paused_dags_by_default = False
 # This section only applies if you are using the CeleryExecutor in
 # [core] section above
 
-# The app name that will be used by celery
-celery_app_name = airflow.executors.celery_executor
-
-# The concurrency that will be used when starting workers with the
-# "airflow worker" command. This defines the number of task instances that
-# a worker will take, so size up your workers based on the resources on
-# your worker box and the nature of your tasks
-celeryd_concurrency = 16
-
-# When you start an airflow worker, airflow starts a tiny web server
-# subprocess to serve the workers local log files to the airflow main
-# web server, who then builds pages and sends them to users. This defines
-# the port on which the logs are served. It needs to be unused, and open
-# visible from the main web server to connect into the workers.
-worker_log_server_port = 8793
-
 # The Celery broker URL. Celery supports RabbitMQ, Redis and experimentally
 # a sqlalchemy database. Refer to the Celery documentation for more
 # information.
-broker_url = sqla+mysql://airflow:airflow@localhost:3306/airflow
+broker_url = redis://localhost:6379/0
 
-# Another key Celery setting
-celery_result_backend = db+mysql://airflow:airflow@localhost:3306/airflow
+accept_content = json
+result_backend = redis://localhost:6379/0
+task_serializer = json
 
 # Celery Flower is a sweet UI for Celery. Airflow has a shortcut to start
 # it `airflow flower`. This defines the IP that Celery Flower runs on
@@ -221,11 +206,10 @@ log_fetch_timeout_sec = 5
 hide_paused_dags_by_default = False
 
 [celery]
-celery_app_name = airflow.executors.celery_executor
-celeryd_concurrency = 16
-worker_log_server_port = 8793
-broker_url = sqla+mysql://airflow:airflow@localhost:3306/airflow
-celery_result_backend = db+mysql://airflow:airflow@localhost:3306/airflow
+broker_url = redis://localhost:6379/0
+accept_content = json
+result_backend = redis://localhost:6379/0
+task_serializer = json
 flower_host = 0.0.0.0
 flower_port = 5555
 default_queue = default
@@ -460,3 +444,9 @@ as_dict.__doc__ = conf.as_dict.__doc__
 
 def set(section, option, value):  # noqa
     return conf.set(section, option, value)
+
+# Celery Configuration
+# CELERY_BROKER_URL = 'redis://localhost:6379/0'
+# CELERY_ACCEPT_CONTENT = ['json']
+# CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+# CELERY_TASK_SERIALIZER = 'json'
