@@ -10,7 +10,9 @@ from django.db.models import (Count, Sum)
 import django_filters.rest_framework
 from sscluster.models import (Cluster, JobLog, ToDoList)
 from sscluster.pagination import CustomPagination
-from sscluster.permissions import IsOwnerOrAdmin
+# Model Permission - CustomDjangoModelPermissions
+# Object Permission - IsOwner IsOwnerOrAdmin
+from sscluster.permissions import (CustomDjangoModelPermissions)
 from sscluster.exceptions import CustomException
 from sscluster.serializers import (ClusterSerializer, JobLogSerializer,
                                    JobLogCountSerializer, ToDoListSerializer)
@@ -24,9 +26,9 @@ class ClusterList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = ClusterSerializer
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.DjangoModelPermissions,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions)
+
     queryset = Cluster.objects.all().order_by('cluster_name')
     lookup_field = 'cluster_uuid'
 
@@ -92,8 +94,8 @@ class ClusterDetail(generics.GenericAPIView):
     """
     Retrieve, update a cluster instance.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions)
     serializer_class = ClusterSerializer
     queryset = Cluster.objects
     lookup_field = 'cluster_uuid'
@@ -102,7 +104,7 @@ class ClusterDetail(generics.GenericAPIView):
         try:
             return self.queryset.get(cluster_uuid = cluster_uuid)
         except Cluster.DoesNotExist:
-            raise CustomException("Not Found the Cluster.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the Cluster.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, cluster_uuid):
         """
@@ -141,9 +143,8 @@ class JobLogList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = JobLogSerializer
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.DjangoModelPermissions,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions)
     queryset = JobLog.objects.all().order_by('-jobid')
     lookup_field = 'job_uuid'
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
@@ -152,7 +153,7 @@ class JobLogList(generics.GenericAPIView):
         try:
             return JobLog.objects.all().filter(**filters).order_by('-jobid')
         except JobLog.DoesNotExist:
-            raise CustomException("Not Found the JobLog.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the JobLog.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, format = None):
         """
@@ -202,8 +203,8 @@ class JobLogDetail(generics.GenericAPIView):
     """
     Retrieve, update a joblog instance.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions)
     serializer_class = JobLogSerializer
     queryset = JobLog.objects
     lookup_field = 'job_uuid'
@@ -212,15 +213,10 @@ class JobLogDetail(generics.GenericAPIView):
         try:
             if job_uuid:
                 return self.queryset.get(job_uuid = job_uuid)
-            if job_id:
+            if jobid:
                 return self.queryset.get(jobid = jobid)
         except JobLog.DoesNotExist:
-            # raise Http404
-            return Response({
-                "status": "Not Found.",
-                "status_code": status.HTTP_404_NOT_FOUND,
-                "data": []
-            })
+            raise CustomException("Not Found the Job Log Instance.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, job_uuid = None, jobid = None):
         """
@@ -256,8 +252,8 @@ class JobLogCount(generics.GenericAPIView):
     """
     Get count of JobLog Records.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions)
     serializer_class = JobLogCountSerializer
     pagination_class = CustomPagination
     queryset = User.objects
@@ -300,7 +296,7 @@ class JobLogCount(generics.GenericAPIView):
                                               used_vmem = Sum('joblog__resources_used_vmem'))\
                                     .order_by('joblog__owner')
         except User.DoesNotExist:
-            raise CustomException("Not Found the JobLog.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the JobLog.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request):
         """
@@ -333,9 +329,8 @@ class ToDoListList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = ToDoListSerializer
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.DjangoModelPermissions,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions)
     queryset = ToDoList.objects.all().order_by('item_name')
     lookup_field = 'id'
 
@@ -360,7 +355,7 @@ class ToDoListList(generics.GenericAPIView):
         try:
             return ToDoList.objects.all().filter(user = user).order_by('checked_status', 'item_name')
         except ToDoList.DoesNotExist:
-            raise CustomException("Not Found the ToDoList.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the ToDoList.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, format = None):
         """
@@ -406,8 +401,8 @@ class ToDoListDetail(generics.GenericAPIView):
     """
     Retrieve, update a ToDoList instance.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions)
     serializer_class = ToDoListSerializer
     queryset = ToDoList.objects
     lookup_field = 'id'
@@ -416,7 +411,7 @@ class ToDoListDetail(generics.GenericAPIView):
         try:
             return self.queryset.get(pk = pk)
         except ToDoList.DoesNotExist:
-            raise CustomException("Not Found the ToDoList Instance.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the ToDoList Instance.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, pk):
         """

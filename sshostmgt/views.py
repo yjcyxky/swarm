@@ -108,12 +108,7 @@ class IPMIList(generics.GenericAPIView):
                })
             return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
         except IPMI.DoesNotExist:
-            # raise Http404
-            return Response({
-                "status": "Not Found.",
-                "status_code": status.HTTP_404_NOT_FOUND,
-                "data": []
-            })
+            raise CustomException("Not Found the IPMI Instance.", status_code = status.HTTP_404_NOT_FOUND)
 
 
 class IPMIDetail(generics.GenericAPIView):
@@ -130,12 +125,7 @@ class IPMIDetail(generics.GenericAPIView):
         try:
             return self.queryset.get(ipmi_uuid = ipmi_uuid)
         except IPMI.DoesNotExist:
-            # raise Http404
-            return Response({
-                "status": "Not Found.",
-                "status_code": status.HTTP_404_NOT_FOUND,
-                "data": []
-            })
+            raise CustomException("Not Found the IPMI Instance.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, ipmi_uuid):
         """
@@ -221,12 +211,7 @@ class TagDetail(generics.GenericAPIView):
         try:
             return self.queryset.get(tag_uuid = tag_uuid)
         except Tag.DoesNotExist:
-            # raise Http404
-            return Response({
-                "status": "Not Found.",
-                "status_code": status.HTTP_404_NOT_FOUND,
-                "data": []
-            })
+            raise CustomException("Not Found the Tag Instance.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, tag_uuid):
         """
@@ -343,12 +328,7 @@ class HostDetail(generics.GenericAPIView):
         try:
             return self.queryset.get(host_uuid = host_uuid)
         except Host.DoesNotExist:
-            # raise Http404
-            return Response({
-                "status": "Not Found.",
-                "status_code": status.HTTP_404_NOT_FOUND,
-                "data": []
-            })
+            raise CustomException("Not Found the Host Instance.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, host_uuid):
         """
@@ -463,12 +443,7 @@ class StorageDetail(generics.GenericAPIView):
         try:
             return self.queryset.get(storage_uuid = storage_uuid)
         except Storage.DoesNotExist:
-            # raise Http404
-            return Response({
-                "status": "Not Found.",
-                "status_code": status.HTTP_404_NOT_FOUND,
-                "data": []
-            })
+            raise CustomException("Not Found the Storage Instance.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, host_uuid):
         """

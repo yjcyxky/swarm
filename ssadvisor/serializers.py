@@ -1,6 +1,7 @@
 import logging
 import re
 import datetime
+import uuid
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework import status
@@ -11,6 +12,7 @@ from ssadvisor.models import (Patient, UserReport, Report, UserFile, File,
                               UserTask, Task, TaskPool, User, Setting)
 from ssadvisor.exceptions import CustomException
 from django.db import transaction
+from ssadvisor.utils import get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +37,7 @@ class SettingSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Setting
         fields = ('setting_uuid', 'name', 'summary', 'is_active', 'advisor_home',
-                  'bash_templ', 'max_task_num')
+                  'max_task_num')
         lookup_field = 'setting_uuid'
 
     def create(self, validated_data):
@@ -56,7 +58,6 @@ class SettingSerializer(serializers.HyperlinkedModelSerializer):
         instance.is_active = validated_data.get('is_active', instance.is_active)
         instance.summary = validated_data.get('summary', instance.summary)
         instance.advisor_home = validated_data.get('advisor_home', instance.advisor_home)
-        instance.bash_templ = validated_data.get('bash_templ', instance.bash_templ)
         instance.max_task_num = validated_data.get('max_task_num', instance.max_task_num)
         instance.save()
         return instance
@@ -98,6 +99,15 @@ class UserTaskSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('user', 'task', 'relationship', 'mode')
 
 
+def gen_path(task_uuid):
+    advisor_setting = get_settings(Setting)
+    advisor_home = advisor_setting.advisor_home
+    config_path = os.path.join(advisor_home, task_uuid, 'config')
+    output_path = os.path.join(advisor_home, task_uuid, 'results')
+    log_path = os.path.join(advisor_home, task_uuid, 'logs')
+    return config_path, output_path, log_path
+
+
 class TaskSerializer(serializers.ModelSerializer):
     patient = serializers.PrimaryKeyRelatedField(queryset = Patient.objects.all(),
                                                  pk_field = serializers.UUIDField(format='hex_verbose'))
@@ -114,7 +124,14 @@ class TaskSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        task = Task.objects.create(**validated_data)
+        validated_data_clone = validated_data.copy()
+        task_uuid = validated_data.get('task_uuid', uuid.uuid4())
+        config_path, output_path, log_path = self.gen_path(task_uuid)
+        validated_data_clone['config_path'] = config_path
+        validated_data_clone['log_path'] = log_path
+        validated_data_clone['output_path'] = output_path
+        validated_data_clone['task_uuid'] = task_uuid
+        task = Task.objects.create(**validated_data_clone)
         if 'owners' in self.initial_data:
             owners = self.initial_data.get('owners')
             for owner in owners:
@@ -168,7 +185,7 @@ class TaskPoolSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TaskPool
-        fields = ('task_pool_uuid', 'task', 'job_id')
+        fields = ('task_pool_uuid', 'task', 'jobid', 'jobstatus', 'updated_time')
 
     def create(self, validated_data):
         taskpool = TaskPool.objects.create(**validated_data)

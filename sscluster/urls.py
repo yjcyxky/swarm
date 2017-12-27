@@ -21,7 +21,7 @@ urlpatterns = [
     url(r'^clusters$',
         views.ClusterList.as_view(),
         name = 'cluster-list'),
-    url(r'^clusters/(?P<cluster_name>[0-9a-zA-Z_\-]+)$',
+    url(r'^clusters/(?P<cluster_uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
         views.ClusterDetail.as_view(),
         name = 'cluster-detail'),
     url(r'^joblogs$',

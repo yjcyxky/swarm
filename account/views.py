@@ -1,8 +1,4 @@
 import logging, json
-from django.contrib.auth.models import User
-from django.http import Http404
-from django.template.loader import get_template
-from django.http import JsonResponse
 from rest_framework.decorators import (api_view, permission_classes)
 from rest_framework.views import APIView
 from rest_framework import generics
@@ -10,10 +6,12 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
 from rest_framework import permissions
-from opsweb.serializers import (UserSerializer)
-from opsweb.permissions import (IsOwnerOrAdmin, IsOwner)
-from opsweb.pagination import CustomPagination
-from opsweb.exceptions import CustomException
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
+from account.serializers import (UserSerializer)
+from account.permissions import (IsOwnerOrAdmin, IsOwner)
+from account.pagination import CustomPagination
+from account.exceptions import CustomException
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +22,6 @@ class UserList(generics.GenericAPIView):
     pagination_class = CustomPagination
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticated,
-                          # permissions.DjangoModelPermissions,
                           permissions.IsAdminUser)
     queryset = User.objects.all().order_by("username")
     lookup_field = 'id'
@@ -111,7 +108,7 @@ class UserList(generics.GenericAPIView):
                 })
             return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
-            raise CustomException("Not Found the User.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the User.", status_code = status.HTTP_404_NOT_FOUND)
 
 
 class UserDetail(APIView):
@@ -119,23 +116,24 @@ class UserDetail(APIView):
     Retrieve, update a user instance.
     """
     permission_classes = (permissions.IsAuthenticated,
-                          IsOwnerOrAdmin)
+                          IsOwnerOrAdmin,)
     queryset = User.objects
     lookup_field = 'id'
 
     def get_object(self, pk):
-        try:
-            return self.queryset.get(pk = pk)
-        except User.DoesNotExist:
-            raise CustomException("Not Found the User.", status_code = status.HTTP_200_OK)
+        filter = {
+            'pk': pk
+        }
+
+        obj = get_object_or_404(self.queryset, **filter)
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def get(self, request, pk):
         """
         Retrieve account information for a specified user.
         """
         user = self.get_object(pk)
-        # 用于自定义permission的主动检查
-        self.check_object_permissions(request, user)
         serializer = UserSerializer(user, context = {'request': request})
         return Response({
             "status": "Success",
@@ -149,7 +147,6 @@ class UserDetail(APIView):
         """
         # 普通用户无法access PUT方法
         user = self.get_object(pk)
-        self.check_object_permissions(request, user)
         serializer = UserSerializer(user, data = request.data,
                                     context = {'request': request},
                                     partial = True)
@@ -177,7 +174,6 @@ class UserDetail(APIView):
         """
         try:
             user = self.get_object(pk)
-            self.check_object_permissions(request, user)
             user.delete()
             return Response({
                 "status_code": status.HTTP_204_NO_CONTENT,
@@ -190,52 +186,6 @@ class UserDetail(APIView):
                 "status_code": status.HTTP_404_NOT_FOUND,
                 "data": []
             })
-
-class APIDetail(APIView):
-    """
-    Retrieve a specified API instance.
-    """
-    permission_classes = (permissions.IsAuthenticated,)
-
-    def gen_response_obj(self, request, message = None,
-                         collections = None, next = None):
-        collections.update({
-            "api_uri": request.get_raw_uri() if isinstance(request, Request) else None,
-            "next": next
-        })
-        return {
-            "status": message,
-            "data": collections,
-            "status_code": status.HTTP_200_OK
-        }
-
-    def get(self, request, api_name):
-        logger.debug('API_NAME: %s' % api_name)
-        logger.debug(request.get_raw_uri())
-        user = request.user
-        if api_name in ('apis', 'navbar', 'sidebar', 'welcome'):
-            t = get_template('%s.json.tmpl' % api_name)
-            api_prefix = request.get_host()
-            api_pool = t.render({"api_prefix": api_prefix, "user": user})
-            collections = {
-                'apiData': json.loads(api_pool)
-            }
-            response_obj = self.gen_response_obj(request, message = 'Success.',
-                                                 collections = collections)
-            return JsonResponse(response_obj, status = 200)
-        else:
-            return Response({
-                "status": "Not Found.",
-                "status_code": status.HTTP_404_NOT_FOUND,
-                "data": []
-            })
-
-def custom404(request):
-    return JsonResponse({
-        'status_code': 404,
-        'details': 'The resource was not found.',
-        'status': 'Failed'
-    }, status = status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])

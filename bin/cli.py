@@ -64,13 +64,44 @@ def flower(args):
     broka = conf.get('celery', 'BROKER_URL')
     address = '--address={}'.format(args.hostname)
     port = '--port={}'.format(args.port)
-    api = ''
+    flower_cmd = ['flower', '-b', broka, address, port]
+
     if args.broker_api:
         api = '--broker_api=' + args.broker_api
+        flower_cmd.append(api)
 
-    flower_conf = ''
     if args.flower_conf:
         flower_conf = '--conf=' + args.flower_conf
+        flower_cmd.append(flower_conf)
+
+    if args.persistent:
+        persistent = '--persistent=' + str(args.persistent)
+        flower_db  = '--db=%s' % os.path.join(conf.BASE_DIR, 'flower')
+        flower_cmd.append(persistent)
+        flower_cmd.append(flower_db)
+
+    if args.auth:
+        # It doesn't work, because cannot get password text from djano.
+        # How to solve it?
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "scouts.settings")
+        try:
+            import django
+            django.setup()
+        except ImportError:
+            raise ImportError(
+                "Couldn't import Django. Are you sure it's installed and "
+                "available on your PYTHONPATH environment variable? Did you "
+                "forget to activate a virtual environment?"
+            )
+        from django.contrib.auth.models import User
+        users = User.objects.filter(is_active = True).all()
+        user_passwd = ''
+        for user in users:
+            username = user.username
+            password = user.password
+            user_passwd = user_passwd + '%s:%s,' % (username, password)
+        basic_auth = '--basic_auth=%s' % user_passwd
+        flower_cmd.append(basic_auth)
 
     if args.daemon:
         pid, stdout, stderr, log_file = setup_locations("flower", args.pid, args.stdout, args.stderr, args.log_file)
@@ -84,7 +115,7 @@ def flower(args):
         )
 
         with ctx:
-            os.execvp("flower", ['flower', '-b', broka, address, port, api, flower_conf])
+            os.execvp("flower", flower_cmd)
 
         stdout.close()
         stderr.close()
@@ -92,7 +123,7 @@ def flower(args):
         signal.signal(signal.SIGINT, sigint_handler)
         signal.signal(signal.SIGTERM, sigint_handler)
 
-        os.execvp("flower", ['flower', '-b', broka, address, port, api, flower_conf])
+        os.execvp("flower", flower_cmd)
 
 def celery(args):
     BASE_DIR = conf.BASE_DIR
@@ -101,6 +132,8 @@ def celery(args):
         'PYTHONPATH': BASE_DIR,
         'PATH': os.environ.get('PATH'),
     })
+
+    celery_cmd = ['celery', '-A', args.module_name, 'worker', '--loglevel=info']
 
     if args.daemon:
         pid, stdout, stderr, log_file = setup_locations("celery", args.pid, args.stdout, args.stderr, args.log_file)
@@ -114,8 +147,7 @@ def celery(args):
         )
 
         with ctx:
-            os.execvpe("celery", ['celery', '-A', args.module_name, 'worker',
-                                  '--loglevel=info'], env)
+            os.execvpe("celery", celery_cmd, env)
 
         stdout.close()
         stderr.close()
@@ -123,7 +155,41 @@ def celery(args):
         signal.signal(signal.SIGINT, sigint_handler)
         signal.signal(signal.SIGTERM, sigint_handler)
 
-        os.execvpe("celery", ['celery', '-A', args.module_name, 'worker', '--loglevel=info'], env)
+        os.execvpe("celery", celery_cmd, env)
+
+def celery_beat(args):
+    BASE_DIR = conf.BASE_DIR
+    env = {}
+    env.update({
+        'PYTHONPATH': BASE_DIR,
+        'PATH': os.environ.get('PATH'),
+    })
+
+    celery_cmd = ['celery', '-A', args.module_name, 'beat', '--loglevel=info']
+    if args.django_beat:
+        celery_cmd.append('--scheduler=django_celery_beat.schedulers:DatabaseScheduler')
+
+    if args.daemon:
+        pid, stdout, stderr, log_file = setup_locations("celery", args.pid, args.stdout, args.stderr, args.log_file)
+        stdout = open(stdout, 'w+')
+        stderr = open(stderr, 'w+')
+
+        ctx = daemon.DaemonContext(
+            pidfile=TimeoutPIDLockFile(pid, -1),
+            stdout=stdout,
+            stderr=stderr,
+        )
+
+        with ctx:
+            os.execvpe("celery", celery_cmd, env)
+
+        stdout.close()
+        stderr.close()
+    else:
+        signal.signal(signal.SIGINT, sigint_handler)
+        signal.signal(signal.SIGTERM, sigint_handler)
+
+        os.execvpe("celery", celery_cmd, env)
 
 def setup_locations(process, pid=None, stdout=None, stderr=None, log=None):
     if not stderr:
@@ -244,6 +310,14 @@ def restart_workers(gunicorn_master_proc, num_workers_expected):
             ) < num_workers_expected:
                 start_refresh(gunicorn_master_proc)
 
+def job(args):
+    from ssadvisor.jobs import Job
+    bash_templ_path = args.bash_template
+    vars_file_path = args.vars_file
+    jobname = args.jobname
+    job = Job(jobname, bash_templ_path = bash_templ_path, vars_file_path = vars_file_path)
+    job.submit_job()
+    logger.info('Your job has been submitted with ID %s' % job.get_jobid())
 
 def webserver(args):
     access_logfile = args.access_logfile or settings.get('webserver', 'access_logfile')
@@ -328,8 +402,8 @@ def version(args):
     print(conf.HEADER.format(version = get_version(), company_name = get_company_name()))
 
 Arg = namedtuple(
-    'Arg', ['flags', 'help', 'action', 'default', 'nargs', 'type', 'choices', 'metavar'])
-Arg.__new__.__defaults__ = (None, None, None, None, None, None, None)
+    'Arg', ['flags', 'help', 'action', 'default', 'nargs', 'type', 'choices', 'metavar', 'required'])
+Arg.__new__.__defaults__ = (None, None, None, None, None, None, None, None)
 
 class CLIFactory(object):
     args = {
@@ -420,9 +494,38 @@ class CLIFactory(object):
         'task_params': Arg(
             ("-tp", "--task_params"),
             help="Sends a JSON params dict to the task"),
+        'persistent': Arg(
+            ("-P", "--persistent"),
+            "Enable persistent mode (default False).",
+            "store_true",
+            default = False),
+        'auth': Arg(
+            ("-au", "--auth"),
+            "Enable auth mode (default False).",
+            "store_true",
+            default = False),
+        # celery
         'module_name': Arg(
             ("-m", "--module_name"),
-            help="The name of the current module for Celery."),
+            default = 'scouts',
+            help="The name of the current module for Celery. Default Value: scouts"),
+        'django_beat': Arg(
+            ("-b", "--django-beat"),
+            "Use django_celery_beat database as a backend.",
+            "store_true",
+            default = True),
+        # job
+        'bash_template': Arg(
+            ("-bt", "--bash_template"),
+            help="bash template file for submitting job(Only Support Jinja2 Syntax).",
+            required = True),
+        'vars_file': Arg(
+            ("-i", "--ini"),
+            help="config file for rendering bash template(Only Support INI Syntax).",
+            required = True),
+        'jobname': Arg(
+            ('jobname',),
+            help="job's name."),
     }
     subparsers = (
         {
@@ -443,16 +546,24 @@ class CLIFactory(object):
             'func': flower,
             'help': "Start a Celery Flower",
             'args': ('flower_hostname', 'flower_port', 'flower_conf', 'broker_api',
-                     'pid', 'daemon', 'stdout', 'stderr', 'log_file'),
+                     'pid', 'daemon', 'stdout', 'stderr', 'log_file', 'persistent', 'auth'),
         }, {
             'func': celery,
             'help': "Start a Celery Worker",
             'args': ('module_name', 'pid', 'daemon', 'stdout', 'stderr', 'log_file'),
         }, {
+            'func': celery_beat,
+            'help': "Start a Celery Beat",
+            'args': ('module_name', 'pid', 'daemon', 'stdout', 'stderr', 'log_file', 'django_beat'),
+        }, {
             'func': version,
             'help': "Show the version",
             'args': tuple(),
-        }
+        }, {
+            'func': job,
+            'help': "Submit a job",
+            'args': ('bash_template', 'vars_file', 'jobname'),
+        },
 
     )
     subparsers_dict = {sp['func'].__name__: sp for sp in subparsers}

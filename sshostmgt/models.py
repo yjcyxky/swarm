@@ -34,6 +34,7 @@ class IPMI(models.Model):
 
     class Meta:
         ordering = ('ipmi_addr',)
+        permissions = (("list_ipmi", "can list all ipmi instance(s)"),)
 
 class BIOS(models.Model):
     bios_uuid = models.CharField(max_length = 36, primary_key = True)
@@ -58,6 +59,7 @@ class Tag(models.Model):
 
     class Meta:
         ordering = ('tag_name',)
+        permissions = (("list_tag", "can list tag instance(s)"),)
 
 class Host(models.Model):
     host_uuid = models.CharField(max_length = 36, primary_key = True)
@@ -76,6 +78,7 @@ class Host(models.Model):
 
     class Meta:
         ordering = ('hostname',)
+        permissions = (("list_host", "can list host instance(s)"),)
 
 class CPU(models.Model):
     cpu_uuid = models.CharField(max_length = 36, primary_key = True)
@@ -88,6 +91,9 @@ class Network(models.Model):
     mac_addr =  models.CharField(max_length = 17, unique = True)
     ip_addr = models.CharField(max_length = 16, unique = True)
 
+    class Meta:
+        permissions = (("list_network", "can list all network instance(s)"),)
+
 class Storage(models.Model):
     storage_uuid = models.CharField(max_length = 36, primary_key = True)
     host = models.ForeignKey(Host, on_delete = models.CASCADE)
@@ -99,6 +105,12 @@ class Storage(models.Model):
     username = models.CharField(max_length = 16)
     groupname = models.CharField(max_length = 16)
 
+    class Meta:
+        permissions = (("list_storage", "can list all storage instance(s)"),)
+
 class Memory(models.Model):
     memory_uuid = models.CharField(max_length = 36, primary_key = True)
     host = models.ForeignKey(Host, on_delete = models.CASCADE)
+
+    class Meta:
+        permissions = (("list_memory", "can list all memory instance(s)"),)

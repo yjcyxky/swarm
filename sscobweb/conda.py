@@ -371,6 +371,7 @@ class Conda:
         """
         所有的Package均以create -n env_name的形式安装，以尽可能的保证互不干扰，类似于Windows安装包
         """
+        # 软件安装规范：cobweb_home/envs/`pkg_name`-`pkg_version`/
         try:
             pkg = '%s=%s' % (self._pkg.name, self._pkg.version)
             out = self.conda_api.create(name = self._env_name, pkgs = (pkg,))

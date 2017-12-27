@@ -21,6 +21,7 @@ class ToDoList(models.Model):
 
     class Meta:
         ordering = ('checked_status', 'created_time', 'user')
+        permissions = (("list_todolist", "can list todolist instance(s)"),)
 
 class Cluster(models.Model):
     cluster_uuid = models.CharField(max_length = 36, primary_key = True)
@@ -36,6 +37,7 @@ class Cluster(models.Model):
 
     class Meta:
         ordering = ('cluster_name',)
+        permissions = (("list_cluster", "can list cluster instance(s)"),)
 
 class JobLog(models.Model):
     job_uuid = models.CharField(max_length = 36, primary_key = True)
@@ -74,6 +76,7 @@ class JobLog(models.Model):
 
     class Meta:
         ordering = ('jobid', 'owner')
+        permissions = (("list_joblog", "can list joblog instance(s)"),)
 
     # Record Marker
     # A --- abort --- (Job has been aborted by the server)

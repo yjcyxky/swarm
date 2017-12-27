@@ -36,6 +36,7 @@ class Setting(models.Model):
 
     class Meta:
         ordering = ('name',)
+        permissions = (("list_setting", "can list setting instance(s)"),)
 
     def __str__(self):
         return "%s" % (self.name)
@@ -74,6 +75,7 @@ class Channel(models.Model):
 
     class Meta:
         ordering = ('is_active', 'is_alive', 'channel_name', 'updated_time')
+        permissions = (("list_channel", "can list channel instance(s)"),)
 
 class Package(models.Model):
     """
@@ -116,6 +118,7 @@ class Package(models.Model):
 
     class Meta:
         ordering = ('pkg_name', 'is_installed')
+        permissions = (("list_package", "can list package instance(s)"),)
 
     def __str__(self):
         return "%s" % (self.pkg_uuid)

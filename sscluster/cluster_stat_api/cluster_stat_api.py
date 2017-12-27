@@ -9,13 +9,13 @@ class JobInfo:
     """
     Get, Parse Job Stat Information
     """
-    def __init__(self, job_id, timeout = 10, format = 'json', cluster_uuid = None):
-        self.job_id = job_id
+    def __init__(self, jobid, timeout = 10, format = 'json', cluster_uuid = None):
+        self.jobid = jobid
         self._job_stat_dict = {}
         self._job_stat_str = ''
         self._command = ['tracejob', '-n', '360', '-f', 'system', '-f', 'job',
                          '-f', 'job_usage', '-f', 'admin', '-q', '-s', '-l',
-                         str(job_id)]
+                         str(jobid)]
         self._timeout = timeout
         self._format = format
         self._cluster_uuid = cluster_uuid

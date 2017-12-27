@@ -7,9 +7,9 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
-from rest_framework.parsers import (MultiPartParser, FormParser)
 from django.db.models import (Count, Sum)
 import django_filters.rest_framework
+from rest_framework.decorators import (api_view, permission_classes)
 from ssadvisor.models import (Patient, Report, UserReport, File, UserFile,
                               Task, TaskPool, UserTask, Setting)
 from ssadvisor.pagination import CustomPagination
@@ -22,7 +22,8 @@ from ssadvisor.serializers import (PatientSerializer, ReportSerializer,
                                    TaskPoolSerializer,)
 from ssadvisor.utils import get_settings
 from sscobweb.models import Setting as CobwebSetting
-from ssadvisor.tasks import submit_job
+from ssadvisor.tasks import submit_job, update_jobstatus
+from ssadvisor.permissions import (IsOwnerOrAdmin, CustomDjangoModelPermissions)
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +33,9 @@ class PatientList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = PatientSerializer
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.DjangoModelPermissions,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions,
+                          permissions.IsAdminUser)
     queryset = Patient.objects.all().order_by('case_id')
     lookup_field = 'patient_uuid'
 
@@ -59,7 +60,7 @@ class PatientList(generics.GenericAPIView):
         try:
             return Patient.objects.all().filter(**filters).order_by('-created_time')
         except Patient.DoesNotExist:
-            raise CustomException("Not Found the Patient.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the Patient.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, format = None):
         """
@@ -119,17 +120,20 @@ class PatientDetail(generics.GenericAPIView):
     """
     Retrieve, update a patient instance.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions,
+                          IsOwnerOrAdmin,)
     serializer_class = PatientSerializer
     queryset = Patient.objects
     lookup_field = 'patient_uuid'
 
     def get_object(self, patient_uuid):
         try:
-            return self.queryset.get(patient_uuid = patient_uuid)
+            obj = self.queryset.get(patient_uuid = patient_uuid)
+            self.check_object_permissions(self.request, obj)
+            return obj
         except Patient.DoesNotExist:
-            raise CustomException("Not Found the Cluster.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the Cluster.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, patient_uuid):
         """
@@ -168,9 +172,9 @@ class ReportList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = ReportSerializer
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.DjangoModelPermissions,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions,
+                          permissions.IsAdminUser)
     queryset = Report.objects.all().order_by('created_time')
     lookup_field = 'report_uuid'
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
@@ -196,7 +200,7 @@ class ReportList(generics.GenericAPIView):
         try:
             return Report.objects.all().filter(**filters).order_by('-created_time')
         except Report.DoesNotExist:
-            raise CustomException("Not Found the JobLog.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the JobLog.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, format = None):
         """
@@ -266,21 +270,20 @@ class ReportDetail(generics.GenericAPIView):
     """
     Retrieve, update a report instance.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions,
+                          IsOwnerOrAdmin,)
     serializer_class = ReportSerializer
     queryset = Report.objects
     lookup_field = 'report_uuid'
 
     def get_object(self, report_uuid):
         try:
-            return self.queryset.get(report_uuid = report_uuid)
+            obj = self.queryset.get(report_uuid = report_uuid)
+            self.check_object_permissions(self.request, obj)
+            return obj
         except Report.DoesNotExist:
-            return Response({
-                "status": "Not Found.",
-                "status_code": status.HTTP_404_NOT_FOUND,
-                "data": []
-            })
+            raise CustomException("Not Found the Report.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, report_uuid):
         """
@@ -319,9 +322,9 @@ class FileList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = FileSerializer
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.DjangoModelPermissions,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions,
+                          permissions.IsAdminUser)
     queryset = File.objects.all().order_by('created_time')
     lookup_field = 'file_uuid'
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
@@ -347,7 +350,7 @@ class FileList(generics.GenericAPIView):
         try:
             return Report.objects.all().filter(**filters).order_by('-created_time')
         except File.DoesNotExist:
-            raise CustomException("Not Found the Files.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the Files.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, format = None):
         """
@@ -414,21 +417,20 @@ class FileDetail(generics.GenericAPIView):
     """
     Retrieve, update a file instance.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions,
+                          IsOwnerOrAdmin,)
     serializer_class = FileSerializer
     queryset = File.objects
     lookup_field = 'file_uuid'
 
     def get_object(self, file_uuid):
         try:
-            return self.queryset.get(file_uuid = file_uuid)
+            obj = self.queryset.get(pk = file_uuid)
+            self.check_object_permissions(self.request, obj)
+            return obj
         except File.DoesNotExist:
-            return Response({
-                "status": "Not Found.",
-                "status_code": status.HTTP_404_NOT_FOUND,
-                "data": []
-            })
+            raise CustomException("Not Found the File.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, file_uuid):
         """
@@ -466,9 +468,9 @@ class TaskList(generics.GenericAPIView):
     List all task objects, or create a new task.
     """
     pagination_class = CustomPagination
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.DjangoModelPermissions,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions,
+                          permissions.IsAdminUser)
     queryset = Task.objects.all().order_by('-created_time')
     lookup_field = 'task_uuid'
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
@@ -499,7 +501,7 @@ class TaskList(generics.GenericAPIView):
         try:
             return Task.objects.all().filter(**filters).order_by('-created_time')
         except Task.DoesNotExist:
-            raise CustomException("Not Found the Tasks.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the Tasks.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get_filters(self, query_params):
         filters = {}
@@ -574,7 +576,6 @@ class TaskList(generics.GenericAPIView):
                 })
         else:
             logger.debug("ssadvisor@views@TaskList@get@filters@%s" % filters)
-            print(filters)
             queryset = self.paginate_queryset(self.get_queryset(filters))
             serializer = self.get_serializer(queryset, many = True,
                                              context = {'request': request})
@@ -589,6 +590,8 @@ class TaskList(generics.GenericAPIView):
         if serializer.is_valid():
             task = serializer.create(serializer.validated_data)
             serializer = TaskSerializer(task, context = {'request': request})
+            task_uuid = serializer.task_uuid
+            submit_job.delay(task_uuid)
             return Response({
                 "status": "success",
                 "status_code": status.HTTP_201_CREATED,
@@ -601,21 +604,20 @@ class TaskDetail(generics.GenericAPIView):
     """
     Retrieve, update a task instance.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions,
+                          IsOwnerOrAdmin,)
     serializer_class = TaskSerializer
     queryset = Task.objects
     lookup_field = 'task_uuid'
 
     def get_object(self, task_uuid):
         try:
-            return self.queryset.get(task_uuid = task_uuid)
+            obj = self.queryset.get(pk = task_uuid)
+            self.check_object_permissions(self.request, obj)
+            return obj
         except Task.DoesNotExist:
-            return Response({
-                "status": "Not Found.",
-                "status_code": status.HTTP_404_NOT_FOUND,
-                "data": []
-            })
+            raise CustomException("Not Found the Task.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, task_uuid):
         """
@@ -623,9 +625,8 @@ class TaskDetail(generics.GenericAPIView):
         """
         task = self.get_object(task_uuid)
         serializer = TaskSerializer(task, context = {'request': request})
-        package = task.package
-        print('testestsetet')
-        print(submit_job.delay(task.task_uuid, None, package.pkg_uuid, None))
+        update_jobstatus.delay(task_uuid = serializer.task_uuid)
+
         return Response({
             "status": "Success",
             "status_code": status.HTTP_200_OK,
@@ -657,10 +658,9 @@ class SettingList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = SettingSerializer
-    parser_classes = (MultiPartParser, FormParser, )
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.DjangoModelPermissions,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions,
+                          permissions.IsAdminUser)
     queryset = Setting.objects.all().order_by('name')
     lookup_field = 'setting_uuid'
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
@@ -669,7 +669,7 @@ class SettingList(generics.GenericAPIView):
         try:
             return Setting.objects.all().filter(**filters).order_by('name', 'is_active')
         except Setting.DoesNotExist:
-            raise CustomException("Not Found the Settings.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the Settings.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, format = None):
         """
@@ -715,18 +715,20 @@ class SettingDetail(generics.GenericAPIView):
     """
     Retrieve, update a setting instance.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions,
+                          IsOwnerOrAdmin,)
     serializer_class = SettingSerializer
-    parser_classes = (MultiPartParser, FormParser, )
     queryset = Setting.objects
     lookup_field = 'setting_uuid'
 
     def get_object(self, setting_uuid):
         try:
-            return self.queryset.get(setting_uuid = setting_uuid)
+            obj = self.queryset.get(setting_uuid = setting_uuid)
+            self.check_object_permissions(self.request, obj)
+            return obj
         except Setting.DoesNotExist:
-            raise CustomException("Not Found the Setting.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the Setting.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, setting_uuid):
         """
@@ -764,9 +766,9 @@ class TaskPoolList(generics.GenericAPIView):
     List all task objects, or create a new task.
     """
     pagination_class = CustomPagination
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.DjangoModelPermissions,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions,
+                          permissions.IsAdminUser)
     queryset = Task.objects.all().order_by('-created_time')
     lookup_field = 'task_uuid'
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
@@ -797,7 +799,7 @@ class TaskPoolList(generics.GenericAPIView):
         try:
             return Task.objects.all().filter(**filters).order_by('-created_time')
         except Task.DoesNotExist:
-            raise CustomException("Not Found the Tasks.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the Tasks.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get_filters(self, query_params):
         filters = {}
@@ -899,21 +901,20 @@ class TaskPoolDetail(generics.GenericAPIView):
     """
     Retrieve, update a taskpool instance.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions,
+                          IsOwnerOrAdmin,)
     serializer_class = TaskPoolSerializer
     queryset = TaskPool.objects
     lookup_field = 'taskpool_uuid'
 
     def get_object(self, taskpool_uuid):
         try:
-            return self.queryset.get(taskpool_uuid = taskpool_uuid)
+            obj = self.queryset.get(taskpool_uuid = taskpool_uuid)
+            self.check_object_permissions(self.request, obj)
+            return obj
         except TaskPool.DoesNotExist:
-            return Response({
-                "status": "Not Found.",
-                "status_code": status.HTTP_404_NOT_FOUND,
-                "data": []
-            })
+            raise CustomException("Not Found the Task Pool Instance.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, taskpool_uuid):
         """

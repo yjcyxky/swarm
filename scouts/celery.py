@@ -5,8 +5,8 @@ from celery import Celery
 from django.conf import settings
 
 # set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'opsweb.settings')
-app = Celery('opsweb')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'scouts.settings')
+app = Celery('scouts')
 
 app.config_from_object(settings, namespace = 'CELERY')
 

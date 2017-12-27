@@ -7,13 +7,10 @@ from datetime import datetime
 from django.db import models
 from django.apps import apps
 from django.contrib.auth.models import User
-from django.core.validators import MaxValueValidator
+from django.core.validators import (MaxValueValidator, MinValueValidator)
 from sscobweb.models import Package
 
 logger = logging.getLogger(__name__)
-
-def get_templ_path(instance, filename):
-    return os.path.join('templates', 'advisor_task.sh')
 
 
 class Setting(models.Model):
@@ -22,12 +19,12 @@ class Setting(models.Model):
     summary = models.TextField(null = True)
     advisor_home = models.CharField(max_length = 255)
     is_active = models.BooleanField(null = False, default = False)
-    bash_templ = models.FileField(max_length = 32, upload_to = get_templ_path)
     max_task_num = models.PositiveSmallIntegerField(default = 10,
                                                     validators=[MaxValueValidator(100),])
 
     class Meta:
         ordering = ('name',)
+        permissions = (("list_setting", "can list setting instance(s)"),)
 
     def __str__(self):
         return "%s" % (self.name)
@@ -48,6 +45,7 @@ class Patient(models.Model):
         return '%s-%s' % (self.patient_uuid, self.case_id)
 
     class Meta:
+        permissions = (("list_patient", "can list patient instance(s)"),)
         ordering = ('created_time', 'case_id', 'birth_date')
 
 
@@ -71,6 +69,7 @@ class File(models.Model):
 
     class Meta:
         ordering = ('created_time', 'file_name', 'size')
+        permissions = (("list_file", "can list file instance(s)"),)
 
 
 class Task(models.Model):
@@ -79,15 +78,23 @@ class Task(models.Model):
     summary = models.TextField(null = True)
     created_time = models.DateTimeField(null = True)
     finished_time = models.DateTimeField(null = True)
-    progress_percentage = models.PositiveSmallIntegerField(default = 0,
-                                                           validators=[MaxValueValidator(100),])
+    # progress_percentage == 0: Running Task
+    # progress_percentage == -1: New Task
+    # progress_percentage == -2: Error Task
+    progress_percentage = models.IntegerField(default = -1,
+                                              validators=[MaxValueValidator(100), MinValueValidator(-2)])
+    jobstatus = models.CharField(max_length = 16, null = True)    # Job Status
     status_code = models.IntegerField()
     msg = models.TextField(null = True)
     args = models.TextField(null = True)
-    config_path = models.CharField(max_length = 255, unique = True)
+    # 必须保存为绝对路径，但是生成此路径时依据Setting中的advisor_home
+    config_path = models.CharField(max_length = 255, unique = True)    # 用于生成job file的变量配置文件
     output_path = models.CharField(max_length = 255, unique = True)
     log_path = models.CharField(max_length = 255, unique = True)
     files = models.ManyToManyField(File)
+    # Task优先级，Level值越低级别越高
+    priority_level = models.PositiveSmallIntegerField(default = 10,
+                                                      validators=[MaxValueValidator(10),])
     package = models.ForeignKey(Package, on_delete = models.CASCADE) # One patient vs. Several tasks
     owners = models.ManyToManyField(
         User,
@@ -101,6 +108,7 @@ class Task(models.Model):
 
     class Meta:
         ordering = ('created_time', 'task_name')
+        permissions = (("list_task", "can list task instance(s)"),)
 
 
 class TaskPool(models.Model):
@@ -111,10 +119,15 @@ class TaskPool(models.Model):
     task_pool_uuid = models.CharField(max_length = 36, primary_key = True)
     task = models.OneToOneField(Task, on_delete = models.CASCADE)
     # Drmaa Job ID
-    job_id = models.CharField(max_length = 32, unique = True)
+    jobid = models.CharField(max_length = 32, unique = True)
+    jobstatus = models.CharField(max_length = 255, null = True)
+    # 状态更新时间
+    updated_time = models.DateTimeField(null = True)
+    result_file_flags = models.TextField(null = True) # 用于计算percentage
 
     class Meta:
-        ordering = ('job_id', )
+        ordering = ('jobid', )
+        permissions = (("list_taskpool", "can list task instance(s) in taskpool"),)
 
 
 class Report(models.Model):
@@ -135,6 +148,7 @@ class Report(models.Model):
 
     class Meta:
         ordering = ('report_name', 'created_time', '-checked')
+        permissions = (("list_report", "can list report instance(s)"),)
 
 
 class UserReport(models.Model):
@@ -148,6 +162,8 @@ class UserReport(models.Model):
     report = models.ForeignKey(Report, on_delete = models.CASCADE)
     relationship = models.CharField(choices = RELATIONSHIPS, max_length = 16)
 
+    class Meta:
+        permissions = (("list_userreport", "can list all userreport relationship(s)"),)
 
 class UserFile(models.Model):
     RELATIONSHIPS = (
@@ -168,6 +184,8 @@ class UserFile(models.Model):
     relationship = models.CharField(choices = RELATIONSHIPS, max_length = 16)
     mode = models.CharField(choices = MODE, max_length = 3)
 
+    class Meta:
+        permissions = (("list_userfile", "can list all userfile relationship(s)"),)
 
 class UserTask(models.Model):
     RELATIONSHIPS = (
@@ -187,3 +205,6 @@ class UserTask(models.Model):
     task = models.ForeignKey(Task, on_delete = models.CASCADE)
     relationship = models.CharField(choices = RELATIONSHIPS, max_length = 16)
     mode = models.CharField(choices = MODE, max_length = 3)
+
+    class Meta:
+        permissions = (("list_usertask", "can list all usertask relationship(s)"),)

@@ -50,7 +50,7 @@ class ChannelList(generics.GenericAPIView):
         try:
             return self.queryset.get(channel_name = channel_name)
         except Channel.DoesNotExist:
-            raise CustomException("Not Found the Channel.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the Channel.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, format = None):
         """
@@ -115,7 +115,7 @@ class ChannelDetail(generics.GenericAPIView):
         try:
             return self.queryset.get(channel_uuid = channel_uuid)
         except Channel.DoesNotExist:
-            raise CustomException("Not Found the Channel.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the Channel.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, channel_uuid):
         """
@@ -176,7 +176,7 @@ class PackageList(generics.GenericAPIView):
         try:
             return Package.objects.all().filter(**filters).order_by('pkg_name', 'is_installed')
         except Package.DoesNotExist:
-            raise CustomException("Not Found the Packages.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the Packages.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, format = None):
         """
@@ -204,7 +204,7 @@ class PackageList(generics.GenericAPIView):
                     'name__contains': name
                 })
         except ValueError:
-            raise CustomException("Bad Request.", status_code = status.HTTP_200_OK)
+            raise CustomException("Bad Request.", status_code = status.HTTP_400_BAD_REQUEST)
 
         queryset = self.paginate_queryset(self.get_queryset(filters))
         serializer = self.get_serializer(queryset, many = True,
@@ -242,7 +242,7 @@ class PackageDetail(generics.GenericAPIView):
         try:
             return self.queryset.get(pkg_uuid = pkg_uuid)
         except Package.DoesNotExist:
-            raise CustomException("Not Found the Package.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the Package.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, pkg_uuid):
         """
@@ -304,7 +304,7 @@ class SettingList(generics.GenericAPIView):
         try:
             return Setting.objects.all().filter(**filters).order_by('name', 'is_active')
         except Setting.DoesNotExist:
-            raise CustomException("Not Found the Settings.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the Settings.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, format = None):
         """
@@ -375,7 +375,7 @@ class SettingDetail(generics.GenericAPIView):
         try:
             return self.queryset.get(setting_uuid = setting_uuid)
         except Setting.DoesNotExist:
-            raise CustomException("Not Found the Setting.", status_code = status.HTTP_200_OK)
+            raise CustomException("Not Found the Setting.", status_code = status.HTTP_404_NOT_FOUND)
 
     def get(self, request, setting_uuid):
         """
