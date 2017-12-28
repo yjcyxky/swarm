@@ -9,6 +9,8 @@ from rest_framework import status
 from rest_framework import permissions
 from scouts.permissions import IsOwnerOrAdmin
 
+logger = logging.getLogger(__name__)
+
 class APIDetail(APIView):
     """
     Retrieve a specified API instance.
@@ -28,6 +30,31 @@ class APIDetail(APIView):
         }
 
     def get(self, request, api_name):
+        """
+        Get a specified API instance.
+        ---
+        The api need an `api_name` url parameter.
+
+        api_name(Possible range of values):
+            - apis
+            - navbar
+            - sidebar
+            - welcome
+
+        response:
+            - status_code: 200
+              status: "Success."
+              data: {}
+
+            - status_code: 400
+              status: "Not Found."
+              data: []
+
+
+        status_code:
+            - 200
+            - 400
+        """
         logger.debug('API_NAME: %s' % api_name)
         logger.debug(request.get_raw_uri())
         user = request.user

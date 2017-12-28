@@ -12,7 +12,6 @@ django-cprofile-middleware==1.0
 django-debug-toolbar==1.9.1
 django-filter==1.1.0
 django-registration==2.3
-django-rest-swagger==2.1.2
 djangorestframework==3.7.3
 djangorestframework-jwt==1.11.0
 docutils==0.14

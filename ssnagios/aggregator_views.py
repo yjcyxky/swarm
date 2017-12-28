@@ -51,11 +51,9 @@ class AggregatorList(generics.GenericAPIView):
                                          context = {'request': request})
         if serializer.is_valid():
             validated_data = serializer.validated_data
-            logger.debug(validated_data)
             status_code, json_response = get_data(endpoint,
                                                   json_data = validated_data,
                                                   method = 'POST')
-            logger.debug(status_code, json_response)
             return Response({
                 "status": "Success" if status_code == 201 else "Failed",
                 "status_code": status_code,

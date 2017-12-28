@@ -56,9 +56,12 @@ class PatientList(generics.GenericAPIView):
             except Patient.DoesNotExist:
                 return False
 
-    def get_queryset(self, filters):
+    def get_queryset(self, filters = None):
         try:
-            return Patient.objects.all().filter(**filters).order_by('-created_time')
+            if filters:
+                return Patient.objects.all().filter(**filters).order_by('-created_time')
+            else:
+                return Patient.objects.all().order_by('-created_time')
         except Patient.DoesNotExist:
             raise CustomException("Not Found the Patient.", status_code = status.HTTP_404_NOT_FOUND)
 
@@ -196,9 +199,12 @@ class ReportList(generics.GenericAPIView):
             except Report.DoesNotExist:
                 return False
 
-    def get_queryset(self, filters):
+    def get_queryset(self, filters = None):
         try:
-            return Report.objects.all().filter(**filters).order_by('-created_time')
+            if filters:
+                return Report.objects.all().filter(**filters).order_by('-created_time')
+            else:
+                return Report.objects.all().order_by('-created_time')
         except Report.DoesNotExist:
             raise CustomException("Not Found the JobLog.", status_code = status.HTTP_404_NOT_FOUND)
 
@@ -346,9 +352,12 @@ class FileList(generics.GenericAPIView):
             except File.DoesNotExist:
                 return False
 
-    def get_queryset(self, filters):
+    def get_queryset(self, filters = None):
         try:
-            return Report.objects.all().filter(**filters).order_by('-created_time')
+            if filters:
+                return Report.objects.all().filter(**filters).order_by('-created_time')
+            else:
+                return Report.objects.all().order_by('-created_time')
         except File.DoesNotExist:
             raise CustomException("Not Found the Files.", status_code = status.HTTP_404_NOT_FOUND)
 
@@ -497,9 +506,12 @@ class TaskList(generics.GenericAPIView):
             except Task.DoesNotExist:
                 return False
 
-    def get_queryset(self, filters):
+    def get_queryset(self, filters = None):
         try:
-            return Task.objects.all().filter(**filters).order_by('-created_time')
+            if filters:
+                return Task.objects.all().filter(**filters).order_by('-created_time')
+            else:
+                return Task.objects.all().order_by('-created_time')
         except Task.DoesNotExist:
             raise CustomException("Not Found the Tasks.", status_code = status.HTTP_404_NOT_FOUND)
 
@@ -665,9 +677,12 @@ class SettingList(generics.GenericAPIView):
     lookup_field = 'setting_uuid'
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
 
-    def get_queryset(self, filters):
+    def get_queryset(self, filters = None):
         try:
-            return Setting.objects.all().filter(**filters).order_by('name', 'is_active')
+            if filters:
+                return Setting.objects.all().filter(**filters).order_by('name', 'is_active')
+            else:
+                return Setting.objects.all().order_by('name', 'is_active')
         except Setting.DoesNotExist:
             raise CustomException("Not Found the Settings.", status_code = status.HTTP_404_NOT_FOUND)
 
@@ -795,9 +810,12 @@ class TaskPoolList(generics.GenericAPIView):
             except Task.DoesNotExist:
                 return False
 
-    def get_queryset(self, filters):
+    def get_queryset(self, filters = None):
         try:
-            return Task.objects.all().filter(**filters).order_by('-created_time')
+            if filters:
+                return Task.objects.all().filter(**filters).order_by('-created_time')
+            else:
+                return Task.objects.all().order_by('-created_time')
         except Task.DoesNotExist:
             raise CustomException("Not Found the Tasks.", status_code = status.HTTP_404_NOT_FOUND)
 

@@ -17,11 +17,11 @@ from django.conf.urls import url, include
 from rest_framework import routers
 from rest_framework_jwt.views import (obtain_jwt_token, refresh_jwt_token, verify_jwt_token)
 from rest_framework.schemas import get_schema_view
-from rest_framework_swagger.renderers import SwaggerUIRenderer, OpenAPIRenderer
+from swagger.renderers import SwaggerUIRenderer, OpenAPIRenderer
 from django.contrib.auth import views as auth_views
 from scouts import views
 
-schema_view = get_schema_view(title='Opsweb APIs', renderer_classes=[OpenAPIRenderer, SwaggerUIRenderer])
+schema_view = get_schema_view(title='Scouts APIs', renderer_classes=[OpenAPIRenderer, SwaggerUIRenderer])
 
 urlpatterns = [
     # For API Documentation
@@ -55,9 +55,9 @@ urlpatterns = [
         # Flower
         url(r'^flower$',
             views.redirect_flower),
-        url(r'^.*/$', views.custom404)
+        url(r'^.*/$', views.custom404, name = 'custom404')
     ])),
-    url(r'^.*/$', views.custom404)
+    url(r'^.*/$', views.custom404, name = "custom404")
 ]
 
 from scouts import settings

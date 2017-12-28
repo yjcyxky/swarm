@@ -149,9 +149,12 @@ class JobLogList(generics.GenericAPIView):
     lookup_field = 'job_uuid'
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
 
-    def get_queryset(self, filters):
+    def get_queryset(self, filters = None):
         try:
-            return JobLog.objects.all().filter(**filters).order_by('-jobid')
+            if filters:
+                return JobLog.objects.all().filter(**filters).order_by('-jobid')
+            else:
+                return JobLog.objects.all().order_by('-jobid')
         except JobLog.DoesNotExist:
             raise CustomException("Not Found the JobLog.", status_code = status.HTTP_404_NOT_FOUND)
 
@@ -259,7 +262,7 @@ class JobLogCount(generics.GenericAPIView):
     queryset = User.objects
     lookup_field = 'job_uuid'
 
-    def get_queryset(self, group_by, filters, select_by = 'year'):
+    def get_queryset(self, filters = None, select_by = 'year'):
         selected_values = {
             'year': ('joblog__owner', 'year', 'joblog__cluster_uuid'),
             'month': ('joblog__owner', 'month', 'joblog__cluster_uuid'),
@@ -276,7 +279,7 @@ class JobLogCount(generics.GenericAPIView):
                 'day': connection.ops.date_trunc_sql('day', 'start')
             },
         }
-        logger.debug('JobLogCount@get_count@selected_values@', selected_values.get(select_by), select_by)
+        logger.debug('JobLogCount@get_count@selected_values@%s' % str(selected_values.get(select_by)))
         try:
             if filters:
                 return self.queryset.extra(select=selections.get(select_by))\
@@ -304,21 +307,31 @@ class JobLogCount(generics.GenericAPIView):
         """
         query_params = request.query_params
         # 防止用户输入引号空格等
-        group_by = query_params.get('group_by', 'owner').strip(' \'"')
         select_by = query_params.get('select_by', 'year').strip(' \'"')
+        start = query_params.get('start')
+        end = query_params.get('end')
         try:
             exit_status = int(query_params.get('exit_status', 0))
         except ValueError:
             raise CustomException("Bad Request.", status_code = status.HTTP_400_BAD_REQUEST)
 
-        logger.debug("sscluster@JobLogCount@%s-%s-%s" % (query_params, select_by, group_by))
-        filters = {
-            'joblog__start__gt': query_params.get('start', '2012-12-12 08:00:00'),
-            'joblog__end__lt': query_params.get('end', '2100-12-12 08:00:00'),
-            'joblog__exit_status': exit_status
-        }
+        logger.debug("sscluster@JobLogCount@%s-%s-%s" % (query_params, select_by))
 
-        queryset = self.paginate_queryset(self.get_queryset(group_by, filters, select_by))
+        filters = {}
+        if exit_status:
+            filters.update({
+                'joblog__exit_status': exit_status
+            })
+        if start:
+            filters.update({
+                'joblog__start__gt': start
+            })
+        if end:
+            filters.update({
+                'joblog__end__lt': end,
+            })
+
+        queryset = self.paginate_queryset(self.get_queryset(filters, select_by))
         serializer = self.get_serializer(queryset, many = True,
                                          context = {'request': request})
         return self.get_paginated_response(serializer.data)

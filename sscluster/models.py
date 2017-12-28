@@ -3,7 +3,7 @@ import logging, copy
 from datetime import datetime
 from django.db import models
 from django.apps import apps
-from django.contrib.auth.models import User
+from django.contrib.auth.models import (User, Group)
 
 logger = logging.getLogger(__name__)
 
@@ -44,11 +44,8 @@ class JobLog(models.Model):
     jobid = models.CharField(max_length = 32, unique = True)
     jobname = models.CharField(max_length = 128)
     user = models.ForeignKey(User)
-    # user = models.CharField(max_length = 32)
-    # group = models.ForeignKey(Group)
-    group = models.CharField(max_length = 32)
-    # owner = models.ForeignKey(User)
-    owner = models.CharField(max_length = 32)
+    group = models.ForeignKey(Group)
+    owner = models.CharField(max_length = 32)    # owner等同于user，为获取集群记录方便而添加，日后再移除
     queue = models.CharField(max_length = 32)
     ctime = models.DateTimeField(null = True)    # Time job was created
     qtime = models.DateTimeField(null = True)    # Time job was queued

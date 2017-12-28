@@ -172,9 +172,12 @@ class PackageList(generics.GenericAPIView):
     lookup_field = 'pkg_uuid'
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
 
-    def get_queryset(self, filters):
+    def get_queryset(self, filters = None):
         try:
-            return Package.objects.all().filter(**filters).order_by('pkg_name', 'is_installed')
+            if filters:
+                return Package.objects.all().filter(**filters).order_by('pkg_name', 'is_installed')
+            else:
+                return Package.objects.all().order_by('pkg_name', 'is_installed')
         except Package.DoesNotExist:
             raise CustomException("Not Found the Packages.", status_code = status.HTTP_404_NOT_FOUND)
 
@@ -300,9 +303,12 @@ class SettingList(generics.GenericAPIView):
     lookup_field = 'setting_uuid'
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
 
-    def get_queryset(self, filters):
+    def get_queryset(self, filters = None):
         try:
-            return Setting.objects.all().filter(**filters).order_by('name', 'is_active')
+            if filters:
+                return Setting.objects.all().filter(**filters).order_by('name', 'is_active')
+            else:
+                return Setting.objects.all().order_by('name', 'is_active')
         except Setting.DoesNotExist:
             raise CustomException("Not Found the Settings.", status_code = status.HTTP_404_NOT_FOUND)
 

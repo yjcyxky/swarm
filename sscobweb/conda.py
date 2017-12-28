@@ -332,7 +332,7 @@ class Conda:
                                        .order_by('priority_level')
         if channels:
             valid_channels = self._pkg.channels
-            logger.debug('Cobweb@utils@_get_channels@valid_channels@%s', str(valid_channels))
+            logger.debug('Cobweb@utils@_get_channels@valid_channels@%s' % str(valid_channels))
             return [channel.channel_path for channel in channels]
         else:
             return []

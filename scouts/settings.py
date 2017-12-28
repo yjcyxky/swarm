@@ -21,6 +21,7 @@ sys.path.append(BASE_DIR)
 
 from bin.configuration import conf as settings
 from bin import configuration as conf
+from version import get_version
 
 RUNMODE = settings.get('core', 'run_mode').strip("'\"")
 SCOUTS_LOG = os.path.join(os.path.expanduser(conf.SCOUTS_LOG), "scouts-webserver-{}.log".format(RUNMODE.lower()))
@@ -47,7 +48,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'registration',
     'rest_framework',
-    'rest_framework_swagger',
     'corsheaders',
     'sscobbler.apps.SscobblerConfig',
     'sshostmgt.apps.SshostmgtConfig',
@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'sscobweb.apps.SscobwebConfig',
     'ssadvisor.apps.SsadvisorConfig',
     'account.apps.AccountConfig',
+    'swagger',
     'scouts',
     'debug_toolbar',
     'django_celery_beat',
@@ -112,8 +113,11 @@ SWAGGER_SETTINGS = {
         'basic': {
             'type': 'basic'
         }
-    }
+    },
+    'JSON_EDITOR': True,
+    'SHOW_REQUEST_HEADERS': True,
 }
+
 LOGIN_URL = 'rest_framework:login'
 LOGOUT_URL = 'rest_framework:logout'
 
