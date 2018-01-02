@@ -24,7 +24,7 @@ from daemon.pidfile import TimeoutPIDLockFile
 
 from configuration import conf as settings
 from version import (get_version, get_company_name)
-from exceptions import ScoutsException
+from exceptions import SwarmException
 
 def sigint_handler(sig, frame):
     sys.exit(0)
@@ -83,7 +83,7 @@ def flower(args):
     if args.auth:
         # It doesn't work, because cannot get password text from djano.
         # How to solve it?
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "scouts.settings")
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "swarm.settings")
         try:
             import django
             django.setup()
@@ -133,24 +133,13 @@ def celery(args):
         'PATH': os.environ.get('PATH'),
     })
 
-    celery_cmd = ['celery', '-A', args.module_name, 'worker', '--loglevel=info']
+    celery_cmd = ['celery', '-A', args.module_name, 'worker', '--loglevel=%s' % args.loglevel]
 
     if args.daemon:
-        pid, stdout, stderr, log_file = setup_locations("celery", args.pid, args.stdout, args.stderr, args.log_file)
-        stdout = open(stdout, 'w+')
-        stderr = open(stderr, 'w+')
+        pid, stdout, stderr, logfile = setup_locations("celery-beat", args.pid, args.stdout, args.stderr, args.log_file)
+        celery_cmd.extend(['--pidfile=%s' % pid, '--detach', '--logfile=%s' % logfile])
 
-        ctx = daemon.DaemonContext(
-            pidfile=TimeoutPIDLockFile(pid, -1),
-            stdout=stdout,
-            stderr=stderr,
-        )
-
-        with ctx:
-            os.execvpe("celery", celery_cmd, env)
-
-        stdout.close()
-        stderr.close()
+        os.execvpe("celery", celery_cmd, env)
     else:
         signal.signal(signal.SIGINT, sigint_handler)
         signal.signal(signal.SIGTERM, sigint_handler)
@@ -165,41 +154,33 @@ def celery_beat(args):
         'PATH': os.environ.get('PATH'),
     })
 
-    celery_cmd = ['celery', '-A', args.module_name, 'beat', '--loglevel=info']
+    celery_cmd = ['celery', '-A', args.module_name, 'beat', '--loglevel=%s' % args.loglevel]
     if args.django_beat:
         celery_cmd.append('--scheduler=django_celery_beat.schedulers:DatabaseScheduler')
+    else:
+        schedule_file = os.path.join(os.path.expanduser(conf.SWARM_HOME), "swarm-celery-beat-schedule.db")
+        celery_cmd.append('--schedule=%s' % schedule_file)
 
     if args.daemon:
-        pid, stdout, stderr, log_file = setup_locations("celery", args.pid, args.stdout, args.stderr, args.log_file)
-        stdout = open(stdout, 'w+')
-        stderr = open(stderr, 'w+')
+        pid, stdout, stderr, logfile = setup_locations("celery-beat", args.pid, args.stdout, args.stderr, args.log_file)
+        celery_cmd.extend(['--pidfile=%s' % pid, '--detach', '--logfile=%s' % logfile])
 
-        ctx = daemon.DaemonContext(
-            pidfile=TimeoutPIDLockFile(pid, -1),
-            stdout=stdout,
-            stderr=stderr,
-        )
-
-        with ctx:
-            os.execvpe("celery", celery_cmd, env)
-
-        stdout.close()
-        stderr.close()
+        os.execvpe("celery-beat", celery_cmd, env)
     else:
         signal.signal(signal.SIGINT, sigint_handler)
         signal.signal(signal.SIGTERM, sigint_handler)
 
-        os.execvpe("celery", celery_cmd, env)
+        os.execvpe("celery-beat", celery_cmd, env)
 
 def setup_locations(process, pid=None, stdout=None, stderr=None, log=None):
     if not stderr:
-        stderr = os.path.join(os.path.expanduser(conf.SCOUTS_LOG), "scouts-{}.err".format(process))
+        stderr = os.path.join(os.path.expanduser(conf.SWARM_LOG), "swarm-{}.err".format(process))
     if not stdout:
-        stdout = os.path.join(os.path.expanduser(conf.SCOUTS_LOG), "scouts-{}.out".format(process))
+        stdout = os.path.join(os.path.expanduser(conf.SWARM_LOG), "swarm-{}.out".format(process))
     if not log:
-        log = os.path.join(os.path.expanduser(conf.SCOUTS_LOG), "scouts-{}.log".format(process))
+        log = os.path.join(os.path.expanduser(conf.SWARM_LOG), "swarm-{}.log".format(process))
     if not pid:
-        pid = os.path.join(os.path.expanduser(conf.SCOUTS_HOME), "scouts-{}.pid".format(process))
+        pid = os.path.join(os.path.expanduser(conf.SWARM_HOME), "swarm-{}.pid".format(process))
 
     return pid, stdout, stderr, log
 
@@ -315,6 +296,7 @@ def job(args):
     bash_templ_path = args.bash_template
     vars_file_path = args.vars_file
     jobname = args.jobname
+
     job = Job(jobname, bash_templ_path = bash_templ_path, vars_file_path = vars_file_path)
     job.submit_job()
     logger.info('Your job has been submitted with ID %s' % job.get_jobid())
@@ -328,10 +310,10 @@ def webserver(args):
     ssl_cert = args.ssl_cert or conf.get('webserver', 'web_server_ssl_cert')
     ssl_key = args.ssl_key or conf.get('webserver', 'web_server_ssl_key')
     if not ssl_cert and ssl_key:
-        raise ScoutsException(
+        raise SwarmException(
             'An SSL certificate must also be provided for use with ' + ssl_key)
     if ssl_cert and not ssl_key:
-        raise ScoutsException(
+        raise SwarmException(
             'An SSL key must also be provided for use with ' + ssl_cert)
 
     RUNMODE = settings.get('core', 'run_mode').strip("'\"")
@@ -360,7 +342,7 @@ def webserver(args):
             '-k', str(args.workerclass),
             '-t', str(worker_timeout),
             '-b', args.hostname + ':' + str(args.port),
-            '-n', 'scouts-webserver',
+            '-n', 'swarm-webserver',
             '-p', str(pid),
             '-c', GUNICORN_CONFIG
         ]
@@ -507,13 +489,18 @@ class CLIFactory(object):
         # celery
         'module_name': Arg(
             ("-m", "--module_name"),
-            default = 'scouts',
-            help="The name of the current module for Celery. Default Value: scouts"),
+            default = 'swarm',
+            help="The name of the current module for Celery. Default Value: swarm"),
         'django_beat': Arg(
             ("-b", "--django-beat"),
             "Use django_celery_beat database as a backend.",
             "store_true",
-            default = True),
+            default = False),
+        'loglevel': Arg(
+            ("-L", "--loglevel"),
+            help = "Logging level, choose between DEBUG, INFO, WARNING,"
+                   "ERROR, CRITICAL, or FATAL.",
+            default = 'INFO'),
         # job
         'bash_template': Arg(
             ("-bt", "--bash_template"),
@@ -534,7 +521,7 @@ class CLIFactory(object):
             'args': ('initdata',),
         }, {
             'func': webserver,
-            'help': "Start a scouts webserver instance",
+            'help': "Start a swarm webserver instance",
             'args': ('port', 'workers', 'workerclass', 'worker_timeout', 'hostname',
                      'pid', 'daemon', 'stdout', 'stderr', 'access_logfile',
                      'error_logfile', 'log_file', 'ssl_cert', 'ssl_key', 'debug'),
@@ -550,11 +537,11 @@ class CLIFactory(object):
         }, {
             'func': celery,
             'help': "Start a Celery Worker",
-            'args': ('module_name', 'pid', 'daemon', 'stdout', 'stderr', 'log_file'),
+            'args': ('module_name', 'pid', 'daemon', 'log_file', 'loglevel'),
         }, {
             'func': celery_beat,
             'help': "Start a Celery Beat",
-            'args': ('module_name', 'pid', 'daemon', 'stdout', 'stderr', 'log_file', 'django_beat'),
+            'args': ('module_name', 'pid', 'daemon', 'log_file', 'django_beat', 'loglevel'),
         }, {
             'func': version,
             'help': "Show the version",

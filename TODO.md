@@ -8,4 +8,4 @@
 
 # Version 0.1.0-2017年08月19日
 1. 移除所有html文件，所有数据传输均采用JSON格式
-2. scouts提供Tree API，用于前端渲染侧边栏
+2. swarm提供Tree API，用于前端渲染侧边栏

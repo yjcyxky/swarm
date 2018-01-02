@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
 from rest_framework import permissions
-from scouts.permissions import IsOwnerOrAdmin
+from swarm.permissions import IsOwnerOrAdmin
 
 logger = logging.getLogger(__name__)
 

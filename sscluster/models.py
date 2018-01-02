@@ -14,7 +14,7 @@ class ToDoList(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
     checked_status = models.BooleanField(null = False, default = False)
     finished_time = models.DateTimeField(null = True)
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete = models.CASCADE)
 
     def __str__(self):
         return '%s-%s' % (self.id, self.item_name)
@@ -43,8 +43,8 @@ class JobLog(models.Model):
     job_uuid = models.CharField(max_length = 36, primary_key = True)
     jobid = models.CharField(max_length = 32, unique = True)
     jobname = models.CharField(max_length = 128)
-    user = models.ForeignKey(User)
-    group = models.ForeignKey(Group)
+    user = models.ForeignKey(User, on_delete = models.CASCADE)
+    group = models.ForeignKey(Group, on_delete = models.CASCADE)
     owner = models.CharField(max_length = 32)    # owner等同于user，为获取集群记录方便而添加，日后再移除
     queue = models.CharField(max_length = 32)
     ctime = models.DateTimeField(null = True)    # Time job was created
@@ -66,7 +66,7 @@ class JobLog(models.Model):
     resources_used_walltime = models.CharField(max_length = 16, null = True)
     cpus_num = models.PositiveIntegerField(null = True)
     total_execution_slots = models.PositiveIntegerField(null = True)
-    cluster_uuid = models.ForeignKey(Cluster)
+    cluster_uuid = models.ForeignKey(Cluster, on_delete = models.CASCADE)
 
     def __str__(self):
         return '%s-%s' % (self.jobid, self.jobname)

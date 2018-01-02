@@ -1,5 +1,5 @@
 """
-WSGI config for scouts project.
+WSGI config for swarm project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

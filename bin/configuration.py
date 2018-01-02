@@ -13,17 +13,17 @@ import sys
 import subprocess
 import warnings
 
-# 必须将scouts添加到sys.path中
+# 必须将swarm添加到sys.path中
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 
 from collections import OrderedDict
 from configparser import ConfigParser
-from exceptions import ScoutsConfigException
+from exceptions import SwarmConfigException
 
 HEADER = """\
  -------------------------------
- < Hi, My name is Scouts-{version} >
+ < Hi, My name is Swarm-{version} >
  -------------------------------
         \   ^__^
          \  (oo)\_______
@@ -31,7 +31,7 @@ HEADER = """\
                 ||----w||
                 ||     ||
 
- Scouts is designed by {company_name} Company for HPC Users...
+ Swarm is designed by {company_name} Company for HPC Users...
 """
 
 # the prefix to append to gunicorn worker processes after init
@@ -69,16 +69,16 @@ def expand_env_var(env_var):
 
 DEFAULT_CONFIG = """\
 [core]
-# The home folder for Scouts, default is ~/scouts
-scouts_home = {SCOUTS_HOME}
+# The home folder for Swarm, default is ~/swarm
+swarm_home = {SWARM_HOME}
 
 # Database
-scouts_db_engine = django.db.backends.mysql
-scouts_db_name = scouts
-scouts_db_user = root
-scouts_db_password = yjc040653
-scouts_db_host = localhost
-scouts_db_port = 3306
+swarm_db_engine = django.db.backends.mysql
+swarm_db_name = swarm
+swarm_db_user = root
+swarm_db_password = yjc040653
+swarm_db_host = localhost
+swarm_db_port = 3306
 
 # Turn unit test mode on (overwrites many configuration options with test
 # values at runtime)
@@ -187,14 +187,14 @@ default_queue = default
 
 TEST_CONFIG = """\
 [core]
-scouts_home = {SCOUTS_HOME}
+swarm_home = {SWARM_HOME}
 unit_test_mode = True
-scouts_db_engine = django.db.backends.mysql
-scouts_db_name = scouts
-scouts_db_user = root
-scouts_db_password = yjc040653
-scouts_db_host = localhost
-scouts_db_port = 3306
+swarm_db_engine = django.db.backends.mysql
+swarm_db_name = swarm
+swarm_db_user = root
+swarm_db_password = yjc040653
+swarm_db_host = localhost
+swarm_db_port = 3306
 run_mode = DEBUG
 
 [webserver]
@@ -217,7 +217,7 @@ default_queue = default
 """
 
 
-class ScoutsConfigParser(ConfigParser):
+class SwarmConfigParser(ConfigParser):
     def __init__(self, *args, **kwargs):
         ConfigParser.__init__(self, *args, **kwargs)
         self.read_string(parameterized_config(DEFAULT_CONFIG))
@@ -232,13 +232,13 @@ class ScoutsConfigParser(ConfigParser):
     def _validate(self):
         RUNMODE = self.get('core', 'run_mode')
         if RUNMODE is None:
-            raise ScoutsConfigException("You must specified run_mode in core section.")
+            raise SwarmConfigException("You must specified run_mode in core section.")
 
         self.is_validated = True
 
     def _get_env_var_option(self, section, key):
         # must have format AIRFLOW__{SECTION}__{KEY} (note double underscore)
-        env_var = 'SCOUTS__{S}__{K}'.format(S=section.upper(), K=key.upper())
+        env_var = 'SWARM__{S}__{K}'.format(S=section.upper(), K=key.upper())
         if env_var in os.environ:
             return expand_env_var(os.environ[env_var])
 
@@ -266,7 +266,7 @@ class ScoutsConfigParser(ConfigParser):
         elif val.lower() in ('f', 'false', '0'):
             return False
         else:
-            raise ScoutsConfigException(
+            raise SwarmConfigException(
                 'The value for configuration option "{}:{}" is not a '
                 'boolean (received "{}").'.format(section, key, val))
 
@@ -302,10 +302,10 @@ class ScoutsConfigParser(ConfigParser):
         if display_source:
             for section in cfg:
                 for k, v in cfg[section].items():
-                    cfg[section][k] = (v, 'scouts config')
+                    cfg[section][k] = (v, 'swarm config')
 
         # add env vars and overwrite because they have priority
-        for ev in [ev for ev in os.environ if ev.startswith('SCOUTS__')]:
+        for ev in [ev for ev in os.environ if ev.startswith('SWARM__')]:
             try:
                 _, section, key = ev.split('__')
                 opt = self._get_env_var_option(section, key)
@@ -314,7 +314,7 @@ class ScoutsConfigParser(ConfigParser):
             if opt:
                 if (
                         not display_sensitive
-                        and ev != 'SCOUTS__CORE__UNIT_TEST_MODE'):
+                        and ev != 'SWARM__CORE__UNIT_TEST_MODE'):
                     opt = '< hidden >'
                 if display_source:
                     opt = (opt, 'env var')
@@ -344,29 +344,29 @@ def mkdir_p(path):
         if exc.errno == errno.EEXIST and os.path.isdir(path):
             pass
         else:
-            raise ScoutsConfigException('Had trouble creating a directory')
+            raise SwarmConfigException('Had trouble creating a directory')
 
 
-# Setting SCOUTS_HOME and SCOUTS_CONFIG from environment variables, using
-# "~/scouts" and "~/scouts/scouts.cfg" respectively as defaults.
+# Setting SWARM_HOME and SWARM_CONFIG from environment variables, using
+# "~/swarm" and "~/swarm/swarm.cfg" respectively as defaults.
 
-if 'SCOUTS_HOME' not in os.environ:
-    SCOUTS_HOME = expand_env_var('~/scouts')
-    SCOUTS_LOG = os.path.join(SCOUTS_HOME, 'logs')
+if 'SWARM_HOME' not in os.environ:
+    SWARM_HOME = expand_env_var('~/swarm')
+    SWARM_LOG = os.path.join(SWARM_HOME, 'logs')
 else:
-    SCOUTS_HOME = expand_env_var(os.environ['SCOUTS_HOME'])
-    SCOUTS_LOG = os.path.join(SCOUTS_HOME, 'logs')
+    SWARM_HOME = expand_env_var(os.environ['SWARM_HOME'])
+    SWARM_LOG = os.path.join(SWARM_HOME, 'logs')
 
-mkdir_p(SCOUTS_HOME)
-mkdir_p(SCOUTS_LOG)
+mkdir_p(SWARM_HOME)
+mkdir_p(SWARM_LOG)
 
-if 'SCOUTS_CONFIG' not in os.environ:
-    if os.path.isfile(expand_env_var('~/scouts.cfg')):
-        SCOUTS_CONFIG = expand_env_var('~/scouts.cfg')
+if 'SWARM_CONFIG' not in os.environ:
+    if os.path.isfile(expand_env_var('~/swarm.cfg')):
+        SWARM_CONFIG = expand_env_var('~/swarm.cfg')
     else:
-        SCOUTS_CONFIG = SCOUTS_HOME + '/scouts.cfg'
+        SWARM_CONFIG = SWARM_HOME + '/swarm.cfg'
 else:
-    SCOUTS_CONFIG = expand_env_var(os.environ['SCOUTS_CONFIG'])
+    SWARM_CONFIG = expand_env_var(os.environ['SWARM_CONFIG'])
 
 def parameterized_config(template):
     """
@@ -378,26 +378,26 @@ def parameterized_config(template):
     all_vars = {k: v for d in [globals(), locals()] for k, v in d.items()}
     return template.format(**all_vars)
 
-TEST_CONFIG_FILE = SCOUTS_HOME + '/unittests.cfg'
+TEST_CONFIG_FILE = SWARM_HOME + '/unittests.cfg'
 if not os.path.isfile(TEST_CONFIG_FILE):
     logging.info("Creating new airflow config file for unit tests in: " +
                  TEST_CONFIG_FILE)
     with open(TEST_CONFIG_FILE, 'w') as f:
         f.write(parameterized_config(TEST_CONFIG))
 
-if not os.path.isfile(SCOUTS_CONFIG):
+if not os.path.isfile(SWARM_CONFIG):
     # These configuration options are used to generate a default configuration
     # when it is missing. The right way to change your configuration is to
     # alter your configuration file, not this code.
-    logging.info("Creating new airflow config file in: " + SCOUTS_CONFIG)
-    with open(SCOUTS_CONFIG, 'w') as f:
+    logging.info("Creating new airflow config file in: " + SWARM_CONFIG)
+    with open(SWARM_CONFIG, 'w') as f:
         f.write(parameterized_config(DEFAULT_CONFIG))
 
-logging.info("Reading the config from " + SCOUTS_CONFIG)
+logging.info("Reading the config from " + SWARM_CONFIG)
 
 
-conf = ScoutsConfigParser()
-conf.read(SCOUTS_CONFIG)
+conf = SwarmConfigParser()
+conf.read(SWARM_CONFIG)
 
 
 def load_test_config():

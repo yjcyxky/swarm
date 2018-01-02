@@ -19,9 +19,9 @@ from rest_framework_jwt.views import (obtain_jwt_token, refresh_jwt_token, verif
 from rest_framework.schemas import get_schema_view
 from swagger.renderers import SwaggerUIRenderer, OpenAPIRenderer
 from django.contrib.auth import views as auth_views
-from scouts import views
+from swarm import views
 
-schema_view = get_schema_view(title='Scouts APIs', renderer_classes=[OpenAPIRenderer, SwaggerUIRenderer])
+schema_view = get_schema_view(title='Swarm APIs', renderer_classes=[OpenAPIRenderer, SwaggerUIRenderer])
 
 urlpatterns = [
     # For API Documentation
@@ -51,6 +51,7 @@ urlpatterns = [
         url(r'^sscluster/', include('sscluster.urls')),
         url(r'^sscobweb/', include('sscobweb.urls')),
         url(r'^ssadvisor/', include('ssadvisor.urls')),
+        url(r'^report-engine/', include('report_engine.urls')),
 
         # Flower
         url(r'^flower$',
@@ -60,7 +61,7 @@ urlpatterns = [
     url(r'^.*/$', views.custom404, name = "custom404")
 ]
 
-from scouts import settings
+from swarm import settings
 if settings.DEBUG:
     from django.conf.urls.static import static
     import debug_toolbar

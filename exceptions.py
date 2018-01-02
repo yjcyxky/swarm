@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 
 
-class ScoutsException(Exception):
+class SwarmException(Exception):
     pass
 
 
-class ScoutsConfigException(ScoutsException):
+class SwarmConfigException(SwarmException):
     pass
 
 
-class ScoutsSensorTimeout(ScoutsException):
+class SwarmSensorTimeout(SwarmException):
     pass
 
 
-class ScoutsTaskTimeout(ScoutsException):
+class SwarmTaskTimeout(SwarmException):
     pass
 
 
-class ScoutsSkipException(ScoutsException):
+class SwarmSkipException(SwarmException):
     pass

@@ -1,5 +1,5 @@
 # 功能模块说明
-1. scouts提供前端和后端数据库管理等，同时负责组合其它组件
+1. swarm提供前端和后端数据库管理等，同时负责组合其它组件
 2. ssansible提供ansible插件封装，用于软件安装与服务配置
 3. sscobbler提供系统自动安装模块
 4. sshostmgt提供主机管理模块，包括主机信息收集、开关机、重启等
@@ -11,7 +11,8 @@
 2. 安装Ansible
 3. 安装配置Ganglia
 4. 安装配置Nagios
-5. 部署SwarmOpsWeb
+5. 部署Redis
+6. 部署MySQL
 
 # How to reuse sscobbler app
 1. You need to prepare a config.py file that contains these variables described below when you want to reuse sscobbler.
@@ -25,12 +26,12 @@ ZH_INTERFACE: language dictory in chinese
 EN_INTERFACE: language dictory in english
 ```
 
-2. Add this line to urls.py file of scouts app
+2. Add this line to urls.py file of swarm app
 ```
 url(r'^sscobbler/', include('sscobbler.urls'))
 ```
 
-3. Add sscobbler app to INSTALLED_APPS of scouts app
+3. Add sscobbler app to INSTALLED_APPS of swarm app
 ```
 'sscobbler'
 ```

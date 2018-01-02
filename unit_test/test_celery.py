@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from scouts.celery import debug_task
+from swarm.celery import debug_task
 from ssadvisor.tasks import add
 
 if __name__ == '__main__':
