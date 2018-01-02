@@ -62,9 +62,19 @@ urlpatterns = [
 ]
 
 from swarm import settings
+from django.conf import settings
+from django.contrib.staticfiles import views
+from django.urls import re_path
+
 if settings.DEBUG:
+    # If you want to collect static files in production mode, you need to use django.contrib.staticfiles
+    # Do Not need to use static files in the restful project.
     from django.conf.urls.static import static
     import debug_toolbar
     urlpatterns = [
         url(r'^__debug__/', include(debug_toolbar.urls)),
     ] + urlpatterns + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+    urlpatterns += [
+        re_path(r'^static/(?P<path>.*)$', views.serve),
+    ]
