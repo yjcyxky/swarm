@@ -36,7 +36,6 @@ from version import (get_version, get_company_name)
 from exceptions import SwarmException
 from ssspider.spider import get_argument_parser, main as spider_main
 
-logger = logging.getLogger(__name__)
 
 def sigint_handler(sig, frame):
     sys.exit(0)
@@ -125,9 +124,9 @@ def flower(args, **kwargs):
         flower_cmd.append(basic_auth)
 
     # 去除重复输入的参数，取最后一个
-    logger.debug('Flower CMD: %s' % str(flower_cmd))
+    print('Flower CMD: %s' % str(flower_cmd))
     flower_cmd = list(set(flower_cmd))
-    logger.debug('Flower CMD(Unique): %s' % str(flower_cmd))
+    print('Flower CMD(Unique): %s' % str(flower_cmd))
     if args.daemon:
         pid, stdout, stderr, log_file = setup_locations("flower", args.pid, args.stdout, args.stderr, args.log_file)
         stdout = open(stdout, 'w+')
@@ -320,11 +319,21 @@ def advisor(args, **kwargs):
     from ssadvisor.jobs import Job
     bash_templ_path = args.bash_template
     vars_file_path = args.ini
-    jobname = args.jobname
+    jobid = jobname = args.job
+    terminate_flag = args.terminate_flag
 
-    job = Job(jobname, bash_templ_path = bash_templ_path, vars_file_path = vars_file_path)
-    job.submit_job()
-    logger.info('Your job has been submitted with ID %s' % job.get_jobid())
+    if (jobname and bash_templ_path and vars_file_path):
+        job = Job(jobname, bash_templ_path = bash_templ_path, vars_file_path = vars_file_path)
+        job.submit_job()
+        print('Your job has been submitted with ID %s' % job.get_jobid())
+    elif (jobid and terminate_flag):
+        job = Job(jobid = jobid)
+        jobstatus = job.terminate_job()
+        print("The status of your job is: %s" % jobstatus)
+    else:
+        job = Job(jobid = jobid)
+        jobstatus = job.get_jobstatus()
+        print("The status of your job is %s" % jobstatus)
 
 def webserver(args, **kwargs):
     access_logfile = args.access_logfile or settings.get('webserver', 'access_logfile')
@@ -527,18 +536,23 @@ class CLIFactory(object):
             help = "Logging level, choose between DEBUG, INFO, WARNING,"
                    "ERROR, CRITICAL, or FATAL.",
             default = 'INFO'),
-        # job
+        # advisor
         'bash_template': Arg(
             ("-bt", "--bash_template"),
             help="bash template file for submitting job(Only Support Jinja2 Syntax).",
-            required = True),
+            required = False),
         'vars_file': Arg(
             ("-i", "--ini"),
             help="config file for rendering bash template(Only Support INI Syntax).",
-            required = True),
-        'jobname': Arg(
-            ('jobname',),
-            help="job's name."),
+            required = False),
+        'terminate_flag': Arg(
+            ("-T", "--terminate"),
+            "Terminate the specified job.",
+            "store_true",
+            default = False),
+        'job': Arg(
+            ("job",),
+            help="job's name or id."),
     }
     subparsers = (
         {
@@ -575,7 +589,7 @@ class CLIFactory(object):
         }, {
             'func': advisor,
             'help': "Submit a job to cluster. (Advisor Terminal Version)",
-            'args': ('bash_template', 'vars_file', 'jobname'),
+            'args': ('bash_template', 'vars_file', 'terminate_flag', 'job'),
         }, {
             'func': spider,
             'help': "Spider is a Python based language and execution "
