@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # -----------------------------------------------------------
@@ -9,11 +8,15 @@
 #  See the license for more details.
 #  Author: Jingcheng Yang <yjcyxky@163.com>
 
-from src.swarm.celery import debug_task
-from src.ssadvisor.tasks import add
+from __future__ import unicode_literals
 
-if __name__ == '__main__':
-    import sys
-    print(sys.path)
-    print(debug_task.delay())
-    print(add.delay(1, 2))
+from django.apps import AppConfig
+import platform
+
+class SscobwebConfig(AppConfig):
+    name = "sscobweb"
+    settings = {
+        'ROOT_PREFIX': '/opt/local/cobweb',
+        'SYSTEM': 'Linux',
+        'ARCH': 'x86_64'
+    }

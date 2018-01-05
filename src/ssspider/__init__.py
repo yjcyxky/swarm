@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # -----------------------------------------------------------
@@ -9,11 +8,9 @@
 #  See the license for more details.
 #  Author: Jingcheng Yang <yjcyxky@163.com>
 
-from src.swarm.celery import debug_task
-from src.ssadvisor.tasks import add
+import os
+import sys
 
-if __name__ == '__main__':
-    import sys
-    print(sys.path)
-    print(debug_task.delay())
-    print(add.delay(1, 2))
+# 必须将spider添加到sys.path中
+SPIDER_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(SPIDER_DIR)

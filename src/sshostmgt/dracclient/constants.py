@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # -----------------------------------------------------------
@@ -9,11 +8,17 @@
 #  See the license for more details.
 #  Author: Jingcheng Yang <yjcyxky@163.com>
 
-from src.swarm.celery import debug_task
-from src.ssadvisor.tasks import add
+# power states
+POWER_ON = 'POWER_ON'
+POWER_OFF = 'POWER_OFF'
+REBOOT = 'REBOOT'
 
-if __name__ == '__main__':
-    import sys
-    print(sys.path)
-    print(debug_task.delay())
-    print(add.delay(1, 2))
+PRIMARY_STATUS = {
+    '0': 'unknown',
+    '1': 'ok',
+    '2': 'degraded',
+    '3': 'error'
+}
+
+# binary unit constants
+UNITS_KI = 2 ** 10
