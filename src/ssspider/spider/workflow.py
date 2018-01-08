@@ -544,6 +544,7 @@ class Workflow:
         if not dryrun and not no_hooks:
             self._onstart(logger.get_logfile())
 
+        # The program will enter into the loop (while True), after entering the job schedule
         success = scheduler.schedule()
 
         if success:

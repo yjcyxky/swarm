@@ -19,3 +19,5 @@
 
 # 2018年1月5日
 1. sscobbler仅支持Python2.7，需要移植到Python3
+2. 增加scheduler_api，封装slurm、Torque等集群调度软件提供Job相关的更多的操作
+3. 增加ansible_api，封装ansible API 2.0提供自动化playbook Runner.

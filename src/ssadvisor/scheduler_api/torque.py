@@ -8,7 +8,7 @@
 #  See the license for more details.
 #  Author: Jingcheng Yang <yjcyxky@163.com>
 
-from ssadvisor.scheduler_api import BaseScheduler
+from ssadvisor.scheduler_api.scheduler import BaseScheduler
 
 class TorqueScheduler(BaseScheduler):
     pass

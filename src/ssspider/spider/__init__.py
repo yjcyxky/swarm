@@ -1232,6 +1232,12 @@ def main(args = None, argv=None):
     #         # silently close
     #         pass
     else:
+        # For Spider Server(Get all information by using log_handler)
+        path = '.spider/zodb'
+        zodb_name = 'spider.fs'
+        from ssspider.workflow import get_log_handler
+        log_handler = get_log_handler(path, zodb_name, debug = True)
+
         success = spider(args.spiderfile,
                             listrules=args.list,
                             list_target_rules=args.list_target_rules,
@@ -1313,7 +1319,8 @@ def main(args = None, argv=None):
                             default_remote_provider=args.default_remote_provider,
                             default_remote_prefix=args.default_remote_prefix,
                             assume_shared_fs=not args.no_shared_fs,
-                            cluster_status=args.cluster_status)
+                            cluster_status=args.cluster_status,
+                            log_handler=log_handler)
 
     if args.profile:
         with open(args.profile, "w") as out:

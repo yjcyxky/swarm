@@ -43,6 +43,18 @@
 10. uberftp
     The uberftp command needs to be available for GridFTP support
 
+# 配置
+1. 所有终端程序支持配置文件+命令行参数两种配置方式(命令行参数优先于配置文件)
+    配置文件的配置经由cli.py<from configuration import conf as settings>导入
+2. 所有webserver模块支持配置文件+数据库两种配置方式(数据库配置优先于配置文件、**数据库配置为动态生效**)
+    - 配置文件的配置经由cli.py<from configuration import conf as settings>导入
+    - 数据库配置则通过相应APP的Setting Model来获取
+
+# ssspider
+1. 提交的所有spider workflow，均记录相应pid至数据库中(即使重启Web服务之后，仍可追踪提交的任务是否已经完成)
+2. 提交的spider workflow实例均维护在队列中，方便随时查询操作workflow
+备注：队列是非永久存储，因此swarm进程退出后队列则被销毁且提交的Job亦中断，因此需要保存足够多的信息在数据库，方便重启Workflow
+
 # How to reuse sscobbler app
 1. You need to prepare a config.py file that contains these variables described below when you want to reuse sscobbler.
 ```

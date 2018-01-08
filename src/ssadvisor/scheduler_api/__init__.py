@@ -8,27 +8,18 @@
 #  See the license for more details.
 #  Author: Jingcheng Yang <yjcyxky@163.com>
 
-class BaseScheduler:
-    def __init__(self):
-        pass
+import sys
 
-    def get_host(self, jobid):
-        """
-        Get host name of the host where the current job located
-        """
-        pass
+def _load(path, module_name, modulelist = ['slurm', 'torque']):
+    loader = __import__(path, fromlist = modulelist)
+    return getattr(loader, '%s.%sScheduler' % (attr_name, module_name.capitalize())
 
-    def list_all_jobs(self):
-        """
-        List all jobs that was submitted to current cluster.
-        """
-        pass
-
-    def show_job_info(self, jobid):
-        pass
-
-    def kill_job(self, jobid):
-        pass
-
-    def force_kill_job(self, jobid):
-        pass
+def get_scheduler(scheduler_name = 'slurm'):
+    try:
+        scheduler_name = scheduler_name.lower()
+        scheduler_cls = _load('ssadvisor.scheduler_api', '%s' % scheduler_name)
+        return scheduler_cls
+    except AttributeError:
+        raise ImportError('scheduler %s cannot be found (%s)' %
+                          (scheduler_name,
+                           traceback.format_exception(*sys.exc_info())))

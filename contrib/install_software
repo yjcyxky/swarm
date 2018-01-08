@@ -1,0 +1,138 @@
+#!/bin/bash
+# -----------------------------------------------------------
+#  Copyright (C) 2017 Nordata.
+#  Website: nordata.com.cn
+#
+#  Swarm platform is developed by the Nordata company.
+#  See the license for more details.
+#  Author: Jingcheng Yang <yjcyxky@163.com>
+
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+show_help(){
+cat << EOF
+usage: $(echo $0) [-c] [-s <software>]
+	-c 使用conda.
+	-s 软件名，字符串必须为software_name=version形式.
+EOF
+}
+
+install_software() {
+	conda create -n ${software_name} ${software}
+}
+
+gen_conda_modulefile() {
+cat <<- EOF > /opt/local/share/modulefiles/${software_name}
+#%Module1.0
+module-whatis ""
+prepend-path PATH /opt/local/cobweb/envs/${software_name}/bin
+prepend-path LD_LIBRARY_PATH /opt/local/cobweb/envs/${software_name}/lib
+prepend-path MANPATH /opt/local/cobweb/envs/${software_name}/man
+prepend-path INFOPATH /opt/local/cobweb/envs/${software_name}/info
+prepend-path INCLUDEPATH /opt/local/cobweb/envs/${software_name}/include
+EOF
+
+	printf "${GREEN}安装${software_name}成功...${NC}\n"
+	printf "安装路径：${GREEN}/opt/local/cobweb/envs/${software_name}${NC}\n"
+}
+
+gen_modulefile() {
+	modulefile=/opt/local/share/modulefiles/${software_name}
+	if [ -f "${modulefile}" ];then
+		printf "${RED}${modulefile}已经存在...${NC}\n"
+		exit 2
+	fi
+	cat <<- EOF > ${modulefile}
+#%Module1.0
+module-whatis ""
+prepend-path PATH /opt/local/softwares/${software_name}/bin
+prepend-path LD_LIBRARY_PATH /opt/local/softwares/${software_name}/lib
+prepend-path MANPATH /opt/local/softwares/${software_name}/man
+prepend-path INFOPATH /opt/local/softwares/${software_name}/info
+prepend-path INCLUDEPATH /opt/local/softwares/${software_name}/include
+EOF
+
+	printf "${GREEN}安装${software_name}成功...${NC}\n"
+	printf "安装路径：${GREEN}/opt/local/softwares/${software_name}${NC}\n"
+}
+
+while getopts ":hcs:" arg
+do
+	case "$arg" in
+		"c")
+			use_conda="yes"
+			;;
+		"s")
+			software="$OPTARG"
+			;;
+		"?")
+			echo "Unkown option: $OPTARG"
+			exit 1
+			;;
+		":")
+			echo "No argument value for option $OPTARG"
+			;;
+		h)
+			show_help
+			exit 0
+			;;
+		*)
+			echo "Unknown error while processing options"
+			show_help
+			exit 1
+			;;
+	esac
+done
+
+# use conda时，-s参数不能为空
+if [ -z "${software}" ];then
+	printf "${RED}必须指定-s参数，且值必须是software_name=version形式.${NC}\n"
+	exit 1
+fi
+
+software_name=${software//=/-}
+
+if [ "${software_name}" == "${software}" ];then
+	printf "${RED}-s参数的值必须是software_name=version形式.${NC}\n"
+	exit 1
+fi
+
+if [ ! -z "$use_conda" ];then
+	software_path=/opt/local/cobweb/envs/${software_name}
+	if [ -d "$software_path" ];then
+		printf "${RED}$software_path已经存在，请删除后重试...${NC}\n"
+		exit 3
+	fi
+	# 提示用户输入Yes或者No，以便继续运算或者结束
+	printf "安装软件${software_name}?(yes|no): "
+	read yesorno
+	case "$yesorno" in
+		[yY]|[Yy][eE][sS])
+			install_software;
+			;;
+		[nN]|[Nn][oO])
+			exit 1
+			;;
+	esac
+
+	if [ "$?" -eq 0 ];then
+		gen_conda_modulefile;
+	fi
+else
+	# 提示用户输入Yes或者No，以便继续运算或者结束
+	printf "${GREEN}当前软件为手动安装，安装路径: /opt/local/softwares/${software_name}\n${NC}"
+	printf "生成modulefile：软件${software_name}?(yes|no): "
+	read yesorno
+	case "$yesorno" in
+		[yY]|[Yy][eE][sS])
+			gen_modulefile;
+			;;
+		[nN]|[Nn][oO])
+			exit 1
+			;;
+	esac
+fi
+
+printf "${GREEN}使用方法：module load ${software_name}${NC}\n"

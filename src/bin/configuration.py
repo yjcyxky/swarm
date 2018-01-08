@@ -191,6 +191,23 @@ flower_port = 5555
 
 # Default queue that tasks get assigned to and that worker listen on.
 default_queue = default
+
+[advisor]
+# Pointer to DRMAA library slurm-drmaa/lib/libdrmaa.so.1
+drmaa_library_path = /opt/local/lib
+
+# Cluster Scheduler(Choices: torque/slurm)
+scheduler_name = torque
+
+advisor_home = {SWARM_HOME}/advisor
+
+# The maximum number of tasks running at the same time
+max_task_num = 10
+
+[ansible]
+ansible_playbook_dir = {SWARM_HOME}/ansible/playbook
+ansible_audit_dir = {SWARM_HOME}/ansible/audit
+ansible_log_dir = {SWARM_HOME}/ansible/logs
 """
 
 TEST_CONFIG = """\
@@ -222,6 +239,16 @@ flower_host = 0.0.0.0
 flower_port = 5555
 default_queue = default
 
+[advisor]
+drmaa_library_path = /opt/local/lib
+scheduler_name = torque
+advisor_home = {SWARM_HOME}/advisor
+max_task_num = 10
+
+[ansible]
+ansible_playbook_dir = {SWARM_HOME}/ansible/playbook
+ansible_audit_dir = {SWARM_HOME}/ansible/audit
+ansible_log_dir = {SWARM_HOME}/ansible/logs
 """
 
 
