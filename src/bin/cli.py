@@ -73,7 +73,33 @@ def resetdb(args, **kwargs):
         print("Bail.")
 
 def spider(args, **kwargs):
-    spider_main(args = args)
+    from ssspider.exceptions import SpiderParameterError
+    from ssspider.utils import gen_spider_file
+    spider_template = args.spider_template
+    vars_file_path = args.ini
+    spiderfile = args.spiderfile
+
+    if spider_template is None and vars_file_path is None:
+        spider_main(args = args)
+
+    if not (spider_template and vars_file_path):
+        raise SpiderParameterError("You must specify spider_template(-st or --spider_template)"
+                                   "and ini arguments(-i or --ini) or only specify spiderfile argument(--spiderfile).")
+    else:
+        workdir = args.directory
+        if workdir:
+            if not os.path.exists(workdir):
+                print(
+                    "Creating specified working directory {}.".format(workdir))
+                os.makedirs(workdir)
+            workdir = os.path.abspath(workdir)
+            os.chdir(workdir)
+        else:
+            workdir = os.getcwd()
+        spiderfile = gen_spider_file(spider_template, vars_file_path, output_dir=workdir)
+        args.spiderfile = spiderfile
+        spider_main(args = args)
+
 
 def flower(args, **kwargs):
     broker_url = conf.get('celery', 'BROKER_URL')
@@ -543,7 +569,7 @@ class CLIFactory(object):
             required = False),
         'vars_file': Arg(
             ("-i", "--ini"),
-            help="config file for rendering bash template(Only Support INI Syntax).",
+            help="config file for rendering template file(Only Support INI Syntax).",
             required = False),
         'terminate_flag': Arg(
             ("-T", "--terminate"),
@@ -553,6 +579,11 @@ class CLIFactory(object):
         'job': Arg(
             ("job",),
             help="job's name or id."),
+        # spider
+        'spider_template': Arg(
+            ("-st", "--spider_template"),
+            help="spider template file",
+            required = False),
     }
     subparsers = (
         {
@@ -595,7 +626,7 @@ class CLIFactory(object):
             'help': "Spider is a Python based language and execution "
                     "environment for GNU Make-like workflows.(Spider Terminal Version)",
             # 调用外部命令时使用，external_args与extra_args联用，extra_args用于扩展外部命令的参数
-            'extra_args': tuple(),
+            'extra_args': ('spider_template', 'vars_file'),
             'external_args': True
         }
 
@@ -616,6 +647,12 @@ class CLIFactory(object):
             sp.set_defaults(func=sub['func'])
             if sub.get('external_args'):
                 get_argument_parser(parser = sp)
+                for arg in sub['extra_args']:
+                    arg = cls.args[arg]
+                    kwargs = {
+                        f: getattr(arg, f)
+                        for f in arg._fields if f != 'flags' and getattr(arg, f)}
+                    sp.add_argument(*arg.flags, **kwargs)
             else:
                 for arg in sub['args']:
                     arg = cls.args[arg]
