@@ -9,18 +9,32 @@
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
+YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
+ERROR=false
 
 show_help(){
 cat << EOF
 usage: $(echo $0) [-c] [-s <software>]
 	-c 使用conda.
+	-S 仅搜寻软件包.
 	-s 软件名，字符串必须为software_name=version形式.
 EOF
 }
 
 install_software() {
-	conda create -n ${software_name} ${software}
+	OUTPUT_JSON=`conda create --json --quiet -n ${software_name} ${software}`
+	SUCCESS=`echo $OUTPUT_JSON | jq '.success'`
+	export ERROR_MSG=`echo $OUTPUT_JSON | jq '.error'`
+	if [ "$SUCCESS" != 'true' ];then
+		export ERROR=true
+	else
+		export ERROR=false
+	fi
+}
+
+search_software() {
+	conda search ${software_name}
 }
 
 gen_conda_modulefile() {
@@ -36,6 +50,7 @@ EOF
 
 	printf "${GREEN}安装${software_name}成功...${NC}\n"
 	printf "安装路径：${GREEN}/opt/local/cobweb/envs/${software_name}${NC}\n"
+	printf "${GREEN}使用方法：module load ${software_name}${NC}\n"
 }
 
 gen_modulefile() {
@@ -56,13 +71,23 @@ EOF
 
 	printf "${GREEN}安装${software_name}成功...${NC}\n"
 	printf "安装路径：${GREEN}/opt/local/softwares/${software_name}${NC}\n"
+	printf "${GREEN}使用方法：module load ${software_name}${NC}\n"
 }
 
-while getopts ":hcs:" arg
+show_error() {
+	printf "${RED}安装$software失败，详情请查看出错日志！${NC}\n"
+	printf "${RED}$ERROR_MSG${NC}\n"
+	exit 1
+}
+
+while getopts ":hcSs:" arg
 do
 	case "$arg" in
 		"c")
 			use_conda="yes"
+			;;
+		"S")
+			search_mode="yes"
 			;;
 		"s")
 			software="$OPTARG"
@@ -86,15 +111,20 @@ do
 	esac
 done
 
+# 识别是否安装jq
+type jq >/dev/null 2>&1 || { echo >&2 "依赖jq，但未安装，请执行'yum install jq'安装此依赖软件.  Aborting."; exit 1; }
+
 # use conda时，-s参数不能为空
 if [ -z "${software}" ];then
 	printf "${RED}必须指定-s参数，且值必须是software_name=version形式.${NC}\n"
 	exit 1
 fi
 
+# 匹配输入模式
+export matched_str=`echo $software | grep -E '[a-zA-Z0-9\-\_\.]+=[a-zA-Z0-9\-\_\.\*]+'`
 software_name=${software//=/-}
 
-if [ "${software_name}" == "${software}" ];then
+if [ "${software_name}" == "${software}" ] || [ -z $matched_str ]; then
 	printf "${RED}-s参数的值必须是software_name=version形式.${NC}\n"
 	exit 1
 fi
@@ -110,16 +140,24 @@ if [ ! -z "$use_conda" ];then
 	read yesorno
 	case "$yesorno" in
 		[yY]|[Yy][eE][sS])
-			install_software;
+		    printf "$GREEN正在安装... ...$NC\n"
+			install_software
 			;;
 		[nN]|[Nn][oO])
 			exit 1
 			;;
 	esac
 
-	if [ "$?" -eq 0 ];then
+	if $ERROR; then
+		show_error;
+	else
 		gen_conda_modulefile;
 	fi
+elif [ ! -z "$search_mode" ];then
+	printf "${GREEN}搜索${software_name}...\n${NC}"
+	printf "${YELLOW}"
+	search_software
+	printf "${NC}"
 else
 	# 提示用户输入Yes或者No，以便继续运算或者结束
 	printf "${GREEN}当前软件为手动安装，安装路径: /opt/local/softwares/${software_name}\n${NC}"
@@ -134,5 +172,3 @@ else
 			;;
 	esac
 fi
-
-printf "${GREEN}使用方法：module load ${software_name}${NC}\n"
