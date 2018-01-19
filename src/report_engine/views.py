@@ -148,7 +148,7 @@ class RootNodeList(generics.GenericAPIView):
 
     def post(self, request, report_uuid):
         """
-        Create a report instance.
+        Create a new version of specified report instance.
         """
         print(request.data)
         serializer = SectionNodeSerializer(data = request.data,
