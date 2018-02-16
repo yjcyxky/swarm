@@ -52,6 +52,7 @@ urlpatterns = [
         url(r'^sscobweb/', include('sscobweb.urls')),
         url(r'^ssadvisor/', include('ssadvisor.urls')),
         url(r'^report-engine/', include('report_engine.urls')),
+        url(r'^ssganglia/', include('ssganglia.urls')),
 
         # Flower
         url(r'^flower$',

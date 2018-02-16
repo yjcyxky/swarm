@@ -208,6 +208,9 @@ max_task_num = 10
 ansible_playbook_dir = {SWARM_HOME}/ansible/playbook
 ansible_audit_dir = {SWARM_HOME}/ansible/audit
 ansible_log_dir = {SWARM_HOME}/ansible/logs
+
+[ganglia]
+rrd_dir_path = /var/lib/ganglia/rrd
 """
 
 TEST_CONFIG = """\
@@ -249,6 +252,9 @@ max_task_num = 10
 ansible_playbook_dir = {SWARM_HOME}/ansible/playbook
 ansible_audit_dir = {SWARM_HOME}/ansible/audit
 ansible_log_dir = {SWARM_HOME}/ansible/logs
+
+[ganglia]
+rrd_dir_path = /var/lib/ganglia/rrd
 """
 
 

@@ -40,8 +40,8 @@ from ssspider.spider import get_argument_parser, main as spider_main
 def sigint_handler(sig, frame):
     sys.exit(0)
 
-def initdb(args, **kwargs):
-    print("Initialize database...")
+
+def setup_django():
     # set the default Django settings module for the initdb function,
     # otherwise raise django.core.exceptions.AppRegistryNotReady.
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'swarm.settings')
@@ -55,12 +55,31 @@ def initdb(args, **kwargs):
             "forget to activate a virtual environment?"
         )
     django.setup()
+
+
+def initdb(args, **kwargs):
+    print("初始化数据库...")
+    setup_django()
     call_command('makemigrations', verbosity = 0, interactive = False)
     call_command('migrate', verbosity = 0)
     initdata = args.initdata
     if initdata:
         call_command(loaddata.Command(), initdata, verbosity = 0)
-    print("Done.")
+    print("完成.")
+
+
+def ganglia(args, **kwargs):
+    print("初始化Ganglia数据库...")
+    setup_django()
+    from ssganglia.models import RRDConfig
+    rrd_dir_path = args.rrd_dir_path and args.rrd_dir_path or \
+                   settings.get('ganglia', 'rrd_dir_path')
+    print("rrd目录路径: %s" % rrd_dir_path)
+    if rrd_dir_path:
+        ganglia_config = RRDConfig(rrd_dir_path)
+        ganglia_config.sync2db()
+    print("完成.")
+
 
 def resetdb(args, **kwargs):
     print("DB: " + repr())
@@ -71,6 +90,7 @@ def resetdb(args, **kwargs):
         # db_utils.resetdb()
     else:
         print("Bail.")
+
 
 def spider(args, **kwargs):
     from ssspider.exceptions import SpiderParameterError
@@ -175,6 +195,7 @@ def flower(args, **kwargs):
 
         os.execvp("flower", flower_cmd)
 
+
 def celery(args, **kwargs):
     BASE_DIR = conf.BASE_DIR
     env = {}
@@ -195,6 +216,7 @@ def celery(args, **kwargs):
         signal.signal(signal.SIGTERM, sigint_handler)
 
         os.execvpe("celery", celery_cmd, env)
+
 
 def celery_beat(args, **kwargs):
     BASE_DIR = conf.BASE_DIR
@@ -222,6 +244,7 @@ def celery_beat(args, **kwargs):
 
         os.execvpe("celery-beat", celery_cmd, env)
 
+
 def setup_locations(process, pid=None, stdout=None, stderr=None, log=None):
     if not stderr:
         stderr = os.path.join(os.path.expanduser(conf.SWARM_LOG), "swarm-{}.err".format(process))
@@ -233,6 +256,7 @@ def setup_locations(process, pid=None, stdout=None, stderr=None, log=None):
         pid = os.path.join(os.path.expanduser(conf.SWARM_HOME), "swarm-{}.pid".format(process))
 
     return pid, stdout, stderr, log
+
 
 def restart_workers(gunicorn_master_proc, num_workers_expected):
     """
@@ -341,6 +365,7 @@ def restart_workers(gunicorn_master_proc, num_workers_expected):
             ) < num_workers_expected:
                 start_refresh(gunicorn_master_proc)
 
+
 def advisor(args, **kwargs):
     from ssadvisor.jobs import Job
     bash_templ_path = args.bash_template
@@ -360,6 +385,7 @@ def advisor(args, **kwargs):
         job = Job(jobid = jobid)
         jobstatus = job.get_jobstatus()
         print("The status of your job is %s" % jobstatus)
+
 
 def webserver(args, **kwargs):
     access_logfile = args.access_logfile or settings.get('webserver', 'access_logfile')
@@ -437,8 +463,10 @@ def webserver(args, **kwargs):
             while True:
                 time.sleep(1)
 
+
 def django_cmd(args):
     manage.run(args = args)
+
 
 def version(args, **kwargs):
     print(conf.HEADER.format(version = get_version(), company_name = get_company_name()))
@@ -447,6 +475,7 @@ def version(args, **kwargs):
 Arg = namedtuple(
     'Arg', ['flags', 'help', 'action', 'default', 'nargs', 'type', 'choices', 'metavar', 'required'])
 Arg.__new__.__defaults__ = (None, None, None, None, None, None, None, None)
+
 
 class CLIFactory(object):
     args = {
@@ -583,7 +612,11 @@ class CLIFactory(object):
         'spider_template': Arg(
             ("-st", "--spider_template"),
             help="spider template file",
-            required = False),
+            required=False),
+        'rrd_dir_path': Arg(
+            ("-rrd", "--rrd_dir_path"),
+            help="RRD Directory Path.",
+            required=True)
     }
     subparsers = (
         {
@@ -628,6 +661,10 @@ class CLIFactory(object):
             # 调用外部命令时使用，external_args与extra_args联用，extra_args用于扩展外部命令的参数
             'extra_args': ('spider_template', 'vars_file'),
             'external_args': True
+        }, {
+            'func': ganglia,
+            'help': "Initialized Ganglia Database.",
+            'args': ('rrd_dir_path',),
         }
 
     )
@@ -661,6 +698,7 @@ class CLIFactory(object):
                         for f in arg._fields if f != 'flags' and getattr(arg, f)}
                     sp.add_argument(*arg.flags, **kwargs)
         return parser
+
 
 def get_parser():
     return CLIFactory.get_parser()

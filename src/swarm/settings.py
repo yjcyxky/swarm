@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'sscluster.apps.SsclusterConfig',
     'sscobweb.apps.SscobwebConfig',
     'ssadvisor.apps.SsadvisorConfig',
+    'ssganglia.apps.SsgangliaConfig',
     'account.apps.AccountConfig',
     'report_engine.apps.ReportEngineConfig',
     'swagger',

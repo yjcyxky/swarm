@@ -138,6 +138,9 @@ done
 # 识别是否安装jq
 type jq >/dev/null 2>&1 || { echo >&2 "依赖jq，但未安装，请执行'yum install jq'安装此依赖软件."; exit 1; }
 
+# 识别是否安装conda
+type conda >/dev/null 2>&1 || { echo >&2 "依赖conda，但未安装，请安装此依赖软件."; exit 1; }
+
 # -s参数不能为空
 if [ -z "${software}" ];then
 	printf "${RED}必须指定-s参数，且值必须是software_name=version形式.${NC}\n"
@@ -172,6 +175,7 @@ if [ ! -z "$search_mode" ];then
 	printf "${YELLOW}"
 	search_software
 	printf "${NC}"
+	exit 2
 fi
 
 # 安装模式

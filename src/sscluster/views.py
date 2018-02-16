@@ -36,8 +36,8 @@ class ClusterList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = ClusterSerializer
-    permission_classes = (permissions.IsAuthenticated,
-                          CustomDjangoModelPermissions)
+    # permission_classes = (permissions.IsAuthenticated,
+                          # CustomDjangoModelPermissions)
 
     queryset = Cluster.objects.all().order_by('cluster_name')
     lookup_field = 'cluster_uuid'
@@ -104,8 +104,8 @@ class ClusterDetail(generics.GenericAPIView):
     """
     Retrieve, update a cluster instance.
     """
-    permission_classes = (permissions.IsAuthenticated,
-                          CustomDjangoModelPermissions)
+    # permission_classes = (permissions.IsAuthenticated,
+                          # CustomDjangoModelPermissions)
     serializer_class = ClusterSerializer
     queryset = Cluster.objects
     lookup_field = 'cluster_uuid'
@@ -153,8 +153,8 @@ class JobLogList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = JobLogSerializer
-    permission_classes = (permissions.IsAuthenticated,
-                          CustomDjangoModelPermissions)
+    # permission_classes = (permissions.IsAuthenticated,
+                          # CustomDjangoModelPermissions)
     queryset = JobLog.objects.all().order_by('-jobid')
     lookup_field = 'job_uuid'
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
@@ -173,16 +173,23 @@ class JobLogList(generics.GenericAPIView):
         Get all joblog objects.
         """
         query_params = request.query_params
-
-        filters = {
-            'start__gt': query_params.get('start', '2012-12-12 08:00:00'),
-            'end__lt': query_params.get('end', '2100-12-12 08:00:00'),
-        }
+        filters = {}
 
         try:
             exit_status = query_params.get('exit_status')
             if exit_status:
                 filters.update({'exit_status': int(exit_status)})
+
+            if query_params.get('start'):
+                filters.update({
+                    'start__gt': query_params.get('start', '2012-12-12 08:00:00')
+                })
+
+            if query_params.get('end'):
+                filters.update({
+                    'end__lt': query_params.get('end', '2100-12-12 08:00:00'),
+                })
+
         except ValueError:
             raise CustomException("Bad Request.", status_code = status.HTTP_400_BAD_REQUEST)
 
@@ -216,8 +223,8 @@ class JobLogDetail(generics.GenericAPIView):
     """
     Retrieve, update a joblog instance.
     """
-    permission_classes = (permissions.IsAuthenticated,
-                          CustomDjangoModelPermissions)
+    # permission_classes = (permissions.IsAuthenticated,
+                          # CustomDjangoModelPermissions)
     serializer_class = JobLogSerializer
     queryset = JobLog.objects
     lookup_field = 'job_uuid'
@@ -265,8 +272,8 @@ class JobLogCount(generics.GenericAPIView):
     """
     Get count of JobLog Records.
     """
-    permission_classes = (permissions.IsAuthenticated,
-                          CustomDjangoModelPermissions)
+    # permission_classes = (permissions.IsAuthenticated,
+                          # CustomDjangoModelPermissions)
     serializer_class = JobLogCountSerializer
     pagination_class = CustomPagination
     queryset = User.objects
@@ -325,7 +332,7 @@ class JobLogCount(generics.GenericAPIView):
         except ValueError:
             raise CustomException("Bad Request.", status_code = status.HTTP_400_BAD_REQUEST)
 
-        logger.debug("sscluster@JobLogCount@%s-%s-%s" % (query_params, select_by))
+        logger.debug("sscluster@JobLogCount@%s-%s" % (query_params, select_by))
 
         filters = {}
         if exit_status:
@@ -342,6 +349,7 @@ class JobLogCount(generics.GenericAPIView):
             })
 
         queryset = self.paginate_queryset(self.get_queryset(filters, select_by))
+        print(self.get_queryset({}, select_by))
         serializer = self.get_serializer(queryset, many = True,
                                          context = {'request': request})
         return self.get_paginated_response(serializer.data)
@@ -352,8 +360,8 @@ class ToDoListList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = ToDoListSerializer
-    permission_classes = (permissions.IsAuthenticated,
-                          CustomDjangoModelPermissions)
+    # permission_classes = (permissions.IsAuthenticated,
+                          # CustomDjangoModelPermissions)
     queryset = ToDoList.objects.all().order_by('item_name')
     lookup_field = 'id'
 
@@ -424,8 +432,8 @@ class ToDoListDetail(generics.GenericAPIView):
     """
     Retrieve, update a ToDoList instance.
     """
-    permission_classes = (permissions.IsAuthenticated,
-                          CustomDjangoModelPermissions)
+    # permission_classes = (permissions.IsAuthenticated,
+                          # CustomDjangoModelPermissions)
     serializer_class = ToDoListSerializer
     queryset = ToDoList.objects
     lookup_field = 'id'
