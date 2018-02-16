@@ -15,13 +15,13 @@ import logging
 import os
 import sys
 import subprocess
-import threading
 import textwrap
 import psutil
 import argparse
 import daemon
 import time
 import signal
+import glob
 
 import configuration as conf
 import manage
@@ -57,14 +57,52 @@ def setup_django():
     django.setup()
 
 
+def bash_complete(args, **kwargs):
+    cmd = b"complete -o bashdefault -C swarm-bash-completion swarm"
+    sys.stdout.buffer.write(cmd)
+    sys.exit(0)
+
+
+def bash_completion():
+    """Entry point for bash completion."""
+    if not len(sys.argv) >= 2:
+        print(
+            "Calculate bash completion for swarm."
+            "This tool shall not be invoked by hand.")
+        sys.exit(1)
+
+    def print_candidates(candidates):
+        if candidates:
+            candidates = sorted(set(candidates))
+            # Use bytes for avoiding '^M' under Windows.
+            sys.stdout.buffer.write(b'\n'.join(s.encode() for s in candidates))
+
+    prefix = sys.argv[2]
+
+    if not prefix.startswith("-"):
+        print_candidates(CLIFactory.subparsers_dict.keys())
+    elif prefix.startswith("-"):
+        print(CLIFactory.get_parser()._actions)
+        print_candidates(action.option_strings[0]
+                         for action in CLIFactory.get_parser()._actions
+                         if action.option_strings and
+                         action.option_strings[0].startswith(prefix))
+    else:
+        files = glob.glob("{}*".format(prefix))
+        if files:
+            print_candidates(files)
+
+    sys.exit(0)
+
+
 def initdb(args, **kwargs):
     print("初始化数据库...")
     setup_django()
-    call_command('makemigrations', verbosity = 0, interactive = False)
-    call_command('migrate', verbosity = 0)
+    call_command('makemigrations', verbosity=0, interactive=False)
+    call_command('migrate', verbosity=0)
     initdata = args.initdata
     if initdata:
-        call_command(loaddata.Command(), initdata, verbosity = 0)
+        call_command(loaddata.Command(), initdata, verbosity=0)
     print("完成.")
 
 
@@ -72,8 +110,8 @@ def ganglia(args, **kwargs):
     print("初始化Ganglia数据库...")
     setup_django()
     from ssganglia.models import RRDConfig
-    rrd_dir_path = args.rrd_dir_path and args.rrd_dir_path or \
-                   settings.get('ganglia', 'rrd_dir_path')
+    rrd_dir_path = args.rrd_dir_path if args.rrd_dir_path \
+        else settings.get('ganglia', 'rrd_dir_path')
     print("rrd目录路径: %s" % rrd_dir_path)
     if rrd_dir_path:
         ganglia_config = RRDConfig(rrd_dir_path)
@@ -100,11 +138,13 @@ def spider(args, **kwargs):
     spiderfile = args.spiderfile
 
     if spider_template is None and vars_file_path is None:
-        spider_main(args = args)
+        spider_main(args=args)
 
     if not (spider_template and vars_file_path):
-        raise SpiderParameterError("You must specify spider_template(-st or --spider_template)"
-                                   "and ini arguments(-i or --ini) or only specify spiderfile argument(--spiderfile).")
+        raise SpiderParameterError("You must specify spider_template(-st or \
+                                    --spider_template)"
+                                   "and ini arguments(-i or --ini) or only \
+                                   specify spiderfile argument(--spiderfile).")
     else:
         workdir = args.directory
         if workdir:
@@ -116,9 +156,10 @@ def spider(args, **kwargs):
             os.chdir(workdir)
         else:
             workdir = os.getcwd()
-        spiderfile = gen_spider_file(spider_template, vars_file_path, output_dir=workdir)
+        spiderfile = gen_spider_file(spider_template, vars_file_path,
+                                     output_dir=workdir)
         args.spiderfile = spiderfile
-        spider_main(args = args)
+        spider_main(args=args)
 
 
 def flower(args, **kwargs):
@@ -138,7 +179,7 @@ def flower(args, **kwargs):
 
     if args.persistent:
         persistent = '--persistent=' + str(args.persistent)
-        flower_db  = '--db=%s' % os.path.join(conf.BASE_DIR, 'flower')
+        flower_db = '--db=%s' % os.path.join(conf.BASE_DIR, 'flower')
         flower_cmd.append(persistent)
         flower_cmd.append(flower_db)
 
@@ -160,7 +201,7 @@ def flower(args, **kwargs):
                 "forget to activate a virtual environment?"
             )
         from django.contrib.auth.models import User
-        users = User.objects.filter(is_active = True).all()
+        users = User.objects.filter(is_active=True).all()
         user_passwd = ''
         for user in users:
             username = user.username
@@ -174,7 +215,10 @@ def flower(args, **kwargs):
     flower_cmd = list(set(flower_cmd))
     print('Flower CMD(Unique): %s' % str(flower_cmd))
     if args.daemon:
-        pid, stdout, stderr, log_file = setup_locations("flower", args.pid, args.stdout, args.stderr, args.log_file)
+        pid, stdout, stderr, log_file = setup_locations("flower",
+                                                        args.pid, args.stdout,
+                                                        args.stderr,
+                                                        args.log_file)
         stdout = open(stdout, 'w+')
         stderr = open(stderr, 'w+')
 
@@ -204,11 +248,16 @@ def celery(args, **kwargs):
         'PATH': os.environ.get('PATH'),
     })
 
-    celery_cmd = ['celery', '-A', args.module_name, 'worker', '--loglevel=%s' % args.loglevel]
+    celery_cmd = ['celery', '-A', args.module_name, 'worker',
+                  '--loglevel=%s' % args.loglevel]
 
     if args.daemon:
-        pid, stdout, stderr, logfile = setup_locations("celery-beat", args.pid, args.stdout, args.stderr, args.log_file)
-        celery_cmd.extend(['--pidfile=%s' % pid, '--detach', '--logfile=%s' % logfile])
+        pid, stdout, stderr, logfile = setup_locations("celery-beat",
+                                                       args.pid, args.stdout,
+                                                       args.stderr,
+                                                       args.log_file)
+        celery_cmd.extend(['--pidfile=%s' % pid, '--detach',
+                           '--logfile=%s' % logfile])
 
         os.execvpe("celery", celery_cmd, env)
     else:
@@ -226,16 +275,23 @@ def celery_beat(args, **kwargs):
         'PATH': os.environ.get('PATH'),
     })
 
-    celery_cmd = ['celery', '-A', args.module_name, 'beat', '--loglevel=%s' % args.loglevel]
+    celery_cmd = ['celery', '-A', args.module_name, 'beat',
+                  '--loglevel=%s' % args.loglevel]
     if args.django_beat:
-        celery_cmd.append('--scheduler=django_celery_beat.schedulers:DatabaseScheduler')
+        celery_cmd.append('--scheduler=\
+                           django_celery_beat.schedulers:DatabaseScheduler')
     else:
-        schedule_file = os.path.join(os.path.expanduser(conf.SWARM_HOME), "swarm-celery-beat-schedule.db")
+        schedule_file = os.path.join(os.path.expanduser(conf.SWARM_HOME),
+                                     "swarm-celery-beat-schedule.db")
         celery_cmd.append('--schedule=%s' % schedule_file)
 
     if args.daemon:
-        pid, stdout, stderr, logfile = setup_locations("celery-beat", args.pid, args.stdout, args.stderr, args.log_file)
-        celery_cmd.extend(['--pidfile=%s' % pid, '--detach', '--logfile=%s' % logfile])
+        pid, stdout, stderr, logfile = setup_locations("celery-beat",
+                                                       args.pid, args.stdout,
+                                                       args.stderr,
+                                                       args.log_file)
+        celery_cmd.extend(['--pidfile=%s' % pid, '--detach',
+                           '--logfile=%s' % logfile])
 
         os.execvpe("celery-beat", celery_cmd, env)
     else:
@@ -247,13 +303,17 @@ def celery_beat(args, **kwargs):
 
 def setup_locations(process, pid=None, stdout=None, stderr=None, log=None):
     if not stderr:
-        stderr = os.path.join(os.path.expanduser(conf.SWARM_LOG), "swarm-{}.err".format(process))
+        stderr = os.path.join(os.path.expanduser(conf.SWARM_LOG),
+                              "swarm-{}.err".format(process))
     if not stdout:
-        stdout = os.path.join(os.path.expanduser(conf.SWARM_LOG), "swarm-{}.out".format(process))
+        stdout = os.path.join(os.path.expanduser(conf.SWARM_LOG),
+                              "swarm-{}.out".format(process))
     if not log:
-        log = os.path.join(os.path.expanduser(conf.SWARM_LOG), "swarm-{}.log".format(process))
+        log = os.path.join(os.path.expanduser(conf.SWARM_LOG),
+                           "swarm-{}.log".format(process))
     if not pid:
-        pid = os.path.join(os.path.expanduser(conf.SWARM_HOME), "swarm-{}.pid".format(process))
+        pid = os.path.join(os.path.expanduser(conf.SWARM_HOME),
+                           "swarm-{}.pid".format(process))
 
     return pid, stdout, stderr, log
 
@@ -266,13 +326,13 @@ def restart_workers(gunicorn_master_proc, num_workers_expected):
     Each iteration of the loop traverses one edge of this state transition
     diagram, where each state (node) represents
     [ num_ready_workers_running / num_workers_running ]. We expect most time to
-    be spent in [n / n]. `bs` is the setting webserver.worker_refresh_batch_size.
+    be spent in [n/n]. `bs` is the setting webserver.worker_refresh_batch_size.
 
     The horizontal transition at ? happens after the new worker parses all the
     dags (so it could take a while!)
 
-       V ────────────────────────────────────────────────────────────────────────┐
-    [n / n] ──TTIN──> [ [n, n+bs) / n + bs ]  ────?───> [n + bs / n + bs] ──TTOU─┘
+       V ─────────────────────────────────────────────────────────────────────┐
+    [n / n] ──TTIN──> [ [n, n+bs) / n + bs ] ────?───> [n + bs/n + bs] ──TTOU─┘
        ^                          ^───────────────┘
        │
        │      ┌────────────────v
@@ -374,22 +434,25 @@ def advisor(args, **kwargs):
     terminate_flag = args.terminate_flag
 
     if (jobname and bash_templ_path and vars_file_path):
-        job = Job(jobname, bash_templ_path = bash_templ_path, vars_file_path = vars_file_path)
+        job = Job(jobname, bash_templ_path=bash_templ_path,
+                  vars_file_path=vars_file_path)
         job.submit_job()
         print('Your job has been submitted with ID %s' % job.get_jobid())
     elif (jobid and terminate_flag):
-        job = Job(jobid = jobid)
+        job = Job(jobid=jobid)
         jobstatus = job.terminate_job()
         print("The status of your job is: %s" % jobstatus)
     else:
-        job = Job(jobid = jobid)
+        job = Job(jobid=jobid)
         jobstatus = job.get_jobstatus()
         print("The status of your job is %s" % jobstatus)
 
 
 def webserver(args, **kwargs):
-    access_logfile = args.access_logfile or settings.get('webserver', 'access_logfile')
-    error_logfile = args.error_logfile or settings.get('webserver', 'error_logfile')
+    access_logfile = args.access_logfile or \
+        settings.get('webserver', 'access_logfile')
+    error_logfile = args.error_logfile or \
+        settings.get('webserver', 'error_logfile')
     num_workers = args.workers or settings.get('webserver', 'workers')
     worker_timeout = (args.worker_timeout or
                       settings.get('webserver', 'webserver_worker_timeout'))
@@ -409,7 +472,8 @@ def webserver(args, **kwargs):
         args = [cmd, subcommand, '%s:%s' % (args.hostname, args.port)]
         django_cmd(args)
     else:
-        pid, stdout, stderr, log_file = setup_locations("webserver", pid=args.pid)
+        pid, stdout, stderr, log_file = setup_locations("webserver",
+                                                        pid=args.pid)
         print(
             textwrap.dedent('''\
                 Running the Gunicorn Server with:
@@ -421,7 +485,8 @@ def webserver(args, **kwargs):
                 =================================================================\
             '''.format(**locals())))
 
-        GUNICORN_CONFIG = os.path.join(conf.BASE_DIR, 'bin', 'gunicorn_config.py')
+        GUNICORN_CONFIG = os.path.join(conf.BASE_DIR, 'bin',
+                                       'gunicorn_config.py')
         run_args = [
             'gunicorn',
             '-w', str(num_workers),
@@ -465,15 +530,17 @@ def webserver(args, **kwargs):
 
 
 def django_cmd(args):
-    manage.run(args = args)
+    manage.run(args=args)
 
 
 def version(args, **kwargs):
-    print(conf.HEADER.format(version = get_version(), company_name = get_company_name()))
+    print(conf.HEADER.format(version=get_version(),
+                             company_name=get_company_name()))
 
 
 Arg = namedtuple(
-    'Arg', ['flags', 'help', 'action', 'default', 'nargs', 'type', 'choices', 'metavar', 'required'])
+    'Arg', ['flags', 'help', 'action', 'default', 'nargs', 'type', 'choices',
+            'metavar', 'required'])
 Arg.__new__.__defaults__ = (None, None, None, None, None, None, None, None)
 
 
@@ -532,13 +599,13 @@ class CLIFactory(object):
         'access_logfile': Arg(
             ("-A", "--access_logfile"),
             default=conf.get('webserver', 'ACCESS_LOGFILE'),
-            help="The logfile to store the webserver access log. Use '-' to print to "
-                 "stderr."),
+            help="The logfile to store the webserver access log."
+                 "Use '-' to print to stderr."),
         'error_logfile': Arg(
             ("-E", "--error_logfile"),
             default=conf.get('webserver', 'ERROR_LOGFILE'),
-            help="The logfile to store the webserver error log. Use '-' to print to "
-                 "stderr."),
+            help="The logfile to store the webserver error log."
+                 "Use '-' to print to stderr."),
         # initdb
         'initdata': Arg(
             ("-I", "--initdata"),
@@ -570,41 +637,44 @@ class CLIFactory(object):
             ("-P", "--persistent"),
             "Enable persistent mode (default False).",
             "store_true",
-            default = False),
+            default=False),
         'auth': Arg(
             ("-au", "--auth"),
             "Enable auth mode (default False).",
             "store_true",
-            default = False),
+            default=False),
         # celery
         'module_name': Arg(
             ("-m", "--module_name"),
-            default = 'swarm',
-            help="The name of the current module for Celery. Default Value: swarm"),
+            default='swarm',
+            help="The name of the current module for Celery."
+                 "Default Value: swarm"),
         'django_beat': Arg(
             ("-b", "--django-beat"),
             "Use django_celery_beat database as a backend.",
             "store_true",
-            default = False),
+            default=False),
         'loglevel': Arg(
             ("-L", "--loglevel"),
-            help = "Logging level, choose between DEBUG, INFO, WARNING,"
-                   "ERROR, CRITICAL, or FATAL.",
-            default = 'INFO'),
+            help="Logging level, choose between DEBUG, INFO, WARNING,"
+                 "ERROR, CRITICAL, or FATAL.",
+            default='INFO'),
         # advisor
         'bash_template': Arg(
             ("-bt", "--bash_template"),
-            help="bash template file for submitting job(Only Support Jinja2 Syntax).",
-            required = False),
+            help="bash template file for submitting job."
+                 "(Only Support Jinja2 Syntax)",
+            required=False),
         'vars_file': Arg(
             ("-i", "--ini"),
-            help="config file for rendering template file(Only Support INI Syntax).",
-            required = False),
+            help="config file for rendering template file."
+                 "(Only Support INI Syntax)",
+            required=False),
         'terminate_flag': Arg(
             ("-T", "--terminate"),
             "Terminate the specified job.",
             "store_true",
-            default = False),
+            default=False),
         'job': Arg(
             ("job",),
             help="job's name or id."),
@@ -626,9 +696,10 @@ class CLIFactory(object):
         }, {
             'func': webserver,
             'help': "Start a swarm webserver instance",
-            'args': ('port', 'workers', 'workerclass', 'worker_timeout', 'hostname',
+            'args': ('port', 'workers', 'workerclass', 'worker_timeout',
                      'pid', 'daemon', 'stdout', 'stderr', 'access_logfile',
-                     'error_logfile', 'log_file', 'ssl_cert', 'ssl_key', 'debug'),
+                     'error_logfile', 'log_file', 'ssl_cert', 'ssl_key',
+                     'hostname', 'debug'),
         }, {
             'func': resetdb,
             'help': "Burn down and rebuild the metadata database",
@@ -636,8 +707,9 @@ class CLIFactory(object):
         }, {
             'func': flower,
             'help': "Start a Celery Flower",
-            'args': ('flower_hostname', 'flower_port', 'flower_conf', 'broker_api',
-                     'pid', 'daemon', 'stdout', 'stderr', 'log_file', 'persistent', 'auth'),
+            'args': ('flower_hostname', 'flower_port', 'flower_conf', 'pid',
+                     'daemon', 'stdout', 'stderr', 'log_file', 'persistent',
+                     'broker_api', 'auth'),
         }, {
             'func': celery,
             'help': "Start a Celery Worker",
@@ -645,7 +717,8 @@ class CLIFactory(object):
         }, {
             'func': celery_beat,
             'help': "Start a Celery Beat",
-            'args': ('module_name', 'pid', 'daemon', 'log_file', 'django_beat', 'loglevel'),
+            'args': ('module_name', 'pid', 'daemon', 'log_file', 'django_beat',
+                     'loglevel'),
         }, {
             'func': version,
             'help': "Show the version",
@@ -657,7 +730,8 @@ class CLIFactory(object):
         }, {
             'func': spider,
             'help': "Spider is a Python based language and execution "
-                    "environment for GNU Make-like workflows.(Spider Terminal Version)",
+                    "environment for GNU Make-like workflows."
+                    "(Spider Terminal Version)",
             # 调用外部命令时使用，external_args与extra_args联用，extra_args用于扩展外部命令的参数
             'extra_args': ('spider_template', 'vars_file'),
             'external_args': True
@@ -665,6 +739,10 @@ class CLIFactory(object):
             'func': ganglia,
             'help': "Initialized Ganglia Database.",
             'args': ('rrd_dir_path',),
+        }, {
+            'func': bash_complete,
+            'help': "Activate Bash Completion.",
+            'args': tuple(),
         }
 
     )
@@ -672,7 +750,7 @@ class CLIFactory(object):
 
     @classmethod
     def get_parser(cls):
-        parser = argparse.ArgumentParser()
+        parser = argparse.ArgumentParser(description='Swarm Platform.')
         subparsers = parser.add_subparsers(
             help='sub-command help', dest='subcommand')
         subparsers.required = True
@@ -683,7 +761,7 @@ class CLIFactory(object):
             sp = subparsers.add_parser(sub['func'].__name__, help=sub['help'])
             sp.set_defaults(func=sub['func'])
             if sub.get('external_args'):
-                get_argument_parser(parser = sp)
+                get_argument_parser(parser=sp)
                 for arg in sub['extra_args']:
                     arg = cls.args[arg]
                     kwargs = {
