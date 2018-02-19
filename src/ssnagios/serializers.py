@@ -9,46 +9,34 @@
 #  Author: Jingcheng Yang <yjcyxky@163.com>
 
 import logging
-import re
-import datetime
 from rest_framework import serializers
-from rest_framework import status
-from django.core.validators import RegexValidator
+from ssnagios.models import Instances, Objects, Notifications
 
 logger = logging.getLogger(__name__)
 
-class TimestampField(serializers.Field):
-    def to_representation(self, value):
-        return int(time.mktime(value.timetuple()))
 
-    def to_internal_value(self, value):
-        return value
-
-class AggregatorSerializer(serializers.Serializer):
-    tags = serializers.CharField(allow_blank = True, trim_whitespace = True)
-    step = serializers.IntegerField()
-    numerator = serializers.CharField(trim_whitespace = True)
-    metric = serializers.CharField(trim_whitespace = True)
-    hostgroup_id = serializers.IntegerField(required = False)
-    endpoint = serializers.CharField(trim_whitespace = True)
-    denominator = serializers.CharField(trim_whitespace = True)
-    id = serializers.IntegerField(allow_null = True, required = False)
+class InstancesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Instances
+        fields = '__all__'
 
 
-class EventSerializer(serializers.Serializer):
-    startTime = TimestampField(required = False)
-    endTime = TimestampField(required = False)
-    status = serializers.CharField(trim_whitespace = True, required = False)
-    process_status = serializers.CharField(trim_whitespace = True, required = False)
-    limit = serializers.IntegerField(required = False)
-    event_id = serializers.CharField(trim_whitespace = True, required = False)
-    note = serializers.CharField(trim_whitespace = True, required = False)
+class ObjectsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Objects
+        fields = '__all__'
 
-    def validate(self, data):
-        """
-        Check that the first_add_time is before the last_update_time.
-        """
-        if data.get('startTime') and data.get('endTime'):
-            if data.get('startTime') > data.get('endTime'):
-                raise serializer.ValidationError("endTime must occur after startTime.")
-        return data
+
+class NotificationsSerializer(serializers.ModelSerializer):
+    instance = InstancesSerializer()
+    object = ObjectsSerializer()
+    checked = serializers.BooleanField()
+    checked_time = serializers.DateTimeField()
+
+    class Meta:
+        model = Notifications
+        fields = ('instance', 'object', 'notification_id',
+                  'notification_type', 'notification_reason', 'start_time',
+                  'start_time_usec', 'end_time', 'end_time_usec', 'state',
+                  'output', 'long_output', 'escalated', 'contacts_notified',
+                  'checked', 'checked_time')

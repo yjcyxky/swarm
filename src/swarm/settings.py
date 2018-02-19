@@ -11,20 +11,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
-import os, sys
-import logging
+import os
 import datetime
-
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(BASE_DIR)
-
 from bin.configuration import conf as settings
 from bin import configuration as conf
-from version import get_version
+from celery.schedules import crontab
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RUNMODE = settings.get('core', 'run_mode').strip("'\"")
-SWARM_LOG = os.path.join(os.path.expanduser(conf.SWARM_LOG), "swarm-webserver-{}.log".format(RUNMODE.lower()))
+SWARM_LOG = os.path.join(os.path.expanduser(conf.SWARM_LOG),
+                         "swarm-webserver-{}.log".format(RUNMODE.lower()))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -84,7 +80,8 @@ ROOT_URLCONF = 'swarm.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates'), os.path.join(BASE_DIR, 'sscobbler/templates/sscobbler'),],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'),
+                 os.path.join(BASE_DIR, 'sscobbler/templates/sscobbler')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -152,7 +149,8 @@ else:
         'NAME': settings.get('core', 'swarm_db_name'),
         'USER': settings.get('core', 'swarm_db_user'),
         'PASSWORD': settings.get('core', 'swarm_db_password'),
-        'HOST': settings.get('core', 'swarm_db_host'),   # Or an IP Address that your DB is hosted on
+        # Or an IP Address that your DB is hosted on
+        'HOST': settings.get('core', 'swarm_db_host'),
         'PORT': settings.get('core', 'swarm_db_port'),
     }
 
@@ -209,9 +207,11 @@ SESSION_FILE_PATH = '/var/lib/cobbler_sessions'
 # )
 CORS_ORIGIN_ALLOW_ALL = True
 
+
 def get_loggers(level):
     loggers = {}
-    for logger in ('django', 'sscluster', 'sshostmgt', 'ssadvisor', 'sscobweb'):
+    for logger in ('django', 'sscluster', 'sshostmgt', 'ssadvisor',
+                   'sscobweb', 'ssganglia', 'ssnagios'):
         loggers.update({
             logger: {
                 'handlers': ['file', 'stream'],
@@ -226,7 +226,8 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s: %(process)d %(thread)d %(message)s'
+            'format': '%(levelname)s %(asctime)s %(module)s:'
+                      '%(process)d %(thread)d %(message)s'
         },
         'simple': {
             'format': '%(levelname)s %(message)s'
@@ -255,11 +256,9 @@ CELERY_ACCEPT_CONTENT = [conf.get('celery', 'accept_content')]
 CELERY_RESULT_BACKEND = conf.get('celery', 'result_backend')
 CELERY_TASK_SERIALIZER = conf.get('celery', 'task_serializer')
 
-from datetime import timedelta
-from celery.schedules import crontab
 
 # Timezone
-CELERY_TIMEZONE='Asia/Shanghai'    # 指定时区，不指定默认为 'UTC'
+CELERY_TIMEZONE = 'Asia/Shanghai'    # 指定时区，不指定默认为 'UTC'
 
 # schedules
 CELERY_BEAT_SCHEDULE = {

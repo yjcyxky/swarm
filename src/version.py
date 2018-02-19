@@ -8,8 +8,10 @@
 #  See the license for more details.
 #  Author: Jingcheng Yang <yjcyxky@163.com>
 
+
 def get_version():
     return '1.0.0'
+
 
 def get_company_name():
     return 'SuperSAN'
