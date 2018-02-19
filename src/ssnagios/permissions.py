@@ -10,6 +10,7 @@
 
 from rest_framework import permissions
 
+
 class IsOwnerOrAdmin(permissions.BasePermission):
     """
     Custom permission to only allow admin to edit it.
@@ -25,5 +26,5 @@ class IsOwnerOrAdmin(permissions.BasePermission):
                 return request.user.get_username() == obj.get_username()
             else:
                 return request.user == obj.owner
-        except AttributeError as e:
+        except AttributeError:
             pass

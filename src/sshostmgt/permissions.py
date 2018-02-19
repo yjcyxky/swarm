@@ -8,7 +8,8 @@
 #  See the license for more details.
 #  Author: Jingcheng Yang <yjcyxky@163.com>
 
-from rest_framework import permissions
+from rest_framework import permissions, exceptions
+
 
 class IsOwnerOrAdmin(permissions.BasePermission):
     """
@@ -31,6 +32,7 @@ class IsOwnerOrAdmin(permissions.BasePermission):
         elif hasattr(obj, 'users'):
             return request.user in obj.users.all()
 
+
 class IsOwner(permissions.BasePermission):
     """
     Custom permission to only allow admin to edit it.
@@ -48,6 +50,7 @@ class IsOwner(permissions.BasePermission):
             return request.user == obj.user
         elif hasattr(obj, 'users'):
             return request.user in obj.users.all()
+
 
 class CustomDjangoModelPermissions(permissions.BasePermission):
     """
@@ -110,8 +113,8 @@ class CustomDjangoModelPermissions(permissions.BasePermission):
         if getattr(view, '_ignore_model_permissions', False):
             return True
 
-        if not request.user or (
-           not request.user.is_authenticated and self.authenticated_users_only):
+        if not request.user or (not request.user.is_authenticated and
+                                self.authenticated_users_only):
             return False
 
         queryset = self._queryset(view)
@@ -119,7 +122,8 @@ class CustomDjangoModelPermissions(permissions.BasePermission):
         perms = self.get_required_permissions(request.method, queryset.model)
         all_group_perms = list(request.user.get_group_permissions())
         # OPTIONS/HEAD no perms
-        # Each method in perms_map only have one perm, so can use len(perms) == 1.
+        # Each method in perms_map only have one perm,
+        # so can use len(perms) == 1.
         if len(perms) == 1:
             if perms[0] in all_group_perms:
                 perm_flag = True
