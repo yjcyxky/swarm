@@ -1,0 +1,71 @@
+
+<!-- Шаблон виджета -->
+<script type="text/x-just" data-just="pmwItemsCounter">
+    <div class="col-lg-2 col-sm-4 col-xs-6">
+        <div class="small-box bg-aqua">
+            <div class="inner">
+                <h3><%= model.justText('count') %></h3>
+                <p style="text-transform: capitalize"><%- model.countObject.model.name %></p>
+            </div>
+            <div class="icon hidden-xs" style="top: 0px;">
+                <i class="glyphicon glyphicon-cog"></i>
+            </div>
+            <a href="<%- ssansible.opt.host %>/?<%- model.countObject.model.page_name %>" onclick="return spajs.openURL(this.href);" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+</script>
+
+<!-- Страница dashboard -->
+<script type="text/x-just" data-just="dashboard_page">
+    <section class="content-header">
+        <h1>
+            Dashboard
+        </h1>
+        <ol class="breadcrumb">
+            <li class="active">Dashboard</li>
+        </ol>
+    </section>
+
+    <section class="content">
+        
+        <!-- Вывод списка виджетов -->
+        <% for(var i in pmDashboard.model.widgets){ %>
+            <div class="row">
+                <% for(var j in pmDashboard.model.widgets[i]){  %>
+                        <% if(pmDashboard.model.widgets[i][j].widget){ %>
+                            <%= pmDashboard.model.widgets[i][j].widget.render() %>
+                        <% } %>
+                <% } %>
+            </div>
+        <% } %>
+ 
+        <div class="row">  
+            <div id="pmAnsibleModule-fastCommandWidget"></div> 
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-12 col-xs-12">
+                <div class="box box-info">
+                    <div class="box-header ui-sortable-handle" style="cursor: move;">
+                        <i class="fa fa-th"></i>
+                        <h3 class="box-title">Tasks history</h3>
+                        <!-- 
+                        <div class="box-tools pull-right">
+                            <button type="button" class="btn btn-sm" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                            <button type="button" class="btn btn-sm" data-widget="remove"><i class="fa fa-times"></i></button>
+                        </div>-->
+                    </div>
+                    <div class="box-body border-radius-none">
+                        <div id="c3-history-chart"></div>
+                    </div>
+                    <!-- /.box-body -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="row"> 
+            <div id="pmTasksTemplates-showTaskWidget"></div> 
+            <div id="pmTasksTemplates-showModuleWidget"></div> 
+        </div>
+    </section>
+</script>

@@ -18,8 +18,6 @@ import errno
 import logging
 import os
 import sys
-import subprocess
-import warnings
 
 # 必须将swarm添加到sys.path中
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -93,6 +91,15 @@ swarm_db_port = 3306
 unit_test_mode = False
 # Run_mode only supports the following modes: DEBUG|INFO|WARNING|ERROR
 run_mode = DEBUG
+
+# Directory to store projects data
+projects_dir = {SWARM_HOME}/projects
+
+# Directory to store hooks scripts (only for 'SCRIPT' type hooks)
+hooks_dir = /tmp/
+
+# Debug output on errors
+# debug = true
 
 [webserver]
 # The base url of your website as airflow cannot guess what domain or
@@ -169,6 +176,17 @@ log_fetch_timeout_sec = 5
 # DAGs by default
 hide_paused_dags_by_default = False
 
+# Allowed hostnames for answer. Default - all.
+allowed_hosts = *
+
+# Url for static files.
+# Attention: If you changing it, don't forget to change `static-map` in [uwsgi]
+# section.
+static_files_url = /static/
+
+# How many results return by API.
+rest_page_limit = 1000
+
 [celery]
 # This section only applies if you are using the CeleryExecutor in
 # [core] section above
@@ -192,6 +210,20 @@ flower_port = 5555
 # Default queue that tasks get assigned to and that worker listen on.
 default_queue = default
 
+# Celery broker settings
+# Read more: http://docs.celeryproject.org/en/latest/userguide/configuration.html#conf-broker-settings
+# Interval between sending heartbeat packages, which says that connection still
+# alive. Make sure that it is not less than in your MQ server settings.
+# Otherwise connection will be lost and worker will not accept jobs or
+# web-server will not send jobs.
+
+heartbeat = 5
+results_expiry_days = 1
+create_instance_attempts = 5
+
+# Concurrency is number of parallel worker processes. Should at be at least 2.
+concurrency = 4
+
 [advisor]
 # Pointer to DRMAA library slurm-drmaa/lib/libdrmaa.so.1
 drmaa_library_path = /opt/local/lib
@@ -211,6 +243,32 @@ ansible_log_dir = {SWARM_HOME}/ansible/logs
 
 [ganglia]
 rrd_dir_path = /var/lib/ganglia/rrd
+
+[cache]
+# Cache settings.
+# Read more: https://docs.djangoproject.com/en/1.10/ref/settings/#caches
+
+backend = django.core.cache.backends.filebased.FileBasedCache
+location = {TMP_DIR}/swarm_django_cache{PY_VER}
+
+[locks]
+# Threads-locks settings.
+# Read more: https://docs.djangoproject.com/en/1.10/ref/settings/#caches
+# !!! USE ONLY BACKENDS WITH THREADS SUPPORT !!!
+# !!! STRONGLY RECOMMENDED TO USE MEMCACHED OR REDIS BACKENDS !!!
+
+# backend = django.core.cache.backends.filebased.FileBasedCache
+location = {TMP_DIR}/swarm_django_cache_locks{PY_VER}
+
+[mail]
+# SMTP settings.
+# Read more: https://docs.djangoproject.com/en/1.10/ref/settings/#email-host
+# This sets without EMAIL_* prefix
+host = smtp.mail.ru
+port = 2525
+user = user
+password = password
+tls = false
 """
 
 TEST_CONFIG = """\
@@ -224,6 +282,9 @@ swarm_db_password = yjc040653
 swarm_db_host = localhost
 swarm_db_port = 3306
 run_mode = DEBUG
+projects_dir = {SWARM_HOME}/projects
+hooks_dir = /tmp/
+debug = true
 
 [webserver]
 base_url = http://localhost:8080
@@ -232,6 +293,9 @@ web_server_port = 8080
 dag_orientation = LR
 log_fetch_timeout_sec = 5
 hide_paused_dags_by_default = False
+allowed_hosts = *
+static_files_url = /static/
+rest_page_limit = 1000
 
 [celery]
 broker_url = redis://localhost:6379/0
@@ -241,6 +305,10 @@ task_serializer = json
 flower_host = 0.0.0.0
 flower_port = 5555
 default_queue = default
+heartbeat = 5
+results_expiry_days = 1
+concurrency = 4
+create_instance_attempts = 5
 
 [advisor]
 drmaa_library_path = /opt/local/lib
@@ -255,6 +323,21 @@ ansible_log_dir = {SWARM_HOME}/ansible/logs
 
 [ganglia]
 rrd_dir_path = /var/lib/ganglia/rrd
+
+[cache]
+backend = django.core.cache.backends.filebased.FileBasedCache
+location = {TMP_DIR}/swarm_django_cache{PY_VER}
+
+[locks]
+backend = django.core.cache.backends.filebased.FileBasedCache
+location = {TMP_DIR}/swarm_django_cache_locks{PY_VER}
+
+[mail]
+host = smtp.mail.ru
+port = 2525
+user = user
+password = password
+tls = false
 """
 
 
@@ -394,9 +477,13 @@ def mkdir_p(path):
 if 'SWARM_HOME' not in os.environ:
     SWARM_HOME = expand_env_var('~/swarm')
     SWARM_LOG = os.path.join(SWARM_HOME, 'logs')
+    TMP_DIR = "/tmp"
+    PY_VER = sys.version_info[0]
 else:
     SWARM_HOME = expand_env_var(os.environ['SWARM_HOME'])
     SWARM_LOG = os.path.join(SWARM_HOME, 'logs')
+    TMP_DIR = "/tmp"
+    PY_VER = sys.version_info[0]
 
 mkdir_p(SWARM_HOME)
 mkdir_p(SWARM_LOG)

@@ -12,13 +12,19 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+import sys
 import datetime
+from configparser import NoSectionError, NoOptionError
 from bin.configuration import conf as settings
 from bin import configuration as conf
 from celery.schedules import crontab
+from version import get_version
 
+POLEMARCH_VERSION = get_version()
+APACHE = False if ("webserver" in sys.argv) else True
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RUNMODE = settings.get('core', 'run_mode').strip("'\"")
+
 SWARM_LOG = os.path.join(os.path.expanduser(conf.SWARM_LOG),
                          "swarm-webserver-{}.log".format(RUNMODE.lower()))
 
@@ -32,7 +38,18 @@ SECRET_KEY = settings.get('webserver', 'secret_key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if settings.get('core', 'run_mode').upper() == 'DEBUG' else False
 
-ALLOWED_HOSTS = ['*']
+# Directory for git projects
+PROJECTS_DIR = settings.get("core", "projects_dir")
+if not PROJECTS_DIR:
+    SWARM_HOME = conf.SWARM_HOME
+    PROJECTS_DIR = "%s/projects" % SWARM_HOME
+
+os.makedirs(PROJECTS_DIR) if not os.path.exists(PROJECTS_DIR) else None
+
+ALLOWED_HOSTS = settings.get("webserver", "allowed_hosts")
+ALLOWED_HOSTS = ALLOWED_HOSTS.split(',') if ALLOWED_HOSTS else ['*']
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTOCOL', 'https')
 
 APPEND_SLASH = False
 
@@ -45,8 +62,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'registration',
+    'crispy_forms',  # For ssansible
+    'rest_framework.authtoken',  # For ssansible
     'rest_framework',
     'corsheaders',
+    'django_filters',  # For ssansible
+    # 'docs',  # For ssansible
     'sscobbler.apps.SscobblerConfig',
     'sshostmgt.apps.SshostmgtConfig',
     'ssfalcon.apps.SsfalconConfig',
@@ -54,6 +75,8 @@ INSTALLED_APPS = [
     'sscluster.apps.SsclusterConfig',
     'sscobweb.apps.SscobwebConfig',
     'ssadvisor.apps.SsadvisorConfig',
+    'ssansible.main',
+    'ssansible.api',
     'ssganglia.apps.SsgangliaConfig',
     'account.apps.AccountConfig',
     'report_engine.apps.ReportEngineConfig',
@@ -63,17 +86,23 @@ INSTALLED_APPS = [
     'django_celery_beat',
 ]
 
+ADDONS = []
+
+INSTALLED_APPS += ADDONS
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
+# Fix for django 1.8-9
+MIDDLEWARE_CLASSES = MIDDLEWARE
 
 ROOT_URLCONF = 'swarm.urls'
 
@@ -81,7 +110,9 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'templates'),
-                 os.path.join(BASE_DIR, 'sscobbler/templates/sscobbler')],
+                 os.path.join(BASE_DIR, 'sscobbler/templates/sscobbler'),
+                 os.path.join(BASE_DIR, 'ssansible/api/templates'),
+                 os.path.join(BASE_DIR, 'ssansible/main/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -96,6 +127,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'wsgi.application'
 
+PAGE_LIMIT = settings.getint("webserver", "rest_page_limit")
 # REST FRAMEWORK
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -105,8 +137,16 @@ REST_FRAMEWORK = {
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.TokenAuthentication',  # For ssansible
+    ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
     ),
     'EXCEPTION_HANDLER': 'swarm.exceptions.custom_exception_handler',
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': settings.getint("webserver", "rest_page_limit"),
 }
 
 SWAGGER_SETTINGS = {
@@ -121,7 +161,7 @@ SWAGGER_SETTINGS = {
 
 LOGIN_URL = 'rest_framework:login'
 LOGOUT_URL = 'rest_framework:logout'
-
+LOGIN_REDIRECT_URL = '/'
 
 JWT_AUTH = {
     'JWT_SECRET_KEY': SECRET_KEY,
@@ -158,6 +198,18 @@ DATABASES = {
     'default': DATABASES_CONFIG
 }
 
+# E-Mail settings
+# https://docs.djangoproject.com/en/1.10/ref/settings/#email-host
+try:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_PORT = settings.getint("mail", "port")
+    EMAIL_HOST_USER = settings.get("mail", "user")
+    EMAIL_HOST_PASSWORD = settings.get("mail", "password")
+    EMAIL_USE_TLS = settings.getboolean("mail", "tls")
+    EMAIL_HOST = settings.get("mail", "host")
+except (NoSectionError, NoOptionError):
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
 
@@ -167,6 +219,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 0,
+        },
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -193,10 +248,27 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = settings.get("webserver", "static_files_url")
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
+]
+
+STATICFILES_FINDERS = (
+  'django.contrib.staticfiles.finders.FileSystemFinder',
+  'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
+if APACHE:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
 STATIC_ROOT = os.path.join(BASE_DIR, 'swarm', 'static')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Documentation files
+# http://django-docs.readthedocs.io/en/latest/#docs-access-optional
+DOCS_ROOT = os.path.join(BASE_DIR, 'doc/html')
+DOCS_ACCESS = 'public'
+DOC_URL = "/docs/"
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.file'
 SESSION_FILE_PATH = '/var/lib/cobbler_sessions'
@@ -211,7 +283,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 def get_loggers(level):
     loggers = {}
     for logger in ('django', 'sscluster', 'sshostmgt', 'ssadvisor',
-                   'sscobweb', 'ssganglia', 'ssnagios'):
+                   'sscobweb', 'ssganglia', 'ssnagios', 'ssansible'):
         loggers.update({
             logger: {
                 'handlers': ['file', 'stream'],
@@ -249,13 +321,27 @@ LOGGING = {
     'loggers': get_loggers(RUNMODE.upper()),
 }
 
+# Celery settings
+__broker_url = settings.get("celery", "broker_url")
+if __broker_url.startswith("filesystem://"):
+    __broker_folder = __broker_url.split("://", 1)[1]
+    CELERY_BROKER_URL = "filesystem://"
+    CELERY_BROKER_TRANSPORT_OPTIONS = {
+        "data_folder_in": __broker_folder,
+        "data_folder_out": __broker_folder,
+        "data_folder_processed": __broker_folder,
+    }
+else:
+    CELERY_BROKER_URL = __broker_url  # nocv
 
-# Celery Configuration
-CELERY_BROKER_URL = conf.get('celery', 'broker_url')
-CELERY_ACCEPT_CONTENT = [conf.get('celery', 'accept_content')]
-CELERY_RESULT_BACKEND = conf.get('celery', 'result_backend')
-CELERY_TASK_SERIALIZER = conf.get('celery', 'task_serializer')
-
+CELERY_RESULT_BACKEND = settings.get("celery", "result_backend")
+CELERY_WORKER_CONCURRENCY = settings.getint("celery", "concurrency")
+CELERY_WORKER_HIJACK_ROOT_LOGGER = False
+CELERY_BROKER_HEARTBEAT = settings.getint("celery", "heartbeat")
+CELERY_BEAT_SCHEDULER = 'ssansible.main.celery_beat_scheduler:SingletonDatabaseScheduler'
+CELERY_ACCEPT_CONTENT = ['pickle', 'json']
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_RESULT_EXPIRES = settings.getint("celery", "results_expiry_days")
 
 # Timezone
 CELERY_TIMEZONE = 'Asia/Shanghai'    # 指定时区，不指定默认为 'UTC'
@@ -266,4 +352,96 @@ CELERY_BEAT_SCHEDULE = {
          'task': 'ssadvisor.tasks.loop_submit_job',
          'schedule': crontab(minute='*/1'),       # 每 60 秒执行一次
     },
+    'ssansible': 'ssansible.main.celery_beat_scheduler:SingletonDatabaseScheduler'
 }
+
+try:
+    __CACHE_DEFAULT_SETTINGS = {k.upper():v for k, v in settings.items('cache')}
+    if not __CACHE_DEFAULT_SETTINGS: raise NoSectionError('cache')
+except NoSectionError:
+    __CACHE_DEFAULT_SETTINGS = {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': '/tmp/swarm_django_cache' + str(sys.version_info[0]),
+    }
+
+try:
+    __CACHE_LOCKS_SETTINGS = {k.upper():v for k, v in settings.items('locks')}
+    if not __CACHE_LOCKS_SETTINGS: raise NoSectionError('locks')
+except NoSectionError:
+    __CACHE_LOCKS_SETTINGS = {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': '/tmp/swarm_django_locks' + str(sys.version_info[0]),
+    }
+
+
+# CACHES = {
+#     'default': __CACHE_DEFAULT_SETTINGS,
+#     "locks": __CACHE_LOCKS_SETTINGS
+# }
+
+CREATE_INSTANCE_ATTEMPTS = settings.getint("celery", "create_instance_attempts")
+CONCURRENCY = settings.getint("celery", "concurrency")
+
+REPO_BACKENDS = {
+    "GIT": {
+        "BACKEND": "ssansible.main.repo_backends.Git",
+        "OPTIONS": {
+            "CLONE_KWARGS": {
+                "depth": 1
+            },
+            "FETCH_KWARGS": {
+            },
+            "GIT_ENV": {
+                "GLOBAL": {
+                    "GIT_SSL_NO_VERIFY": "true"
+                }
+            }
+        }
+    },
+    "TAR": {
+        "BACKEND": "ssansible.main.repo_backends.Tar",
+    },
+    "MANUAL": {
+        "BACKEND": "ssansible.main.repo_backends.Manual",
+    }
+}
+
+
+TASKS_HANDLERS = {
+    "REPO": {
+        "BACKEND": "ssansible.main.tasks.tasks.RepoTask"
+    },
+    "SCHEDUER": {
+        "BACKEND": "ssansible.main.tasks.tasks.ScheduledTask"
+    },
+    "MODULE": {
+        "BACKEND": "ssansible.main.tasks.tasks.ExecuteAnsibleModule"
+    },
+    "PLAYBOOK": {
+        "BACKEND": "ssansible.main.tasks.tasks.ExecuteAnsiblePlaybook"
+    },
+}
+
+ACL = {
+    "DEFAULT_ACL_CLASSES": {
+        "ACLPermissionAbstract": "ssansible.main.models.acl_models.ACLPermissionAbstract",
+        "ACLModel": "ssansible.main.models.acl_models.ACLModel",
+        "ACLPermissionSubclass": "ssansible.main.models.acl_models.ACLPermissionSubclass",
+        "ACLGroupSubclass": "ssansible.main.models.acl_models.ACLGroupSubclass",
+        "ACLQuerySet": "ssansible.main.models.acl_models.ACLQuerySet",
+        "ACLInventoriesQuerySet": "django.db.models.query.QuerySet",
+        "ACLHistoryQuerySet": "ssansible.main.models.acl_models.ACLHistoryQuerySet",
+        "ACLUserGroupsQuerySet": "ssansible.main.models.acl_models.ACLQuerySet",
+    }
+}
+
+HOOKS = {
+    "HTTP": {
+        "BACKEND": 'ssansible.main.hooks.http.Backend'
+    },
+    "SCRIPT": {
+        "BACKEND": 'ssansible.main.hooks.script.Backend'
+    },
+}
+
+HOOKS_DIR = settings.get("core", "hooks_dir")
