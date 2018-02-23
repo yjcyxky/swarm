@@ -112,14 +112,16 @@ class JobLogSerializer(serializers.ModelSerializer):
         """
         if data.get('start') and data.get('end'):
             if data.get('end') <= data.get('start'):
-                raise serializer.ValidationError("start must occur after end.")
+                raise serializers.ValidationError("Start must occur after end")
         return data
 
+
 class JobLogCountSerializer(serializers.ModelSerializer):
-    records_count = serializers.IntegerField(min_value = 0)
+    records_count = serializers.IntegerField(min_value=0)
 
     def to_representation(self, instance):
-        print('sscluster@serializers@JobLogCountSerializer@to_representation@', instance)
+        print('sscluster@serializers@JobLogCountSerializer@to_representation@',
+              instance)
         request = self.context.get('request')
         return {
             'owner': instance.get('joblog__owner'),
@@ -141,4 +143,5 @@ class JobLogCountSerializer(serializers.ModelSerializer):
         fields = ('records_count', 'owner', 'group', 'cluster_uuid', 'start',
                   'end', 'used_cput', 'used_mem', 'used_vmem')
         read_only_fields = ('records_count', 'owner', 'group', 'cluster_uuid',
-                            'start', 'end', 'used_cput', 'used_mem', 'used_vmem')
+                            'start', 'end', 'used_cput', 'used_mem',
+                            'used_vmem')
