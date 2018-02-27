@@ -1,7 +1,7 @@
 # 功能模块说明
 1. swarm
     前端和后端数据库管理等，同时负责组合其它组件
-2. ssansible
+2. ssansible(此模块已经独立开发，参考**Gemstone系统**)
     绑定ansible(https://github.com/ansible)，用于系统软件与服务配置
 3. sscobbler
     系统自动安装
@@ -22,9 +22,10 @@
 10. ssadvisor
     医学数据挖掘APP运算
 11. ssspider
-    封装snakemake(https://bitbucket.org/snakemake/snakemake)，用于Pipeline分析
+    用于Pipeline分析
 
 # 平台依赖环境(大部分软件均与Swarm一同安装在Swarm服务器上，若需要集群中管理节点与计算节点部署软件则会明确声明)
+支持Python3.5，不支持Python3.6、2.7、2.6等
 1. Cobbler
     必须安装在Swarm服务器
 2. Ansible
@@ -36,12 +37,13 @@
 5. Redis
 6. MySQL
 7. Falcon
-8. sscluster
+8. Torque+Maui(用于sscluster)
     当前版本仅支持Torque
 9. sshostmgt
     电源管理模块，仅支持Dell系列服务器
 10. uberftp
     The uberftp command needs to be available for GridFTP support
+11. rrdtool和rrdtool-devel
 
 # 配置
 1. 所有终端程序支持配置文件+命令行参数两种配置方式(命令行参数优先于配置文件)

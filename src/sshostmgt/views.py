@@ -15,6 +15,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
+from rest_framework.serializers import ValidationError
 from sshostmgt.models import (IPMI, Host, Tag, Storage)
 from sshostmgt.pagination import CustomPagination
 from sshostmgt.permissions import IsOwnerOrAdmin
@@ -168,6 +169,10 @@ class IPMIDetail(generics.GenericAPIView):
             })
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request, ipmi_uuid, format=None):
+        ipmi = self.get_object(ipmi_uuid)
+        ipmi.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class TagList(generics.GenericAPIView):
     """
@@ -361,7 +366,10 @@ class HostDetail(generics.GenericAPIView):
                                     context = {'request': request},
                                     partial = True)
         if serializer.is_valid():
-            serializer.update(host, serializer.validated_data)
+            try:
+                serializer.update(host, serializer.validated_data)
+            except ValidationError as err:
+                raise CustomException(str(err), status_code = status.HTTP_400_BAD_REQUEST)
             serializer = HostSerializer(host, context = {'request': request})
             return Response({
                 "status": "Updated Success",
@@ -369,6 +377,13 @@ class HostDetail(generics.GenericAPIView):
                 "data": serializer.data
             })
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, host_uuid, format=None):
+        host = self.get_object(host_uuid)
+        ipmi = host.ipmi
+        host.delete()
+        ipmi.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class StorageList(generics.GenericAPIView):
     """

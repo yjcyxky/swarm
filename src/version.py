@@ -10,7 +10,7 @@
 
 
 def get_version():
-    return '1.0.0'
+    return 'v3.10'
 
 
 def get_company_name():

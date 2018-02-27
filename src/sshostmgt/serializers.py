@@ -59,9 +59,8 @@ class IPMISerializer(serializers.ModelSerializer):
     ipmi_passwd = serializers.CharField()
     last_update_time = serializers.DateTimeField()
     first_add_time = serializers.DateTimeField()
-    ipmi_addr = serializers.IPAddressField(validators = [UniqueValidator(queryset=IPMI.objects.all())])
-    ipmi_mac = serializers.CharField(min_length = 17, max_length = 17,
-                                     validators = [check_mac, UniqueValidator(queryset=IPMI.objects.all())])
+    ipmi_addr = serializers.IPAddressField()
+    ipmi_mac = serializers.CharField(min_length=17, max_length=17)
 
     class Meta:
         model = IPMI
@@ -70,8 +69,35 @@ class IPMISerializer(serializers.ModelSerializer):
         # extra_kwargs = {'ipmi_passwd': {'write_only': True}}
         lookup_field = 'ipmi_uuid'
 
+        extra_kwargs = {
+            'ipmi_uuid': {
+                'validators': []
+            },
+            'ipmi_mac': {
+                'validators': [check_mac]
+            },
+            'ipmi_addr': {
+                'validators': []
+            }
+        }
+
+    def custome_validate_ipmi_mac(self, value):
+        if IPMI.objects.filter(ipmi_mac=value):
+            raise serializers.ValidationError("This field must be unique.")
+
+    def custome_validate_ipmi_addr(self, value):
+        if IPMI.objects.filter(ipmi_addr=value):
+            raise serializers.ValidationError("This field must be unique.")
+
+    def custome_validate_ipmi_uuid(self, value):
+        if IPMI.objects.filter(ipmi_uuid=value):
+            raise serializers.ValidationError("This field must be unique.")
+
     def create(self, validated_data):
         # save将调用create创建用户
+        self.custome_validate_ipmi_mac(validated_data.get('ipmi_mac'))
+        self.custome_validate_ipmi_addr(validated_data.get('ipmi_addr'))
+        self.custome_validate_ipmi_uuid(validated_data.get('ipmi_uuid'))
         power_state = validated_data.get('power_state', 'POWER_OFF').upper()
         if validated_data.get('power_state'):
             validated_data.pop('power_state')
@@ -125,7 +151,8 @@ class IPMISerializer(serializers.ModelSerializer):
 
 class TagSerializer(serializers.ModelSerializer):
     tag_name = serializers.CharField(validators = [check_tag_name, UniqueValidator(queryset=Tag.objects.all())])
-    label_color = serializers.CharField(validators = [check_label_color])
+    label_color = serializers.CharField(validators = [check_label_color], default='#23d7bc')
+    common_used = serializers.BooleanField(default=False)
 
     class Meta:
         model = Tag
@@ -164,28 +191,28 @@ class HostListSerializer(serializers.HyperlinkedModelSerializer):
         lookup_field = 'host_uuid'
 
 class HostSerializer(serializers.HyperlinkedModelSerializer):
-    ipmi = serializers.PrimaryKeyRelatedField(queryset = IPMI.objects.all(),
-                                              pk_field = serializers.UUIDField(format='hex_verbose'))
+    ipmi = IPMISerializer()
     host_uuid = serializers.UUIDField(format = 'hex_verbose')
     mgmt_ip_addr = serializers.IPAddressField()
     hostname = serializers.CharField(validators = [check_hostname], max_length = 64)
-    tags = TagSerializer(many = True, read_only = True)
+    tags = TagSerializer(many=True, read_only=True)
     tags_uuid = serializers.PrimaryKeyRelatedField(many=True,
-                                              queryset = Tag.objects.all(),
-                                              pk_field = serializers.UUIDField(format='hex_verbose'),
-                                              source = 'tags')
+                                                   queryset = Tag.objects.all(),
+                                                   pk_field = serializers.UUIDField(format='hex_verbose'),
+                                                   source='tags')
 
     class Meta:
         model = Host
-        fields = ('host_uuid', 'host_desc', 'mgmt_ip_addr', 'hostname', 'ipmi', 'tags', 'tags_uuid')
+        fields = ('host_uuid', 'host_desc', 'mgmt_ip_addr', 'hostname', 'ipmi',
+                  'tags', 'tags_uuid', 'mgmt_mac')
         lookup_field = 'host_uuid'
 
     def create(self, validated_data):
-        ipmi = validated_data.pop('ipmi')
-        host = Host.objects.create(ipmi = ipmi, **validated_data)
-        host.save()
-        # 必须先保存才可添加
+        ipmi_data = validated_data.pop('ipmi')
         tags = validated_data.pop('tags')
+        ipmi = IPMI.objects.create(**ipmi_data)
+        host = Host.objects.create(ipmi=ipmi, **validated_data)
+        host.save()
         host.tags.add(*tags)
         return host
 
@@ -195,7 +222,16 @@ class HostSerializer(serializers.HyperlinkedModelSerializer):
         instance.hostname = validated_data.get('hostname', instance.hostname)
         instance.mgmt_ip_addr = validated_data.get('mgmt_ip_addr', instance.mgmt_ip_addr)
         instance.mgmt_mac = validated_data.get('mgmt_mac', instance.mgmt_mac)
-        instance.ipmi = validated_data.get('ipmi', instance.ipmi)
+        ipmi_data = validated_data.get('ipmi')
+        ipmi = IPMI.objects.filter(ipmi_uuid=ipmi_data.get('ipmi_uuid'))
+        if ipmi_data and ipmi:
+            ipmi.update(**ipmi_data)
+        elif ipmi_data and not ipmi:
+            serializer = IPMISerializer(data=ipmi_data)
+            if serializer.is_valid():
+                ipmi = serializer.create(serializer.validated_data)
+                instance.ipmi = ipmi
+
         tags = validated_data.get('tags', None)
         instance.save()
         if tags:
