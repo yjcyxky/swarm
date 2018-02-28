@@ -14,5 +14,11 @@ from ssnagios import views
 urlpatterns = [
     url(r'^notifications/$',
         views.NotificationList.as_view(),
-        name='notification-list')
+        name='notification-list'),
+    url(r'^notifications/(?P<notification_id>[0-9]+)$',
+        views.NotificationDetail.as_view(),
+        name='notification-detail'),
+    url(r'^hosts/(?P<hostname>[0-9a-zA-Z_\-\.]+)$',
+        views.HostDetail.as_view(),
+        name='host-detail'),
 ]

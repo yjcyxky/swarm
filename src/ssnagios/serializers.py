@@ -10,18 +10,85 @@
 
 import logging
 from rest_framework import serializers
-from ssnagios.models import Instances, Objects, Notifications
+from ssnagios.models import Instances, Objects, Notifications, Hosts
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
 
-class InstancesSerializer(serializers.ModelSerializer):
+class HostsSerializer(serializers.ModelSerializer):
+    def get_object_model(self, value):
+        return Objects.objects.get(object_id=value)
+
+    def to_representation(self, instance):
+        nagios_instance = Instances.objects.get(instance_id=instance.instance_id)
+        instance_dict = instance.__dict__
+        host_object_id = instance_dict.get('host_object_id')
+        check_command_object_id = instance_dict.get('check_command_object_id')
+        return {
+            'host_id': instance_dict.get('host_id'),
+            'instance': InstancesSerializer(nagios_instance).data,
+            'config_type': instance_dict.get('config_type'),
+            'host_object': ObjectsSerializer(self.get_object_model(host_object_id)).data,
+            'alias': instance_dict.get('alias'),
+            'display_name': instance_dict.get('display_name'),
+            'address': instance_dict.get('address'),
+            'check_command_object': ObjectsSerializer(self.get_object_model(check_command_object_id)).data,
+            'check_command_args': instance_dict.get('check_command_args'),
+        }
+
     class Meta:
-        model = Instances
+        model = Hosts
         fields = '__all__'
 
 
+class InstancesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Instances
+        fields = ('instance_id', 'instance_name', 'instance_description')
+
+
 class ObjectsSerializer(serializers.ModelSerializer):
+    def get_objecttype_str(self, objecttype_id):
+        objecttype_dict = {
+            '1': 'Host',
+            '2': 'Service',
+            '3': 'Host group',
+            '4': 'Service group',
+            '5': 'Host escalation',
+            '6': 'Service escalation',
+            '7': 'Host dependency',
+            '8': 'Service dependency',
+            '9': 'Timeperiod',
+            '10': 'Contact',
+            '11': 'Contact group',
+            '12': 'Command',
+            '13': 'Extended host info (deprecated)',
+            '14': 'Extended service info'
+        }
+        return objecttype_dict.get(str(objecttype_id), 'Unknown objecttype')
+
+    def get_is_active_str(self, is_active):
+        if is_active == 0:
+            return 'Inactive'
+        elif is_active == 1:
+            return 'Active'
+        else:
+            return 'Unknown'
+
+    def to_representation(self, instance):
+        instance = instance.__dict__
+        objecttype_id = instance.get('objecttype_id')
+        return {
+            'object_id': instance.get('object_id'),
+            'instance_id': instance.get('instance_id'),
+            'objecttype_id': self.get_objecttype_str(objecttype_id),
+            'name1': instance.get('name1'),
+            'name2': instance.get('name2'),
+            'is_active': self.get_is_active_str(instance.get('is_active'))
+        }
+
     class Meta:
         model = Objects
         fields = '__all__'
@@ -32,6 +99,14 @@ class NotificationsSerializer(serializers.ModelSerializer):
     object = ObjectsSerializer()
     checked = serializers.BooleanField()
     checked_time = serializers.DateTimeField()
+
+    def get_checked_str(self, checked):
+        if not checked:
+            return 'UNREAD'
+        elif checked:
+            return 'READ'
+        else:
+            return 'UNKNOWN'
 
     def get_notifi_type_str(self, notification_type):
         if notification_type == 0:
@@ -82,12 +157,14 @@ class NotificationsSerializer(serializers.ModelSerializer):
             return service_state_dict.get(str(state))
 
     def to_representation(self, instance):
+        nagios_instance = Instances.objects.get(instance_id=instance.instance_id)
+        nagios_object = Objects.objects.get(object_id=instance.object_id)
         instance = instance.__dict__
         notifi_type = instance.get('notification_type')
         notifi_reason = instance.get('notification_reason')
         return {
-            'instance': instance.get('instance'),
-            'object': instance.get('object'),
+            'instance': InstancesSerializer(nagios_instance).data,
+            'object': ObjectsSerializer(nagios_object).data,
             'notification_id': instance.get('notification_id'),
             'notification_type': self.get_notifi_type_str(notifi_type),
             'notification_reason': self.get_notifi_reason_str(notifi_reason),
@@ -100,9 +177,15 @@ class NotificationsSerializer(serializers.ModelSerializer):
             'long_output': instance.get('long_output'),
             'escalated': self.get_escalated_str(instance.get('escalated')),
             'contacts_notified': instance.get('contacts_notified'),
-            'checked': instance.get('checked'),
+            'checked': self.get_checked_str(instance.get('checked')),
             'checked_time': instance.get('checked_time')
         }
+
+    def update(self, instance, validated_data):
+        checked = validated_data.get('checked')
+        instance.checked = bool(checked)
+        instance.checked_time = timezone.now()
+        instance.save()
 
     class Meta:
         model = Notifications

@@ -35,6 +35,7 @@ from configuration import conf as settings
 from version import (get_version, get_company_name)
 from exceptions import SwarmException
 from ssspider.spider import get_argument_parser, main as spider_main
+from ssnagios.raw_sqls import add_fields as ssnagios_add_fields
 
 
 def sigint_handler(sig, frame):
@@ -96,12 +97,33 @@ def bash_completion():
 
 
 def initdb(args, **kwargs):
-    print("初始化数据库...")
+    print("初始化Swarm数据库...")
     setup_django()
-    call_command('makemigrations', verbosity=0, interactive=False)
+    apps = ('report_engine', 'ssadvisor', 'sscluster', 'sscobbler', 'sscobweb',
+            'ssganglia', 'sshostmgt', 'django_celery_beat', 'swarm', 'account')
+    call_command('makemigrations', *apps, verbosity=0, interactive=False)
     call_command('migrate', verbosity=0)
+
+    print("初始化ssnagios模块数据库...")
+    BASE_DIR = conf.BASE_DIR
+    INSTALL_DB = os.path.join(BASE_DIR, 'ssnagios/initdb/installdb')
+    USERNAME = settings.get('core', 'swarm_db_user')
+    PASSWORD = settings.get('core', 'swarm_db_password')
+    DATABASE = settings.get('core', 'swarm_db_name')
+    HOSTNAME = settings.get('core', 'swarm_db_host')
+    PORT = settings.get('core', 'swarm_db_port')
+    CMD = [INSTALL_DB, '-u', USERNAME, '-p', PASSWORD, '-h', HOSTNAME,
+           '-d', DATABASE, '-P', PORT]
+    status = subprocess.call(CMD)
+
+    if status == 0:
+        ssnagios_add_fields()
+    else:
+        sys.exit(status)
+
     initdata = args.initdata
     if initdata:
+        print("加载数据...")
         call_command(loaddata.Command(), initdata, verbosity=0)
     print("完成.")
 
