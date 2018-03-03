@@ -36,7 +36,15 @@ class NotificationList(generics.GenericAPIView):
         """
         Get all notifications.
         """
-        queryset = self.paginate_queryset(self.queryset)
+        query_params = request.query_params
+        checked = query_params.get('checked')
+        if checked:
+            checked = checked if isinstance(checked, int) else 0
+            checked = int(checked)
+            queryset = self.queryset.filter(checked=checked)
+        else:
+            queryset = self.queryset
+        queryset = self.paginate_queryset(queryset)
         serializer = self.get_serializer(queryset, many=True,
                                          context={'request': request})
         return self.get_paginated_response(serializer.data)

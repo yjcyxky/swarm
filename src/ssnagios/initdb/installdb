@@ -22,6 +22,10 @@ use strict;
 use FindBin qw($Bin);
 use Getopt::Std;
 use DBI;
+use File::Spec;
+
+my $path_curf = File::Spec->rel2abs(__FILE__);
+my ($vol, $dirs, $file) = File::Spec->splitpath($path_curf);
 
 sub usage {
 	print $usage,$/,"\t",$_[0],$/;
@@ -52,7 +56,7 @@ my $thisversion="2.0.1";
 eval { $dbh->do("SELECT * FROM nagios_dbversion LIMIT 1") };
 if ($@) {
 
-	my $file="mysql.sql";
+	my $file=$dirs."mysql.sql";
 	if (-e $file){
 	    print "** Creating tables for version $thisversion",$/;
 	    print "     Using $file for installation...",$/;
@@ -72,4 +76,3 @@ else {
     print "*** Database already installed",$/;
     exit 0;
 };
-

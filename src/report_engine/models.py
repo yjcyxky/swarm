@@ -18,18 +18,26 @@ from django.conf import settings
 
 USER_HOME = os.path.expanduser("~")
 
-def get_report_engine_home(create_flag = False):
+
+def get_report_engine_home(create_flag=False):
+    """
+    获取report_engine的工作目录；若不存在，则创建
+    """
     DEFAULT_HOME = os.path.join(USER_HOME, 'report_engine')
     REPORT_ENGINE_HOME = getattr(settings, 'REPORT_ENGINE_HOME', DEFAULT_HOME)
     if create_flag:
         os.makedirs(REPORT_ENGINE_HOME)
     return REPORT_ENGINE_HOME
 
+
 class TitleNode(models.Model):
-    title_uuid = models.CharField(max_length = 36, primary_key = True,
-                                  default = uuid.uuid4())
+    """
+    Title容器，用于存储报告的Title
+    """
+    title_uuid = models.CharField(max_length=36, primary_key=True,
+                                  default=uuid.uuid4())
     created_time = models.DateTimeField(auto_now_add=True)
-    content = mysql_models.JSONField(max_length = 255)
+    content = mysql_models.JSONField(max_length=255)
 
     def __str__(self):
         return '%s' % self.title_uuid
@@ -40,10 +48,13 @@ class TitleNode(models.Model):
 
 
 class InfoNode(models.Model):
-    info_uuid = models.CharField(max_length = 36, primary_key = True,
-                                 default = uuid.uuid4())
+    """
+    Meta信息节点，用于存储报告相关的Metadata
+    """
+    info_uuid = models.CharField(max_length=36, primary_key=True,
+                                 default=uuid.uuid4())
     created_time = models.DateTimeField(auto_now_add=True)
-    content = mysql_models.JSONField(max_length = 255)
+    content = mysql_models.JSONField(max_length=255)
 
     def __str__(self):
         return '%s' % self.info_uuid
@@ -54,10 +65,13 @@ class InfoNode(models.Model):
 
 
 class ParagraphNode(models.Model):
-    paragraph_uuid = models.CharField(max_length = 36, primary_key = True,
-                                      default = uuid.uuid4())
+    """
+    段落节点，用于存储报告的段落内容
+    """
+    paragraph_uuid = models.CharField(max_length=36, primary_key=True,
+                                      default=uuid.uuid4())
     created_time = models.DateTimeField(auto_now_add=True)
-    content = mysql_models.JSONField(max_length = 255)
+    content = mysql_models.JSONField(max_length=255)
 
     def __str__(self):
         return '%s' % self.paragraph_uuid
@@ -68,10 +82,13 @@ class ParagraphNode(models.Model):
 
 
 class MediaNode(models.Model):
-    media_uuid = models.CharField(max_length = 36, primary_key = True,
-                                  default = uuid.uuid4())
+    """
+    Media节点，用于存储多媒体内容
+    """
+    media_uuid = models.CharField(max_length=36, primary_key=True,
+                                  default=uuid.uuid4())
     created_time = models.DateTimeField(auto_now_add=True)
-    content = mysql_models.JSONField(max_length = 255)
+    content = mysql_models.JSONField(max_length=255)
 
     def __str__(self):
         return '%s' % self.media_uuid
@@ -82,10 +99,13 @@ class MediaNode(models.Model):
 
 
 class UrlNode(models.Model):
-    url_uuid = models.CharField(max_length = 36, primary_key = True,
-                                default = uuid.uuid4())
+    """
+    URL节点，用于存储报告内容中的链接
+    """
+    url_uuid = models.CharField(max_length=36, primary_key=True,
+                                default=uuid.uuid4())
     created_time = models.DateTimeField(auto_now_add=True)
-    content = mysql_models.JSONField(max_length = 255)
+    content = mysql_models.JSONField(max_length=255)
 
     def __str__(self):
         return '%s' % self.url_uuid
@@ -96,10 +116,13 @@ class UrlNode(models.Model):
 
 
 class ReferenceNode(models.Model):
-    reference_uuid = models.CharField(max_length = 36, primary_key = True,
-                                      default = uuid.uuid4())
+    """
+    参考文献节点，用于存储报告中的参考文献
+    """
+    reference_uuid = models.CharField(max_length=36, primary_key=True,
+                                      default=uuid.uuid4())
     created_time = models.DateTimeField(auto_now_add=True)
-    content = mysql_models.JSONField(max_length = 255)
+    content = mysql_models.JSONField(max_length=255)
 
     def __str__(self):
         return '%s' % self.reference_uuid
@@ -110,10 +133,13 @@ class ReferenceNode(models.Model):
 
 
 class HeaderNode(models.Model):
-    header_uuid = models.CharField(max_length = 36, primary_key = True,
-                                   default = uuid.uuid4())
+    """
+    页眉节点，用于存储报告相关的页眉
+    """
+    header_uuid = models.CharField(max_length=36, primary_key=True,
+                                   default=uuid.uuid4())
     created_time = models.DateTimeField(auto_now_add=True)
-    content = mysql_models.JSONField(max_length = 255)
+    content = mysql_models.JSONField(max_length=255)
 
     def __str__(self):
         return '%s' % self.header_uuid
@@ -124,10 +150,13 @@ class HeaderNode(models.Model):
 
 
 class FooterNode(models.Model):
-    footer_uuid = models.CharField(max_length = 36, primary_key = True,
-                                   default = uuid.uuid4())
+    """
+    页脚节点，用于存储报告相关的页脚
+    """
+    footer_uuid = models.CharField(max_length=36, primary_key=True,
+                                   default=uuid.uuid4())
     created_time = models.DateTimeField(auto_now_add=True)
-    content = mysql_models.JSONField(max_length = 255)
+    content = mysql_models.JSONField(max_length=255)
 
     def __str__(self):
         return '%s' % self.footer_uuid
@@ -138,10 +167,13 @@ class FooterNode(models.Model):
 
 
 class ListNode(models.Model):
-    list_uuid = models.CharField(max_length = 36, primary_key = True,
-                                 default = uuid.uuid4())
+    """
+    列表节点，用于存储报告相关的列表
+    """
+    list_uuid = models.CharField(max_length=36, primary_key=True,
+                                 default=uuid.uuid4())
     created_time = models.DateTimeField(auto_now_add=True)
-    content = mysql_models.JSONField(max_length = 255)
+    content = mysql_models.JSONField(max_length=255)
 
     def __str__(self):
         return '%s' % self.list_uuid
@@ -152,10 +184,13 @@ class ListNode(models.Model):
 
 
 class TableNode(models.Model):
-    table_uuid = models.CharField(max_length = 36, primary_key = True,
-                                  default = uuid.uuid4())
+    """
+    表格节点，用于存储报告中的表格
+    """
+    table_uuid = models.CharField(max_length=36, primary_key=True,
+                                  default=uuid.uuid4())
     created_time = models.DateTimeField(auto_now_add=True)
-    content = mysql_models.JSONField(max_length = 255)
+    content = mysql_models.JSONField(max_length=255)
 
     def __str__(self):
         return '%s' % self.table_uuid
@@ -166,10 +201,13 @@ class TableNode(models.Model):
 
 
 class Version(models.Model):
-    version_uuid = models.CharField(max_length = 36, primary_key = True,
-                                    default = uuid.uuid4())
+    """
+    版本信息节点，用于存储报告版本信息
+    """
+    version_uuid = models.CharField(max_length=36, primary_key=True,
+                                    default=uuid.uuid4())
     created_time = models.DateTimeField(auto_now_add=True)
-    name_alias = models.CharField(max_length = 32)
+    name_alias = models.CharField(max_length=32)
 
     def __str__(self):
         return '%s' % self.version_uuid
@@ -180,44 +218,61 @@ class Version(models.Model):
 
 
 class ReportNode(models.Model):
-    report_uuid = models.CharField(max_length = 36, primary_key = True,
-                                   default = uuid.uuid4())
-    latest = models.CharField(max_length = 36, unique = True,
-                              default = uuid.uuid4())
+    """
+    报告节点，用于存储报告Metadata
+    """
+    report_uuid = models.CharField(max_length=36, primary_key=True,
+                                   default=uuid.uuid4())
+    # 最新版Report UUID
+    latest = models.CharField(max_length=36, null=True, blank=True)
     created_time = models.DateTimeField(auto_now_add=True)
-    updated_time = models.DateTimeField(null = True)
-    patient = models.CharField(max_length = 36, default = uuid.uuid4())
-    user = models.ForeignKey(User, on_delete = models.CASCADE)
+    updated_time = models.DateTimeField(null=True)
+    patient = models.CharField(max_length=36)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     version_set = models.ManyToManyField(Version)
 
 
 class SectionNode(models.Model):
+    """
+    容器节点
+    """
     TYPES = (
         ('ROOT', 'ROOT'),
         ('root', 'ROOT'),
         ('SECTION', 'SECTION'),
         ('section', 'SECTION'),
     )
-    section_uuid = models.CharField(max_length = 36, primary_key = True,
-                                    default = uuid.uuid4())
+    section_uuid = models.CharField(max_length=36, primary_key=True,
+                                    default=uuid.uuid4())
     created_time = models.DateTimeField(auto_now_add=True)
     # updated_time = models.DateTimeField(null = True)
-    node_type = models.CharField(max_length = 32, choices = TYPES)
-    json_path = models.CharField(max_length = 255)
-    title_node = models.OneToOneField(TitleNode, null=True, on_delete = models.CASCADE)
-    info_node = models.OneToOneField(InfoNode, null=True, on_delete = models.CASCADE)
-    paragraph_node = models.OneToOneField(ParagraphNode, null=True, on_delete = models.CASCADE)
-    media_node = models.OneToOneField(MediaNode, null=True, on_delete = models.CASCADE)
-    url_node = models.OneToOneField(UrlNode, null=True, on_delete = models.CASCADE)
-    reference_node = models.OneToOneField(ReferenceNode, null=True, on_delete = models.CASCADE)
-    header_node = models.OneToOneField(HeaderNode, null=True, on_delete = models.CASCADE)
-    footer_node = models.OneToOneField(FooterNode, null=True, on_delete = models.CASCADE)
-    list_node = models.OneToOneField(ListNode, null=True, on_delete = models.CASCADE)
-    table_node = models.OneToOneField(TableNode, null=True, on_delete = models.CASCADE)
-    section_node = models.ForeignKey('self', null=True, on_delete = models.CASCADE)
-    report = models.ForeignKey(ReportNode, null = True, blank = True,
-                               related_name = 'root_node_set',
-                               on_delete = models.CASCADE)
+    node_type = models.CharField(max_length=32, choices=TYPES)
+    json_path = models.CharField(max_length=255)
+    title_node = models.OneToOneField(TitleNode, null=True,
+                                      on_delete=models.CASCADE)
+    info_node = models.OneToOneField(InfoNode, null=True,
+                                     on_delete=models.CASCADE)
+    paragraph_node = models.OneToOneField(ParagraphNode, null=True,
+                                          on_delete=models.CASCADE)
+    media_node = models.OneToOneField(MediaNode, null=True,
+                                      on_delete=models.CASCADE)
+    url_node = models.OneToOneField(UrlNode, null=True,
+                                    on_delete=models.CASCADE)
+    reference_node = models.OneToOneField(ReferenceNode, null=True,
+                                          on_delete=models.CASCADE)
+    header_node = models.OneToOneField(HeaderNode, null=True,
+                                       on_delete=models.CASCADE)
+    footer_node = models.OneToOneField(FooterNode, null=True,
+                                       on_delete=models.CASCADE)
+    list_node = models.OneToOneField(ListNode, null=True,
+                                     on_delete=models.CASCADE)
+    table_node = models.OneToOneField(TableNode, null=True,
+                                      on_delete=models.CASCADE)
+    section_node = models.ForeignKey('self', null=True,
+                                     on_delete=models.CASCADE)
+    report = models.ForeignKey(ReportNode, null=True, blank=True,
+                               related_name='root_node_set',
+                               on_delete=models.CASCADE)
 
     def __str__(self):
         return '%s' % self.section_uuid

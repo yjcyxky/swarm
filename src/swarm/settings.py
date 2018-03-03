@@ -215,7 +215,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 def get_loggers(level):
     loggers = {}
     for logger in ('django', 'sscluster', 'sshostmgt', 'ssadvisor',
-                   'sscobweb', 'ssganglia', 'ssnagios'):
+                   'sscobweb', 'ssganglia', 'ssnagios', 'report_engine'):
         loggers.update({
             logger: {
                 'handlers': ['file', 'stream'],

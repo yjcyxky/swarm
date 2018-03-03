@@ -9,6 +9,7 @@
 #  Author: Jingcheng Yang <yjcyxky@163.com>
 
 import logging
+import os
 import re
 import datetime
 import uuid
@@ -21,7 +22,6 @@ from django.core.validators import RegexValidator
 from ssadvisor.models import (Patient, UserReport, Report, UserFile, File,
                               UserTask, Task, TaskPool, User, AdvisorSetting)
 from ssadvisor.exceptions import CustomException
-from django.db import transaction
 from ssadvisor.utils import get_settings
 
 logger = logging.getLogger(__name__)

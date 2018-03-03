@@ -8,33 +8,32 @@
 #  See the license for more details.
 #  Author: Jingcheng Yang <yjcyxky@163.com>
 
-from django.conf.urls import url, include
-from rest_framework import routers
+from django.conf.urls import url
 from sshostmgt import views
 
 urlpatterns = [
     url(r'^ipmi$',
         views.IPMIList.as_view(),
-        name = 'ipmi-list'),
+        name='ipmi-list'),
     url(r'^ipmi/(?P<ipmi_uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
         views.IPMIDetail.as_view(),
-        name = 'ipmi-detail'),
+        name='ipmi-detail'),
     url(r'^tags$',
         views.TagList.as_view(),
-        name = 'tag-list'),
+        name='tag-list'),
     url(r'^tags/(?P<tag_uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
         views.TagDetail.as_view(),
-        name = 'tag-detail'),
+        name='tag-detail'),
     url(r'^hosts$',
         views.HostList.as_view(),
-        name = 'host-list'),
+        name='host-list'),
     url(r'^hosts/(?P<host_uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
         views.HostDetail.as_view(),
-        name = 'host-detail'),
+        name='host-detail'),
     url(r'^storages$',
         views.StorageList.as_view(),
-        name = 'storage-list'),
+        name='storage-list'),
     url(r'^storages/(?P<storage_uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
         views.StorageDetail.as_view(),
-        name = 'host-detail'),
+        name='host-detail'),
 ]

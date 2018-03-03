@@ -12,7 +12,7 @@ from django.conf.urls import url
 from ssnagios import views
 
 urlpatterns = [
-    url(r'^notifications/$',
+    url(r'^notifications$',
         views.NotificationList.as_view(),
         name='notification-list'),
     url(r'^notifications/(?P<notification_id>[0-9]+)$',

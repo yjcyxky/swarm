@@ -18,8 +18,6 @@ import errno
 import logging
 import os
 import sys
-import subprocess
-import warnings
 
 # 必须将swarm添加到sys.path中
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -296,7 +294,6 @@ class SwarmConfigParser(ConfigParser):
         if self.has_option(section, key):
             return expand_env_var(
                 ConfigParser.get(self, section, key, **kwargs))
-
 
     def getboolean(self, section, key):
         val = str(self.get(section, key)).lower().strip()

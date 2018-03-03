@@ -8,24 +8,21 @@
 #  See the license for more details.
 #  Author: Jingcheng Yang <yjcyxky@163.com>
 
-import logging, json
-from rest_framework.decorators import (api_view, permission_classes)
-from rest_framework.views import APIView
+import logging
 from rest_framework import generics
 from rest_framework.response import Response
-from rest_framework.request import Request
 from rest_framework import status
 from rest_framework import permissions
-from django.shortcuts import get_object_or_404
-from django.contrib.auth.models import User
 from report_engine.models import (ReportNode, SectionNode)
 from report_engine.serializers import (ReportNodeSerializer,
                                        SectionNodeSerializer)
-from report_engine.permissions import (IsOwnerOrAdmin, IsOwner)
+from report_engine.permissions import (IsOwnerOrAdmin,
+                                       CustomDjangoModelPermissions)
 from report_engine.pagination import CustomPagination
 from report_engine.exceptions import CustomException
 
 logger = logging.getLogger(__name__)
+
 
 class ReportList(generics.GenericAPIView):
     """
@@ -33,62 +30,65 @@ class ReportList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = ReportNodeSerializer
-    # permission_classes = (permissions.IsAuthenticated,
-                          # permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,
+                          IsOwnerOrAdmin)
     queryset = ReportNode.objects.all().order_by("created_time")
     lookup_field = 'report_uuid'
 
-    def get(self, request, format = None):
+    def get(self, request, format=None):
         """
         Get all reports.
         """
         queryset = self.paginate_queryset(self.get_queryset())
-        serializer = self.get_serializer(queryset, many = True,
-                                         context = {'request': request})
+        serializer = self.get_serializer(queryset, many=True,
+                                         context={'request': request})
         return self.get_paginated_response(serializer.data)
 
     def post(self, request):
         """
         Create a report instance.
         """
-        serializer = ReportNodeSerializer(data = request.data,
-                                          context = {'request': request})
+        serializer = ReportNodeSerializer(data=request.data,
+                                          context={'request': request})
         if serializer.is_valid():
-            user = serializer.create(serializer.validated_data)
-            serializer = ReportNodeSerializer(user, context = {'request': request})
+            report = serializer.create(serializer.validated_data)
+            serializer = ReportNodeSerializer(report,
+                                              context={'request': request})
             return Response({
                 "status": "Created Success",
                 "status_code": status.HTTP_201_CREATED,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST)
 
 
 class ReportDetail(generics.GenericAPIView):
     """
     Retrieve, update a report information instance.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       CustomDjangoModelPermissions,
-    #                       IsOwnerOrAdmin,)
+    permission_classes = (permissions.IsAuthenticated,
+                          CustomDjangoModelPermissions,
+                          IsOwnerOrAdmin,)
     serializer_class = ReportNodeSerializer
     queryset = ReportNode.objects
     lookup_field = 'report_uuid'
 
     def get_object(self, report_uuid):
         try:
-            obj = self.queryset.get(report_uuid = report_uuid)
+            obj = self.queryset.get(report_uuid=report_uuid)
             # self.check_object_permissions(self.request, obj)
             return obj
         except ReportNode.DoesNotExist:
-            raise CustomException("Not Found the Report.", status_code = status.HTTP_404_NOT_FOUND)
+            raise CustomException("Not Found the Report.",
+                                  status_code=status.HTTP_404_NOT_FOUND)
 
     def get(self, request, report_uuid):
         """
         Retrieve report information for a specified report instance.
         """
         report = self.get_object(report_uuid)
-        serializer = ReportNodeSerializer(report, context = {'request': request})
+        serializer = ReportNodeSerializer(report, context={'request': request})
         return Response({
             "status": "Success",
             "status_code": status.HTTP_200_OK,
@@ -100,18 +100,49 @@ class ReportDetail(generics.GenericAPIView):
         Modify report information.
         """
         report = self.get_object(report_uuid)
-        serializer = ReportNodeSerializer(report, data = request.data,
-                                          context = {'request': request},
-                                          partial = True)
+        serializer = ReportNodeSerializer(report, data=request.data,
+                                          context={'request': request},
+                                          partial=True)
         if serializer.is_valid():
             report = serializer.update(report, serializer.validated_data)
-            serializer = ReportNodeSerializer(report, context = {'request': request})
+            serializer = ReportNodeSerializer(report,
+                                              context={'request': request})
             return Response({
                 "status": "Updated Success",
                 "status_code": status.HTTP_200_OK,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, report_uuid):
+        """
+        Delete report instance and all version reports.
+        """
+        try:
+            report = self.get_object(report_uuid)
+            # Delete All Version items
+            version_set = report.version_set.all()
+            for version in version_set:
+                logger.debug("Delete Version Instance %s" % version)
+                version.delete()
+            # Clear Relationships
+            report.version_set.clear()
+
+            # Delete Report Instance
+            # The root_node_set will delete automatically for the CASCADE flag.
+            logger.debug("Delete Report Instance %s" % report)
+            report.delete()
+            return Response({
+                "status_code": status.HTTP_204_NO_CONTENT,
+                "status": "No Content.",
+                "data": []
+            })
+        except:
+            return Response({
+                "status": "Not Found.",
+                "status_code": status.HTTP_404_NOT_FOUND,
+                "data": []
+            })
 
 
 class RootNodeList(generics.GenericAPIView):
@@ -120,20 +151,20 @@ class RootNodeList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = SectionNodeSerializer
-    # permission_classes = (permissions.IsAuthenticated,
-                          # permissions.IsAdminUser)
-    # queryset = SectionNode.objects.all().order_by("created_time")
-    queryset = SectionNode.objects.all()
+    permission_classes = (permissions.IsAuthenticated,
+                          IsOwnerOrAdmin)
+    queryset = SectionNode.objects.all().order_by("created_time")
     lookup_field = 'section_uuid'
 
-    def get_queryset(self, filters = None):
+    def get_queryset(self, filters=None):
         try:
             if filters:
-                return SectionNode.objects.all().filter(**filters).order_by('-created_time')
+                return self.queryset.filter(**filters)
         except SectionNode.DoesNotExist:
-            raise CustomException("Not Found the JobLog.", status_code = status.HTTP_404_NOT_FOUND)
+            raise CustomException("Not Found the RootNode Instance.",
+                                  status_code=status.HTTP_404_NOT_FOUND)
 
-    def get(self, request, report_uuid, format = None):
+    def get(self, request, report_uuid, format=None):
         """
         Get all version reports.
         """
@@ -142,27 +173,31 @@ class RootNodeList(generics.GenericAPIView):
             'node_type': 'ROOT'
         }
         queryset = self.paginate_queryset(self.get_queryset(filters))
-        serializer = self.get_serializer(queryset, many = True,
-                                         context = {'request': request})
+        serializer = self.get_serializer(queryset, many=True,
+                                         context={'request': request})
         return self.get_paginated_response(serializer.data)
 
     def post(self, request, report_uuid):
         """
         Create a new version of specified report instance.
         """
-        print(request.data)
-        serializer = SectionNodeSerializer(data = request.data,
-                                           context = {'request': request})
+        serializer = SectionNodeSerializer(data=request.data,
+                                           context={'request': request})
         if serializer.is_valid():
-            print(serializer.validated_data)
+            if serializer.validated_data.get('node_type', '').upper() \
+               != 'ROOT':
+                raise CustomException("The node_type of the first section_node"
+                                      " must be ROOT.",
+                                      status_code=status.HTTP_400_BAD_REQUEST)
             report = serializer.create(serializer.validated_data)
-            # serializer = SectionNodeSerializer(report, context = {'request': request})
-            # return Response({
-            #     "status": "Created Success",
-            #     "status_code": status.HTTP_201_CREATED,
-            #     "data": serializer.data
-            # })
-        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+            serializer = SectionNodeSerializer(report,
+                                               context={'request': request})
+            return Response({
+                "status": "Created Success",
+                "status_code": status.HTTP_201_CREATED,
+                "data": serializer.data
+            })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RootNodeDetail(generics.GenericAPIView):
@@ -178,18 +213,21 @@ class RootNodeDetail(generics.GenericAPIView):
 
     def get_object(self, report_uuid, version_uuid):
         try:
-            obj = self.queryset.get(report = report_uuid, section_uuid = version_uuid)
+            obj = self.queryset.get(report=report_uuid,
+                                    section_uuid=version_uuid)
             # self.check_object_permissions(self.request, obj)
             return obj
         except SectionNode.DoesNotExist:
-            raise CustomException("Not Found the Report.", status_code = status.HTTP_404_NOT_FOUND)
+            raise CustomException("Not Found the Report.",
+                                  status_code=status.HTTP_404_NOT_FOUND)
 
     def get(self, request, report_uuid, version_uuid):
         """
         Retrieve report information for a specified report instance.
         """
         report = self.get_object(report_uuid, version_uuid)
-        serializer = SectionNodeSerializer(report, context = {'request': request})
+        serializer = SectionNodeSerializer(report,
+                                           context={'request': request})
         return Response({
             "status": "Success",
             "status_code": status.HTTP_200_OK,
@@ -201,18 +239,22 @@ class RootNodeDetail(generics.GenericAPIView):
         Modify report information.
         """
         report = self.get_object(report_uuid, version_uuid)
-        serializer = SectionNodeSerializer(report, data = request.data,
-                                           context = {'request': request},
-                                           partial = True)
+        serializer = SectionNodeSerializer(report, data=request.data,
+                                           context={'request': request},
+                                           partial=True)
         if serializer.is_valid():
             report = serializer.update(report, serializer.validated_data)
-            serializer = SectionNodeSerializer(report, context = {'request': request})
+            serializer = SectionNodeSerializer(report,
+                                               context={'request': request})
             return Response({
                 "status": "Updated Success",
                 "status_code": status.HTTP_200_OK,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, report_uuid, version_uuid):
+        """
+        Delete report instance.
+        """
         pass

@@ -487,7 +487,6 @@ def webserver(args, **kwargs):
         raise SwarmException(
             'An SSL key must also be provided for use with ' + ssl_cert)
 
-    RUNMODE = settings.get('core', 'run_mode').strip("'\"")
     if args.debug:
         cmd = sys.argv[0]
         subcommand = 'runserver'

@@ -25,18 +25,14 @@ class CustomPagination(PageNumberPagination):
         query_params = data.serializer.context.get('request').query_params
         total = self.page.paginator.count
         try:
-            which_page = int(query_params.get('page')) \
-                            if query_params.get('page') \
-                                else 1
-            page_size =  int(query_params.get('page_size')) \
-                            if query_params.get('page_size') \
-                                else self.page_size
+            which_page = int(query_params.get('page', 1))
+            page_size = int(query_params.get('page_size', self.page_size))
             if page_size == 0:
                 page_size = 10
         except ValueError:
             raise CustomException("Invalid query parameters.",
-                                  status_code = status.HTTP_400_BAD_REQUEST)
-        last_page =  total // page_size + 1
+                                  status_code=status.HTTP_400_BAD_REQUEST)
+        last_page = total // page_size + 1
         from_pos = (which_page - 1) * page_size + 1
         to_pos = which_page * page_size if total // page_size >= which_page else total % page_size
         logger.debug("which_page: %s" % which_page)
