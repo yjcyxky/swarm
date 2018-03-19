@@ -27,6 +27,7 @@ from django.db import connection
 
 logger = logging.getLogger(__name__)
 
+
 class ChannelList(generics.GenericAPIView):
     """
     List all channel objects, or create a channel instance.
@@ -50,25 +51,28 @@ class ChannelList(generics.GenericAPIView):
 
         if new_kwargs:
             try:
-                logger.debug("ChannelList@exist_object@new_kwargs:%s" % str(new_kwargs))
-                logger.debug("ChannelList@exist_object@objects:%s" % str(self.queryset.get(**new_kwargs)))
+                logger.debug("ChannelList@exist_object@new_kwargs:%s" %
+                             str(new_kwargs))
+                logger.debug("ChannelList@exist_object@objects:%s" %
+                             str(self.queryset.get(**new_kwargs)))
                 return self.queryset.get(**new_kwargs)
             except Channel.DoesNotExist:
                 return False
 
     def get_object(self, channel_name):
         try:
-            return self.queryset.get(channel_name = channel_name)
+            return self.queryset.get(channel_name=channel_name)
         except Channel.DoesNotExist:
-            raise CustomException("Not Found the Channel.", status_code = status.HTTP_404_NOT_FOUND)
+            raise CustomException("Not Found the Channel.",
+                                  status_code=status.HTTP_404_NOT_FOUND)
 
-    def get(self, request, format = None):
+    def get(self, request, format=None):
         """
         Get all channel objects.
         """
         query_params = request.query_params
-        if query_params and (query_params.get('channel_uuid') or \
-                             query_params.get('channel_name') or \
+        if query_params and (query_params.get('channel_uuid') or
+                             query_params.get('channel_name') or
                              query_params.get('md5sum')):
             if not self.exist_object(**query_params):
                 return Response({
@@ -83,16 +87,16 @@ class ChannelList(generics.GenericAPIView):
                 })
         else:
             queryset = self.paginate_queryset(self.get_queryset())
-            serializer = self.get_serializer(queryset, many = True,
-                                             context = {'request': request})
+            serializer = self.get_serializer(queryset, many=True,
+                                             context={'request': request})
             return self.get_paginated_response(serializer.data)
 
     def post(self, request):
         """
         Create a channel instance.
         """
-        serializer = ChannelSerializer(data = request.data,
-                                       context = {'request': request})
+        serializer = ChannelSerializer(data=request.data,
+                                       context={'request': request})
         if serializer.is_valid():
             validated_data = serializer.validated_data
             channel_name = validated_data.get('channel_name')
@@ -101,14 +105,16 @@ class ChannelList(generics.GenericAPIView):
             channel_importer.fetch_repodata()
             channel_importer.sync()
             # channel = serializer.create(serializer.validated_data)
-            channel = self.get_object(channel_name = validated_data.get('channel_name'))
-            serializer = ChannelSerializer(channel, context = {'request': request})
+            channel_name = validated_data.get('channel_name')
+            channel = self.get_object(channel_name=channel_name)
+            serializer = ChannelSerializer(channel,
+                                           context={'request': request})
             return Response({
                 "status": "success",
                 "status_code": status.HTTP_201_CREATED,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ChannelDetail(generics.GenericAPIView):
@@ -123,30 +129,31 @@ class ChannelDetail(generics.GenericAPIView):
 
     def get_object(self, channel_uuid):
         try:
-            return self.queryset.get(channel_uuid = channel_uuid)
+            return self.queryset.get(channel_uuid=channel_uuid)
         except Channel.DoesNotExist:
-            raise CustomException("Not Found the Channel.", status_code = status.HTTP_404_NOT_FOUND)
+            raise CustomException("Not Found the Channel.",
+                                  status_code=status.HTTP_404_NOT_FOUND)
 
     def get(self, request, channel_uuid):
         """
         Retrieve channel information for a specified channel instance.
         """
         channel = self.get_object(channel_uuid)
-        serializer = ChannelSerializer(channel, context = {'request': request})
+        serializer = ChannelSerializer(channel, context={'request': request})
         return Response({
             "status": "Success",
             "status_code": status.HTTP_200_OK,
             "data": serializer.data
-       })
+        })
 
     def put(self, request, channel_uuid):
         """
         Modify channel information.
         """
         channel = self.get_object(channel_uuid)
-        serializer = ChannelSerializer(channel, data = request.data,
-                                       context = {'request': request},
-                                       partial = True)
+        serializer = ChannelSerializer(channel, data=request.data,
+                                       context={'request': request},
+                                       partial=True)
         query_params = request.query_params
         if serializer.is_valid():
             logger.debug(query_params.get('update_repodata'))
@@ -159,14 +166,15 @@ class ChannelDetail(generics.GenericAPIView):
                 channel_importer.sync()
 
             channel = serializer.update(channel, serializer.validated_data)
-            serializer = ChannelSerializer(channel, context = {'request': request})
+            serializer = ChannelSerializer(channel,
+                                           context={'request': request})
 
             return Response({
                 "status": "Updated Success",
                 "status_code": status.HTTP_200_OK,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status = status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_200_OK)
 
 
 class PackageList(generics.GenericAPIView):
@@ -182,16 +190,20 @@ class PackageList(generics.GenericAPIView):
     lookup_field = 'pkg_uuid'
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
 
-    def get_queryset(self, filters = None):
+    def get_queryset(self, filters=None):
         try:
             if filters:
-                return Package.objects.all().filter(**filters).order_by('pkg_name', 'is_installed')
+                return Package.objects.all()\
+                                      .filter(**filters)\
+                                      .order_by('pkg_name', 'is_installed')
             else:
-                return Package.objects.all().order_by('pkg_name', 'is_installed')
+                return Package.objects.all()\
+                                      .order_by('pkg_name', 'is_installed')
         except Package.DoesNotExist:
-            raise CustomException("Not Found the Packages.", status_code = status.HTTP_404_NOT_FOUND)
+            raise CustomException("Not Found the Packages.",
+                                  status_code=status.HTTP_404_NOT_FOUND)
 
-    def get(self, request, format = None):
+    def get(self, request, format=None):
         """
         Get all package objects.
         """
@@ -199,9 +211,11 @@ class PackageList(generics.GenericAPIView):
 
         try:
             filters = {}
-            name = query_params.get('name')
+            name = query_params.get('name', '')
+            name = name if len(name) > 0 else None
             is_installed = query_params.get('is_installed')
-            installed_time = query_params.get('installed_time', '2100-12-12 08:00:00')
+            installed_time = query_params.get('installed_time',
+                                              '2100-12-12 08:00:00')
             created_date = query_params.get('created_date')
             if created_date:
                 filters.update({
@@ -217,28 +231,30 @@ class PackageList(generics.GenericAPIView):
                     'name__contains': name
                 })
         except ValueError:
-            raise CustomException("Bad Request.", status_code = status.HTTP_400_BAD_REQUEST)
+            raise CustomException("Bad Request.",
+                                  status_code=status.HTTP_400_BAD_REQUEST)
 
         queryset = self.paginate_queryset(self.get_queryset(filters))
-        serializer = self.get_serializer(queryset, many = True,
-                                         context = {'request': request})
+        serializer = self.get_serializer(queryset, many=True,
+                                         context={'request': request})
         return self.get_paginated_response(serializer.data)
 
     def post(self, request):
         """
         Create a package instance.
         """
-        serializer = PackageSerializer(data = request.data,
-                                       context = {'request': request})
+        serializer = PackageSerializer(data=request.data,
+                                       context={'request': request})
         if serializer.is_valid():
             package = serializer.create(serializer.validated_data)
-            serializer = PackageSerializer(package, context = {'request': request})
+            serializer = PackageSerializer(package,
+                                           context={'request': request})
             return Response({
                 "status": "success",
                 "status_code": status.HTTP_201_CREATED,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PackageDetail(generics.GenericAPIView):
@@ -253,16 +269,17 @@ class PackageDetail(generics.GenericAPIView):
 
     def get_object(self, pkg_uuid):
         try:
-            return self.queryset.get(pkg_uuid = pkg_uuid)
+            return self.queryset.get(pkg_uuid=pkg_uuid)
         except Package.DoesNotExist:
-            raise CustomException("Not Found the Package.", status_code = status.HTTP_404_NOT_FOUND)
+            raise CustomException("Not Found the Package.",
+                                  status_code=status.HTTP_404_NOT_FOUND)
 
     def get(self, request, pkg_uuid):
         """
         Retrieve package information for a specified package instance.
         """
         package = self.get_object(pkg_uuid)
-        serializer = PackageSerializer(package, context = {'request': request})
+        serializer = PackageSerializer(package, context={'request': request})
         return Response({
             "status": "Success",
             "status_code": status.HTTP_200_OK,
@@ -273,31 +290,32 @@ class PackageDetail(generics.GenericAPIView):
         """
         Modify package information.
         """
-        package = self.get_object(pkg_uuid = pkg_uuid)
-        serializer = PackageSerializer(package, data = request.data,
-                                       context = {'request': request},
-                                       partial = True)
+        package = self.get_object(pkg_uuid=pkg_uuid)
+        serializer = PackageSerializer(package, data=request.data,
+                                       context={'request': request},
+                                       partial=True)
         query_params = request.query_params
         if serializer.is_valid():
             if query_params.get('install_pkg', 'False').upper() == 'TRUE':
                 pkg_uuid = package.pkg_uuid
-                conda = Conda(pkg_uuid = pkg_uuid)
+                conda = Conda(pkg_uuid=pkg_uuid)
                 conda.reset_channels()
                 package = conda.install()
             elif query_params.get('remove_pkg', 'False').upper() == 'TRUE':
                 pkg_uuid = package.pkg_uuid
-                conda = Conda(pkg_uuid = pkg_uuid)
+                conda = Conda(pkg_uuid=pkg_uuid)
                 package = conda.remove()
             else:
                 package = serializer.update(package, serializer.validated_data)
 
-            serializer = PackageSerializer(package, context = {'request': request})
+            serializer = PackageSerializer(package,
+                                           context={'request': request})
             return Response({
                 "status": "Updated Success",
                 "status_code": status.HTTP_200_OK,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SettingList(generics.GenericAPIView):
@@ -313,16 +331,20 @@ class SettingList(generics.GenericAPIView):
     lookup_field = 'setting_uuid'
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
 
-    def get_queryset(self, filters = None):
+    def get_queryset(self, filters=None):
         try:
             if filters:
-                return CobwebSetting.objects.all().filter(**filters).order_by('name', 'is_active')
+                return CobwebSetting.objects.all()\
+                                            .filter(**filters)\
+                                            .order_by('name', 'is_active')
             else:
-                return CobwebSetting.objects.all().order_by('name', 'is_active')
+                return CobwebSetting.objects.all()\
+                                            .order_by('name', 'is_active')
         except CobwebSetting.DoesNotExist:
-            raise CustomException("Not Found the Settings.", status_code = status.HTTP_404_NOT_FOUND)
+            raise CustomException("Not Found the Settings.",
+                                  status_code=status.HTTP_404_NOT_FOUND)
 
-    def get(self, request, format = None):
+    def get(self, request, format=None):
         """
         Get all setting objects.
         """
@@ -336,7 +358,7 @@ class SettingList(generics.GenericAPIView):
         cobweb_home = query_params.get('cobweb_home')
         if is_active:
             filters.update({
-                'is_active': True if is_active.upper() == 'TRUE' else FALSE,
+                'is_active': True if is_active.upper() == 'TRUE' else False,
             })
         if cobweb_root_prefix:
             filters.update({
@@ -356,25 +378,26 @@ class SettingList(generics.GenericAPIView):
             })
 
         queryset = self.paginate_queryset(self.get_queryset(filters))
-        serializer = self.get_serializer(queryset, many = True,
-                                         context = {'request': request})
+        serializer = self.get_serializer(queryset, many=True,
+                                         context={'request': request})
         return self.get_paginated_response(serializer.data)
 
     def post(self, request):
         """
         Create a setting instance.
         """
-        serializer = SettingSerializer(data = request.data,
-                                       context = {'request': request})
+        serializer = SettingSerializer(data=request.data,
+                                       context={'request': request})
         if serializer.is_valid():
             setting = serializer.create(serializer.validated_data)
-            serializer = SettingSerializer(setting, context = {'request': request})
+            serializer = SettingSerializer(setting,
+                                           context={'request': request})
             return Response({
                 "status": "success",
                 "status_code": status.HTTP_201_CREATED,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SettingDetail(generics.GenericAPIView):
@@ -389,16 +412,17 @@ class SettingDetail(generics.GenericAPIView):
 
     def get_object(self, setting_uuid):
         try:
-            return self.queryset.get(setting_uuid = setting_uuid)
+            return self.queryset.get(setting_uuid=setting_uuid)
         except CobwebSetting.DoesNotExist:
-            raise CustomException("Not Found the Setting.", status_code = status.HTTP_404_NOT_FOUND)
+            raise CustomException("Not Found the Setting.",
+                                  status_code=status.HTTP_404_NOT_FOUND)
 
     def get(self, request, setting_uuid):
         """
         Retrieve setting information for a specified setting instance.
         """
         setting = self.get_object(setting_uuid)
-        serializer = SettingSerializer(setting, context = {'request': request})
+        serializer = SettingSerializer(setting, context={'request': request})
         return Response({
             "status": "Success",
             "status_code": status.HTTP_200_OK,
@@ -409,16 +433,17 @@ class SettingDetail(generics.GenericAPIView):
         """
         Modify setting information.
         """
-        setting = self.get_object(setting_uuid = setting_uuid)
-        serializer = SettingSerializer(setting, data = request.data,
-                                       context = {'request': request},
-                                       partial = True)
+        setting = self.get_object(setting_uuid=setting_uuid)
+        serializer = SettingSerializer(setting, data=request.data,
+                                       context={'request': request},
+                                       partial=True)
         if serializer.is_valid():
             setting = serializer.update(setting, serializer.validated_data)
-            serializer = SettingSerializer(setting, context = {'request': request})
+            serializer = SettingSerializer(setting,
+                                           context={'request': request})
             return Response({
                 "status": "Updated Success",
                 "status_code": status.HTTP_200_OK,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

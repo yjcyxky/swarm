@@ -18,13 +18,13 @@ import errno
 import logging
 import os
 import sys
+from collections import OrderedDict
+from configparser import ConfigParser
 
 # 必须将swarm添加到sys.path中
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 
-from collections import OrderedDict
-from configparser import ConfigParser
 from exceptions import SwarmConfigException
 
 HEADER = """\
@@ -209,6 +209,9 @@ ansible_log_dir = {SWARM_HOME}/ansible/logs
 
 [ganglia]
 rrd_dir_path = /var/lib/ganglia/rrd
+
+[report_engine]
+report_engine_home = {SWARM_HOME}/report_engine
 """
 
 TEST_CONFIG = """\
@@ -253,6 +256,9 @@ ansible_log_dir = {SWARM_HOME}/ansible/logs
 
 [ganglia]
 rrd_dir_path = /var/lib/ganglia/rrd
+
+[report_engine]
+report_engine_home = {SWARM_HOME}/report_engine
 """
 
 
@@ -406,6 +412,7 @@ if 'SWARM_CONFIG' not in os.environ:
 else:
     SWARM_CONFIG = expand_env_var(os.environ['SWARM_CONFIG'])
 
+
 def parameterized_config(template):
     """
     Generates a configuration from the provided template + variables defined in
@@ -488,3 +495,8 @@ def set(section, option, value):  # noqa
 # CELERY_ACCEPT_CONTENT = ['json']
 # CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 # CELERY_TASK_SERIALIZER = 'json'
+
+# DRMAA Library Configuration
+if 'DRMAA_LIBRARY_PATH' not in os.environ:
+    drmaa_library_path = conf.get('advisor', 'drmaa_library_path')
+    os.environ.setdefault('DRMAA_LIBRARY_PATH', drmaa_library_path)

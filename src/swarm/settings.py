@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+import sys
 import datetime
 from bin.configuration import conf as settings
 from bin import configuration as conf
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'registration',
     'rest_framework',
     'corsheaders',
+    'django_extensions',
     'sscobbler.apps.SscobblerConfig',
     'sshostmgt.apps.SshostmgtConfig',
     'ssfalcon.apps.SsfalconConfig',
@@ -68,7 +70,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -154,13 +156,34 @@ else:
         'PORT': settings.get('core', 'swarm_db_port'),
     }
 
+
 DATABASES = {
     'default': DATABASES_CONFIG
 }
 
-MIGRATION_MODULES = {
-    'ssnagios': None,
-}
+TESTS_IN_PROGRESS = False
+TEST_MODE = 'test' in sys.argv[1:] or 'jenkins' in sys.argv[1:]
+if TEST_MODE:
+    # 单元测试时, 跳过migrate, 极大的提升测试运行效率
+    # 具体可以查看
+    # https://simpleisbetterthancomplex.com/tips/2016/08/19/django-tip-12-disabling-migrations-to-speed-up-unit-tests.html
+    # https://stackoverflow.com/questions/36487961/django-unit-testing-taking-a-very-long-time-to-create-test-database
+
+    class DisableMigrations(object):
+        def __contains__(self, item):
+            return True
+
+        def __getitem__(self, item):
+            return None
+
+    DEBUG = False
+    TEMPLATE_DEBUG = False
+    TESTS_IN_PROGRESS = True
+    MIGRATION_MODULES = DisableMigrations()
+else:
+    MIGRATION_MODULES = {
+        'ssnagios': None,
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
@@ -225,33 +248,34 @@ def get_loggers(level):
         })
     return loggers
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '%(levelname)s %(asctime)s %(module)s:'
-                      '%(process)d %(thread)d %(message)s'
+if not TEST_MODE:
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '%(levelname)s %(asctime)s %(module)s:'
+                          '%(process)d %(thread)d %(message)s'
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
         },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
+        'handlers': {
+            'file': {
+                'level': RUNMODE.upper(),
+                'class': 'logging.FileHandler',
+                'filename': '%s' % SWARM_LOG,
+                'formatter': 'verbose'
+            },
+            'stream': {
+                'level': RUNMODE.upper(),
+                'class': 'logging.StreamHandler',
+                'formatter': 'verbose'
+            }
         },
-    },
-    'handlers': {
-        'file': {
-            'level': RUNMODE.upper(),
-            'class': 'logging.FileHandler',
-            'filename': '%s' % SWARM_LOG,
-            'formatter': 'verbose'
-        },
-        'stream': {
-            'level': RUNMODE.upper(),
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose'
-        }
-    },
-    'loggers': get_loggers(RUNMODE.upper()),
-}
+        'loggers': get_loggers(RUNMODE.upper()),
+    }
 
 
 # Celery Configuration
@@ -271,3 +295,7 @@ CELERY_BEAT_SCHEDULE = {
          'schedule': crontab(minute='*/1'),       # 每 60 秒执行一次
     },
 }
+
+
+# ReportEngine
+REPORT_ENGINE_HOME = settings.get('report_engine', 'report_engine_home')

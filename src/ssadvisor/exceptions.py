@@ -13,6 +13,7 @@ from rest_framework import status
 from django.utils.encoding import force_text
 from rest_framework.exceptions import APIException
 
+
 def custom_exception_handler(exc, context):
     # Call REST framework's default exception handler first,
     # to get the standard error response.
@@ -24,9 +25,11 @@ def custom_exception_handler(exc, context):
 
     return response
 
+
 class CustomException(APIException):
     status_code = status.HTTP_404_NOT_FOUND
     default_detail = 'Not Found.'
+
     def __init__(self, detail, field = None, status_code = None):
         if status_code is not None:
             self.status_code = status_code
@@ -36,6 +39,7 @@ class CustomException(APIException):
             self.detail = {'detail': force_text(detail)}
         else:
             self.detail = {'detail': force_text(self.default_detail)}
+
 
 class AdvisorWrongSetting(Exception):
     pass

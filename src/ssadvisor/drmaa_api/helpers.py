@@ -22,16 +22,16 @@ from ctypes import (byref, c_uint, create_string_buffer, POINTER, pointer,
 from .const import ATTR_BUFFER, ENCODING, NO_MORE_ELEMENTS
 from .errors import error_buffer
 from .wrappers import (drmaa_attr_names_t, drmaa_attr_values_t,
-                            drmaa_get_attribute, drmaa_get_attribute_names,
-                            drmaa_get_next_attr_name,
-                            drmaa_get_next_attr_value,
-                            drmaa_get_next_job_id, drmaa_get_vector_attribute,
-                            drmaa_get_vector_attribute_names, drmaa_job_ids_t,
-                            drmaa_release_attr_names,
-                            drmaa_release_attr_values,
-                            drmaa_release_job_ids, drmaa_run_bulk_jobs,
-                            drmaa_set_attribute, drmaa_set_vector_attribute,
-                            drmaa_version, STRING)
+                       drmaa_get_attribute, drmaa_get_attribute_names,
+                       drmaa_get_next_attr_name,
+                       drmaa_get_next_attr_value,
+                       drmaa_get_next_job_id, drmaa_get_vector_attribute,
+                       drmaa_get_vector_attribute_names, drmaa_job_ids_t,
+                       drmaa_release_attr_names,
+                       drmaa_release_attr_values,
+                       drmaa_release_job_ids, drmaa_run_bulk_jobs,
+                       drmaa_set_attribute, drmaa_set_vector_attribute,
+                       drmaa_version, STRING)
 
 
 # Python 3 compatability help
@@ -90,12 +90,14 @@ class SessionStringAttribute(object):
         c(self._f, buf, sizeof(buf))
         return buf.value.decode()
 
+
 Version = namedtuple("Version", "major minor")
 if sys.version_info < (3, 0):
     Version.__str__ = lambda x: "{0}.{1}".format(x.major,
                                                  x.minor).encode(ENCODING)
 else:
     Version.__str__ = lambda x: "{0}.{1}".format(x.major, x.minor)
+
 
 class SessionVersionAttribute(object):
 
@@ -227,7 +229,7 @@ def adapt_rusage(rusage):
     rv = dict()
     for attr in attributes_iterator(rusage.contents):
 
-        k, v = attr.split('=',1)
+        k, v = attr.split('=', 1)
         rv[k] = v
     return rv
 

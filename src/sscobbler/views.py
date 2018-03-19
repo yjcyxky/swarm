@@ -2,20 +2,16 @@
 from django.http import HttpResponse, JsonResponse, HttpRequest
 from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render_to_response
-from django.shortcuts import render
 from django.template import RequestContext
 from django.template.loader import get_template
-from django.views.decorators.csrf import csrf_protect
-from django.views.decorators.http import require_POST
 from django.apps import apps
 
 import simplejson
 import string
 import time
-import xmlrpclib
+import xmlrpc
 
-import field_ui_info
+from . import field_ui_info
 
 sscobbler_settings = apps.get_app_config("sscobbler").settings
 COBBLER_API_URL = sscobbler_settings.get("cobbler_api_url")
@@ -34,18 +30,25 @@ elif INTERFACE_LANG == 'zh':
 else:
     INTERFACE = ZH_INTERFACE
 
-# ==================================================================================
 
-def gen_response_obj(request, message = None, collections = None, next = None):
+def get_version():
+    return remote.extended_version(request.session['token'])['version']
+
+
+def gen_response_obj(request, message=None, collections=None, next=None):
     return {
         "message": message or "Method Not Allowed.",
         "collections": collections,
-        "api_uri": request.get_raw_uri() if isinstance(request, HttpRequest) else None,
+        "api_uri": (request.get_raw_uri()
+                    if isinstance(request, HttpRequest)
+                    else None),
         "next": next
     }
 
+
 def local_get_cobbler_api_url():
     return COBBLER_API_URL
+
 
 def strip_none(data, omit_none=False):
     """
@@ -75,6 +78,7 @@ def strip_none(data, omit_none=False):
 
     return data
 
+
 @login_required(login_url='/login/')
 def index(request):
     """
@@ -90,17 +94,16 @@ def index(request):
             'message': 'sscobbler is alive.',
             'collections': {
                 'sscobbler': {
-                    # 调用cobbler API获取(可修改/etc/cobbler/version文件或SSCOPDeploy项目setup.py文件)
-                    'version': remote.extended_version(request.session['token'])['version'],
+                    # 调用cobbler API获取(可修改/etc/cobbler/version文件)
+                    'version': get_version(),
                 }
             },
             'url': request.get_full_path()
         }
-        return JsonResponse(json, status = 200)
+        return JsonResponse(json, status=200)
     else:
-        return JsonResponse(response_obj, status = 405)
+        return JsonResponse(response_obj, status=405)
 
-# ========================================================================
 
 def task_created(request):
     """
@@ -114,16 +117,15 @@ def task_created(request):
         t = get_template("task_created.tmpl")
         html = t.render(RequestContext(request, {
             'interface': INTERFACE,
-            'version': remote.extended_version(request.session['token'])['version'],
+            'version': get_version(),
             'username': username
         }))
         response_obj["message"] = "success.",
         response_obj["collections"] = {"task_created": html}
-        return JsonResponse(response_obj, status = 200)
+        return JsonResponse(response_obj, status=200)
     else:
-        return JsonResponse(response_obj, status = 405)
+        return JsonResponse(response_obj, status=405)
 
-# ========================================================================
 
 def error_page(request, message):
     """
@@ -131,27 +133,28 @@ def error_page(request, message):
     """
     if not test_user_authenticated(request):
         return login(request, expired=True)
-    # FIXME: test and make sure we use this rather than throwing lots of tracebacks for
-    # field errors
+    # FIXME: test and make sure we use this rather than throwing lots of
+    #        tracebacks for field errors
     response_obj = gen_response_obj(request)
     if request.method == "GET":
         t = get_template('error_page.tmpl')
-        message = message.replace("<Fault 1: \"<class 'cobbler.cexceptions.CX'>:'", "Remote exception: ")
+        error_msg = "<Fault 1: \"<class 'cobbler.cexceptions.CX'>:'"
+        message = message.replace(error_msg,
+                                  "Remote exception: ")
         message = message.replace("'\">", "")
         html = t.render(RequestContext(request, {
             'interface': INTERFACE,
-            'version': remote.extended_version(request.session['token'])['version'],
+            'version': get_version(),
             'message': message,
             'username': username
         }))
 
         response_obj["message"] = "success.",
         response_obj["collections"] = {"error_page": html}
-        return JsonResponse(response_obj, status = 200)
+        return JsonResponse(response_obj, status=200)
     else:
-        return JsonResponse(response_obj, status = 405)
+        return JsonResponse(response_obj, status=405)
 
-# ==================================================================================
 
 def _get_field_html_element(field_name):
 
@@ -228,11 +231,12 @@ def get_fields(what, is_subobject, seed_item=None):
         if ui_field["value"] is None:
             ui_field["value"] = ""
 
-        # we'll process this for display but still need to present the original to some
-        # template logic
+        # we'll process this for display but still need to present
+        # the original to some template logic
         ui_field["value_raw"] = ui_field["value"]
 
-        if isinstance(ui_field["value"], basestring) and ui_field["value"].startswith("SETTINGS:"):
+        if isinstance(ui_field["value"], basestring) \
+           and ui_field["value"].startswith("SETTINGS:"):
             key = ui_field["value"].replace("SETTINGS:", "", 1)
             ui_field["value"] = settings[key]
 
@@ -338,13 +342,14 @@ def _create_sections_metadata(what, sections_data, fields):
                         found = True
                         break
                 if not found:
-                    raise Exception("%s field %s referenced in UI section definition does not exist in UI fields definition" % (what, section_field))
+                    raise Exception("%s field %s referenced in UI section "
+                                    "definition does not exist in UI fields "
+                                    "definition" % (what, section_field))
 
             section_index += 1
 
     return sections
 
-# ==================================================================================
 
 def __tweak_field(fields, field_name, attribute, value):
     """
@@ -355,11 +360,11 @@ def __tweak_field(fields, field_name, attribute, value):
         if x["name"] == field_name:
             x[attribute] = value
 
-# ==================================================================================
 
 def __format_columns(column_names, sort_field):
     """
-    Format items retrieved from XMLRPC for rendering by the generic_edit template
+    Format items retrieved from XMLRPC for rendering
+    by the generic_edit template
     """
     dataset = []
 
@@ -383,11 +388,10 @@ def __format_columns(column_names, sort_field):
     return dataset
 
 
-# ==================================================================================
-
 def __format_items(items, column_names):
     """
-    Format items retrieved from XMLRPC for rendering by the generic_edit template
+    Format items retrieved from XMLRPC for rendering
+    by the generic_edit template
     """
     dataset = []
     for item_dict in items:
@@ -395,7 +399,8 @@ def __format_items(items, column_names):
         for fieldname in column_names:
             if fieldname == "name":
                 html_element = "name"
-            elif fieldname in ["system", "repo", "distro", "profile", "image", "mgmtclass", "package", "file"]:
+            elif fieldname in ["system", "repo", "distro", "profile", "image",
+                               "mgmtclass", "package", "file"]:
                 html_element = "editlink"
             elif fieldname in field_ui_info.USES_CHECKBOX:
                 html_element = "checkbox"
@@ -405,7 +410,6 @@ def __format_items(items, column_names):
         dataset.append(row)
     return dataset
 
-# ==================================================================================
 
 def genlist(request, what, page=None):
     """
@@ -422,8 +426,10 @@ def genlist(request, what, page=None):
             page = int(request.session.get("%s_page" % what, 1))
         limit = int(request.session.get("%s_limit" % what, 50))
         sort_field = request.session.get("%s_sort_field" % what, "name")
-        filters = simplejson.loads(request.session.get("%s_filters" % what, "{}"))
-        pageditems = remote.find_items_paged(what, strip_none(filters), sort_field, page, limit)
+        filters = simplejson.loads(request.session.get("%s_filters" % what,
+                                                       "{}"))
+        pageditems = remote.find_items_paged(what, strip_none(filters),
+                                             sort_field, page, limit)
 
         # what columns to show for each page?
         # we also setup the batch actions here since they're dependent
@@ -484,7 +490,7 @@ def genlist(request, what, page=None):
             'pageinfo': pageditems["pageinfo"],
             'filters': filters,
             'interface': INTERFACE,
-            'version': remote.extended_version(request.session['token'])['version'],
+            'version': get_version(),
             'username': username,
             'limit': limit,
             'batchactions': batchactions,
@@ -493,9 +499,9 @@ def genlist(request, what, page=None):
 
         response_obj["message"] = "success.",
         response_obj["collections"] = {"genlist": html}
-        return JsonResponse(response_obj, status = 200)
+        return JsonResponse(response_obj, status=200)
     else:
-        return JsonResponse(response_obj, status = 405)
+        return JsonResponse(response_obj, status=405)
 
 
 # @require_POST
@@ -509,7 +515,8 @@ def modify_list(request, what, pref, value=None):
     store these preferences persistently.
     """
     if not test_user_authenticated(request):
-        return login(request, next="/sscobbler/%s/modifylist/%s/%s" % (what, pref, str(value)), expired=True)
+        return login(request, next="/sscobbler/%s/modifylist/%s/%s" %
+                                   (what, pref, str(value)), expired=True)
 
     # what preference are we tweaking?
     if request.method == "POST":
@@ -543,7 +550,8 @@ def modify_list(request, what, pref, value=None):
         elif pref in ("addfilter", "removefilter"):
             # filters limit what we show in the lists
             # they are stored in json format for marshalling
-            filters = simplejson.loads(request.session.get("%s_filters" % what, "{}"))
+            filters = simplejson.loads(request.session.get("%s_filters" % what,
+                                                           "{}"))
             if pref == "addfilter":
                 (field_name, field_value) = value.split(":", 1)
                 # add this filter
@@ -563,11 +571,11 @@ def modify_list(request, what, pref, value=None):
         # redirect to the list page
         # return HttpResponseRedirect("/sscobbler/%s/list" % what)
         url = '/sscobbler/%s/list' % what
-        return JsonResponse({'status': True, 'message': None, 'url': url}, status = 200)
+        return JsonResponse({'status': True, 'message': None, 'url': url},
+                            status=200)
     else:
-        return JsonResponse(gen_response_obj(request), status = 405)
+        return JsonResponse(gen_response_obj(request), status=405)
 
-# ======================================================================
 
 # @require_POST
 def generic_rename(request, what, obj_name=None, obj_newname=None):
@@ -575,25 +583,30 @@ def generic_rename(request, what, obj_name=None, obj_newname=None):
     Renames an object.
     """
     if not test_user_authenticated(request):
-        return login(request, next="/sscobbler/%s/rename/%s/%s" % (what, obj_name, obj_newname), expired=True)
+        return login(request, next="/sscobbler/%s/rename/%s/%s" %
+                                   (what, obj_name, obj_newname), expired=True)
 
     if request.method == "POST":
         if obj_name is None:
-            return error_page(request, "You must specify a %s to rename" % what)
+            error_msg = "You must specify a %s to rename" % what
+            return error_page(request, error_msg)
         if not remote.has_item(what, obj_name):
             return error_page(request, "Unknown %s specified" % what)
-        elif not remote.check_access_no_fail(request.session['token'], "modify_%s" % what, obj_name):
-            return error_page(request, "You do not have permission to rename this %s" % what)
+        elif not remote.check_access_no_fail(request.session['token'],
+                                             "modify_%s" % what, obj_name):
+            error_msg = "You do not have permission to rename this %s" % what
+            return error_page(request, error_msg)
         else:
-            obj_id = remote.get_item_handle(what, obj_name, request.session['token'])
-            remote.rename_item(what, obj_id, obj_newname, request.session['token'])
+            obj_id = remote.get_item_handle(what, obj_name,
+                                            request.session['token'])
+            remote.rename_item(what, obj_id, obj_newname,
+                               request.session['token'])
             # return HttpResponseRedirect("/sscobbler/%s/list" % what)
             url = '/sscobbler/%s/list' % what
             return JsonResponse({'status': True, 'message': None, 'url': url})
     else:
-        return JsonResponse(gen_response_obj(request), status = 405)
+        return JsonResponse(gen_response_obj(request), status=405)
 
-# ======================================================================
 
 # @require_POST
 def generic_copy(request, what, obj_name=None, obj_newname=None):
@@ -601,26 +614,31 @@ def generic_copy(request, what, obj_name=None, obj_newname=None):
     Copies an object.
     """
     if not test_user_authenticated(request):
-        return login(request, next="/sscobbler/%s/copy/%s/%s" % (what, obj_name, obj_newname), expired=True)
+        return login(request, next="/sscobbler/%s/copy/%s/%s" %
+                     (what, obj_name, obj_newname), expired=True)
     # FIXME: shares all but one line with rename, merge it.
 
     if request.method == "POST":
         if obj_name is None:
-            return error_page(request, "You must specify a %s to rename" % what)
+            error_msg = "You must specify a %s to rename" % what
+            return error_page(request, error_msg)
         if not remote.has_item(what, obj_name):
             return error_page(request, "Unknown %s specified" % what)
-        elif not remote.check_access_no_fail(request.session['token'], "modify_%s" % what, obj_name):
-            return error_page(request, "You do not have permission to copy this %s" % what)
+        elif not remote.check_access_no_fail(request.session['token'],
+                                             "modify_%s" % what, obj_name):
+            error_msg = "You do not have permission to copy this %s" % what
+            return error_page(request, error_msg)
         else:
-            obj_id = remote.get_item_handle(what, obj_name, request.session['token'])
-            remote.copy_item(what, obj_id, obj_newname, request.session['token'])
+            obj_id = remote.get_item_handle(what, obj_name,
+                                            request.session['token'])
+            remote.copy_item(what, obj_id, obj_newname,
+                             request.session['token'])
             # return HttpResponseRedirect("/sscobbler/%s/list" % what)
             url = '/sscobbler/%s/list' % what
             return JsonResponse({'status': True, 'message': None, 'url': url})
     else:
-        return JsonResponse(gen_response_obj(request), status = 405)
+        return JsonResponse(gen_response_obj(request), status=405)
 
-# ======================================================================
 
 # @require_POST
 def generic_delete(request, what, obj_name=None):
@@ -628,82 +646,104 @@ def generic_delete(request, what, obj_name=None):
     Deletes an object.
     """
     if not test_user_authenticated(request):
-        return login(request, next="/sscobbler/%s/delete/%s" % (what, obj_name), expired=True)
+        return login(request, next="/sscobbler/%s/delete/%s" %
+                     (what, obj_name), expired=True)
     # FIXME: consolidate code with above functions.
 
     if request.method == "POST":
         if obj_name is None:
-            return error_page(request, "You must specify a %s to delete" % what)
+            error_msg = "You must specify a %s to delete" % what
+            return error_page(request, error_msg)
         if not remote.has_item(what, obj_name):
             return error_page(request, "Unknown %s specified" % what)
-        elif not remote.check_access_no_fail(request.session['token'], "remove_%s" % what, obj_name):
-            return error_page(request, "You do not have permission to delete this %s" % what)
+        elif not remote.check_access_no_fail(request.session['token'],
+                                             "remove_%s" % what, obj_name):
+            error_msg = "You do not have permission to delete this %s" % what
+            return error_page(request, error_msg)
         else:
             # check whether object is to be deleted recursively
-            recursive = simplejson.loads(request.POST.get("recursive", "false"))
+            recursive = simplejson.loads(request.POST.get("recursive",
+                                                          "false"))
             try:
-                remote.xapi_object_edit(what, obj_name, "remove", {'name': obj_name, 'recursive': recursive}, request.session['token'])
-            except Exception, e:
+                remote.xapi_object_edit(what, obj_name,
+                                        "remove", {'name': obj_name,
+                                                   'recursive': recursive},
+                                        request.session['token'])
+            except Exception as e:
                 return error_page(request, str(e))
             # return HttpResponseRedirect("/sscobbler/%s/list" % what)
             url = '/sscobbler/%s/list' % what
             return JsonResponse({'status': True, 'message': None, 'url': url})
     else:
-        return JsonResponse(gen_response_obj(request), status = 405)
+        return JsonResponse(gen_response_obj(request), status=405)
 
-# ======================================================================
 
 # @require_POST
 def generic_domulti(request, what, multi_mode=None, multi_arg=None):
     """
-    Process operations like profile reassignment, netboot toggling, and deletion
-    which occur on all items that are checked on the list page.
+    Process operations like profile reassignment, netboot toggling,
+    and deletion which occur on all items that are checked on the list page.
     """
     if not test_user_authenticated(request):
-        return login(request, next="/sscobbler/%s/multi/%s/%s" % (what, multi_mode, multi_arg), expired=True)
+        return login(request, next="/sscobbler/%s/multi/%s/%s" %
+                     (what, multi_mode, multi_arg), expired=True)
 
     if request.method == "POST":
         names = request.POST.get('names', '').strip().split()
         if names == "":
-            return error_page(request, "Need to select some '%s' objects first" % what)
+            error_msg = "Need to select some '%s' objects first" % what
+            return error_page(request, error_msg)
 
         if multi_mode == "delete":
             # check whether the objects are to be deleted recursively
-            recursive = simplejson.loads(request.POST.get("recursive_batch", "false"))
+            recursive = simplejson.loads(request.POST.get("recursive_batch",
+                                                          "false"))
             for obj_name in names:
                 try:
-                    remote.xapi_object_edit(what, obj_name, "remove", {'name': obj_name, 'recursive': recursive}, request.session['token'])
-                except Exception, e:
+                    remote.xapi_object_edit(what, obj_name,
+                                            "remove", {'name': obj_name,
+                                                       'recursive': recursive},
+                                            request.session['token'])
+                except Exception as e:
                     return error_page(request, str(e))
 
         elif what == "system" and multi_mode == "netboot":
             netboot_enabled = multi_arg  # values: enable or disable
             if netboot_enabled is None:
-                return error_page(request, "Cannot modify systems without specifying netboot_enabled")
+                return error_page(request, "Cannot modify systems without"
+                                           "specifying netboot_enabled")
             if netboot_enabled == "enable":
                 netboot_enabled = True
             elif netboot_enabled == "disable":
                 netboot_enabled = False
             else:
-                return error_page(request, "Invalid netboot option, expect enable or disable")
+                return error_page(request, "Invalid netboot option,"
+                                           "expect enable or disable")
             for obj_name in names:
-                obj_id = remote.get_system_handle(obj_name, request.session['token'])
-                remote.modify_system(obj_id, "netboot_enabled", netboot_enabled, request.session['token'])
+                obj_id = remote.get_system_handle(obj_name,
+                                                  request.session['token'])
+                remote.modify_system(obj_id, "netboot_enabled",
+                                     netboot_enabled,
+                                     request.session['token'])
                 remote.save_system(obj_id, request.session['token'], "edit")
 
         elif what == "system" and multi_mode == "profile":
             profile = multi_arg
             if profile is None:
-                return error_page(request, "Cannot modify systems without specifying profile")
+                return error_page(request, "Cannot modify systems without"
+                                           "specifying profile")
             for obj_name in names:
-                obj_id = remote.get_system_handle(obj_name, request.session['token'])
-                remote.modify_system(obj_id, "profile", profile, request.session['token'])
+                obj_id = remote.get_system_handle(obj_name,
+                                                  request.session['token'])
+                remote.modify_system(obj_id, "profile", profile,
+                                     request.session['token'])
                 remote.save_system(obj_id, request.session['token'], "edit")
 
         elif what == "system" and multi_mode == "power":
             power = multi_arg
             if power is None:
-                return error_page(request, "Cannot modify systems without specifying power option")
+                return error_page(request, "Cannot modify systems without"
+                                           "specifying power option")
             options = {"systems": names, "power": power}
             remote.background_power_system(options, request.session['token'])
 
@@ -717,7 +757,8 @@ def generic_domulti(request, what, multi_mode=None, multi_arg=None):
 
         elif what == "distro" and multi_mode == "buildiso":
             if len(names) > 1:
-                return error_page(request, "You can only select one distro at a time to build an ISO for")
+                return error_page(request, "You can only select one distro"
+                                           "at a time to build an ISO for")
             options = {"standalone": True, "distro": str(names[0])}
             remote.background_buildiso(options, request.session['token'])
 
@@ -726,16 +767,17 @@ def generic_domulti(request, what, multi_mode=None, multi_arg=None):
             remote.background_reposync(options, request.session['token'])
 
         else:
-            return error_page(request, "Unknown batch operation on %ss: %s" % (what, str(multi_mode)))
+            return error_page(request, "Unknown batch operation on %ss: %s" %
+                                       (what, str(multi_mode)))
 
-        # FIXME: "operation complete" would make a lot more sense here than a redirect
+        # FIXME: "operation complete" would make a lot more sense
+        #        here than a redirect
         # return HttpResponseRedirect("/sscobbler/%s/list" % what)
         url = '/sscobbler/%s/list' % what
         return JsonResponse({'status': True, 'message': None, 'url': url})
     else:
-        return JsonResponse(gen_response_obj(request), status = 405)
+        return JsonResponse(gen_response_obj(request), status=405)
 
-# ======================================================================
 
 def import_prompt(request):
     if not test_user_authenticated(request):
@@ -746,17 +788,16 @@ def import_prompt(request):
         t = get_template('import.tmpl')
         html = t.render(RequestContext(request, {
             'interface': INTERFACE,
-            'version': remote.extended_version(request.session['token'])['version'],
+            'version': get_version(),
             'username': username,
         }))
 
         response_obj["message"] = "success.",
         response_obj["collections"] = {"import_prompt": html}
-        return JsonResponse(response_obj, status = 200)
+        return JsonResponse(response_obj, status=200)
     else:
-        return JsonResponse(response_obj, status = 405)
+        return JsonResponse(response_obj, status=405)
 
-# ======================================================================
 
 def check(request):
     """
@@ -771,18 +812,17 @@ def check(request):
         t = get_template('check.tmpl')
         html = t.render(RequestContext(request, {
             'interface': INTERFACE,
-            'version': remote.extended_version(request.session['token'])['version'],
+            'version': get_version(),
             'username': username,
             'results': results
         }))
 
         response_obj["message"] = "success.",
         response_obj["collections"] = {"check": html}
-        return JsonResponse(response_obj, status = 200)
+        return JsonResponse(response_obj, status=200)
     else:
-        return JsonResponse(response_obj, status = 405)
+        return JsonResponse(response_obj, status=405)
 
-# ======================================================================
 
 # @require_POST
 def buildiso(request):
@@ -793,9 +833,8 @@ def buildiso(request):
         remote.background_buildiso({}, request.session['token'])
         return HttpResponseRedirect('/sscobbler/task_created')
     else:
-        return JsonResponse(gen_response_obj(request), status = 405)
+        return JsonResponse(gen_response_obj(request), status=405)
 
-# ======================================================================
 
 # @require_POST
 def import_run(request):
@@ -812,9 +851,8 @@ def import_run(request):
         remote.background_import(options, request.session['token'])
         return HttpResponseRedirect('/sscobbler/task_created')
     else:
-        return JsonResponse(gen_response_obj(request), status = 405)
+        return JsonResponse(gen_response_obj(request), status=405)
 
-# ======================================================================
 
 def aifile_list(request, page=None):
     """
@@ -836,25 +874,26 @@ def aifile_list(request, page=None):
             'what': 'aifile',
             'ai_files': aifile_list,
             'interface': INTERFACE,
-            'version': remote.extended_version(request.session['token'])['version'],
+            'version': get_version(),
             'username': username,
             'item_count': len(aifile_list[0]),
         }))
 
         response_obj["message"] = "success.",
         response_obj["collections"] = {"aifile_list": html}
-        return JsonResponse(response_obj, status = 200)
+        return JsonResponse(response_obj, status=200)
     else:
-        return JsonResponse(response_obj, status = 405)
+        return JsonResponse(response_obj, status=405)
 
-# ======================================================================
 
 def aifile_edit(request, aifile_name=None, editmode='edit'):
     """
     This is the page where an automatic OS installation file is edited.
     """
     if not test_user_authenticated(request):
-        return login(request, next="/sscobbler/aifile/edit/file:%s" % aifile_name, expired=True)
+        return login(request,
+                     next="/sscobbler/aifile/edit/file:%s" % aifile_name,
+                     expired=True)
 
     response_obj = gen_response_obj(request)
     if request.method == "GET":
@@ -865,9 +904,12 @@ def aifile_edit(request, aifile_name=None, editmode='edit'):
         deleteable = False
         aidata = ""
         if aifile_name is not None:
-            editable = remote.check_access_no_fail(request.session['token'], "modify_autoinst", aifile_name)
-            deleteable = not remote.is_autoinstall_in_use(aifile_name, request.session['token'])
-            aidata = remote.read_autoinstall_template(aifile_name, request.session['token'])
+            editable = remote.check_access_no_fail(request.session['token'],
+                                                   "modify_autoinst",
+                                                   aifile_name)
+            token = request.session['token']
+            deleteable = not remote.is_autoinstall_in_use(aifile_name, token)
+            aidata = remote.read_autoinstall_template(aifile_name, token)
 
         t = get_template('aifile_edit.tmpl')
         html = t.render(RequestContext(request, {
@@ -877,17 +919,16 @@ def aifile_edit(request, aifile_name=None, editmode='edit'):
             'editable': editable,
             'editmode': editmode,
             'interface': INTERFACE,
-            'version': remote.extended_version(request.session['token'])['version'],
+            'version': get_version(),
             'username': username
         }))
 
         response_obj["message"] = "success.",
         response_obj["collections"] = {"aifile_edit": html}
-        return JsonResponse(response_obj, status = 200)
+        return JsonResponse(response_obj, status=200)
     else:
-        return JsonResponse(response_obj, status = 405)
+        return JsonResponse(response_obj, status=405)
 
-# ======================================================================
 
 # @require_POST
 def aifile_save(request):
@@ -903,23 +944,27 @@ def aifile_save(request):
         aidata = request.POST.get('aidata', "").replace('\r\n', '\n')
 
         if aifile_name is None:
-            return HttpResponse("NO AUTOMATIC INSTALLATION FILE NAME SPECIFIED")
+            error_msg = "NO AUTOMATIC INSTALLATION FILE NAME SPECIFIED"
+            return HttpResponse(error_msg)
 
         delete1 = request.POST.get('delete1', None)
         delete2 = request.POST.get('delete2', None)
 
         if delete1 and delete2:
-            remote.remove_autoinstall_template(aifile_name, request.session['token'])
+            remote.remove_autoinstall_template(aifile_name,
+                                               request.session['token'])
             # return HttpResponseRedirect('/sscobbler/aifile/list')
-            return JsonResponse({'status': True, 'message': None, 'url': '/sscobbler/aifile/list'})
+            return JsonResponse({'status': True, 'message': None,
+                                 'url': '/sscobbler/aifile/list'})
         else:
-            remote.write_autoinstall_template(aifile_name, aidata, request.session['token'])
+            remote.write_autoinstall_template(aifile_name, aidata,
+                                              request.session['token'])
             # return HttpResponseRedirect('/sscobbler/aifile/list')
-            return JsonResponse({'status': True, 'message': None, 'url': '/sscobbler/aifile/list'})
+            return JsonResponse({'status': True, 'message': None,
+                                 'url': '/sscobbler/aifile/list'})
     else:
-        return JsonResponse(gen_response_obj(request), status = 405)
+        return JsonResponse(gen_response_obj(request), status=405)
 
-# ======================================================================
 
 def snippet_list(request, page=None):
     """
@@ -940,24 +985,25 @@ def snippet_list(request, page=None):
             'what': 'snippet',
             'snippets': snippet_list,
             'interface': INTERFACE,
-            'version': remote.extended_version(request.session['token'])['version'],
+            'version': get_version(),
             'username': username
         }))
 
         response_obj["message"] = "success.",
         response_obj["collections"] = {"snippet_list": html}
-        return JsonResponse(response_obj, status = 200)
+        return JsonResponse(response_obj, status=200)
     else:
-        return JsonResponse(response_obj, status = 405)
+        return JsonResponse(response_obj, status=405)
 
-# ======================================================================
 
 def snippet_edit(request, snippet_name=None, editmode='edit'):
     """
     This page edits a specific snippet.
     """
     if not test_user_authenticated(request):
-        return login(request, next="/sscobbler/edit/file:%s" % snippet_name, expired=True)
+        return login(request,
+                     next="/sscobbler/edit/file:%s" % snippet_name,
+                     expired=True)
 
     response_obj = gen_response_obj(request)
     if request.method == "GET":
@@ -968,9 +1014,12 @@ def snippet_edit(request, snippet_name=None, editmode='edit'):
         deleteable = False
         snippetdata = ""
         if snippet_name is not None:
-            editable = remote.check_access_no_fail(request.session['token'], "modify_snippet", snippet_name)
+            editable = remote.check_access_no_fail(request.session['token'],
+                                                   "modify_snippet",
+                                                   snippet_name)
             deleteable = True
-            snippetdata = remote.read_autoinstall_snippet(snippet_name, request.session['token'])
+            token = request.session['token']
+            snippetdata = remote.read_autoinstall_snippet(snippet_name, token)
 
         t = get_template('snippet_edit.tmpl')
         html = t.render(RequestContext(request, {
@@ -980,17 +1029,16 @@ def snippet_edit(request, snippet_name=None, editmode='edit'):
             'editable': editable,
             'editmode': editmode,
             'interface': INTERFACE,
-            'version': remote.extended_version(request.session['token'])['version'],
+            'version': get_version(),
             'username': username
         }))
 
         response_obj["message"] = "success.",
         response_obj["collections"] = {"snippet_edit": html}
-        return JsonResponse(response_obj, status = 200)
+        return JsonResponse(response_obj, status=200)
     else:
-        return JsonResponse(response_obj, status = 405)
+        return JsonResponse(response_obj, status=405)
 
-# ======================================================================
 
 # @require_POST
 def snippet_save(request):
@@ -1008,7 +1056,9 @@ def snippet_save(request):
 
         if snippet_name is None:
             # return HttpResponse("NO SNIPPET NAME SPECIFIED")
-            return JsonResponse({'status': False, 'message': INTERFACE.no_snippet_wmsg, 'url': None})
+            return JsonResponse({'status': False,
+                                 'message': INTERFACE.no_snippet_wmsg,
+                                 'url': None})
 
         if editmode != 'edit':
             if snippet_name.find("/var/lib/cobbler/snippets/") != 0:
@@ -1018,21 +1068,25 @@ def snippet_save(request):
         delete2 = request.POST.get('delete2', None)
 
         if delete1 and delete2:
-            remote.remove_autoinstall_snippet(snippet_name, request.session['token'])
+            remote.remove_autoinstall_snippet(snippet_name,
+                                              request.session['token'])
             # return HttpResponseRedirect('/sscobbler/snippet/list')
-            return JsonResponse({'status': True, 'message': None, 'url': '/sscobbler/snippet/list'})
+            return JsonResponse({'status': True, 'message': None,
+                                 'url': '/sscobbler/snippet/list'})
         else:
-            remote.write_autoinstall_snippet(snippet_name, snippetdata, request.session['token'])
+            remote.write_autoinstall_snippet(snippet_name, snippetdata,
+                                             request.session['token'])
             # return HttpResponseRedirect('/sscobbler/snippet/list')
-            return JsonResponse({'status': True, 'message': None, 'url': '/sscobbler/snippet/list'})
+            return JsonResponse({'status': True, 'message': None,
+                                 'url': '/sscobbler/snippet/list'})
     else:
-        return JsonResponse(gen_response_obj(request), status = 405)
+        return JsonResponse(gen_response_obj(request), status=405)
 
-# ======================================================================
 
 def setting_list(request):
     """
-    This page presents a list of all the settings to the user.  They are not editable.
+    This page presents a list of all the settings to the user.
+    They are not editable.
     """
     if not test_user_authenticated(request):
         return login(request, next="/sscobbler/setting/list", expired=True)
@@ -1050,17 +1104,17 @@ def setting_list(request):
         html = t.render(RequestContext(request, {
             'settings': results,
             'interface': INTERFACE,
-            'version': remote.extended_version(request.session['token'])['version'],
+            'version': get_version(),
             'username': username,
         }))
         response_obj = gen_response_obj(request,
-                                        message = "success.",
-                                        collections = {
+                                        message="success.",
+                                        collections={
                                             "setting_list": html
                                         })
-        return JsonResponse(response_obj, status = 200)
+        return JsonResponse(response_obj, status=200)
     else:
-        return JsonResponse(gen_response_obj(request), status = 405)
+        return JsonResponse(gen_response_obj(request), status=405)
 
 
 def setting_edit(request, setting_name=None):
@@ -1068,9 +1122,12 @@ def setting_edit(request, setting_name=None):
     if request.method == "GET":
         if not setting_name:
             # return HttpResponseRedirect('/sscobbler/setting/list')
-            return JsonResponse({'status': False, 'message': None, 'url': '/sscobbler/setting/list'})
+            return JsonResponse({'status': False, 'message': None,
+                                 'url': '/sscobbler/setting/list'})
         if not test_user_authenticated(request):
-            return login(request, next="/sscobbler/setting/edit/%s" % setting_name, expired=True)
+            return login(request,
+                         next="/sscobbler/setting/edit/%s" % setting_name,
+                         expired=True)
 
         settings = remote.get_settings()
         if setting_name not in settings:
@@ -1095,16 +1152,16 @@ def setting_edit(request, setting_name=None):
             'editmode': 'edit',
             'editable': True,
             'interface': INTERFACE,
-            'version': remote.extended_version(request.session['token'])['version'],
+            'version': get_version(),
             'username': username,
             'name': setting_name,
         }))
 
         response_obj["message"] = "success.",
         response_obj["collections"] = {"setting_edit": html}
-        return JsonResponse(response_obj, status = 200)
+        return JsonResponse(response_obj, status=200)
     else:
-        return JsonResponse(response_obj, status = 405)
+        return JsonResponse(response_obj, status=405)
 
 
 def setting_save(request):
@@ -1123,19 +1180,21 @@ def setting_save(request):
         if setting_name not in settings:
             return error_page(request, "Unknown setting: %s" % setting_name)
 
-        if remote.modify_setting(setting_name, setting_value, request.session['token']):
+        if remote.modify_setting(setting_name, setting_value,
+                                 request.session['token']):
             return error_page(request, "There was an error saving the setting")
 
         # return HttpResponseRedirect("/sscobbler/setting/list")
-        return JsonResponse({'status': True, 'message': None, 'url': '/sscobbler/setting/list'})
+        return JsonResponse({'status': True, 'message': None,
+                             'url': '/sscobbler/setting/list'})
     else:
-        return JsonResponse(gen_response_obj(request), status = 405)
+        return JsonResponse(gen_response_obj(request), status=405)
 
-# ======================================================================
 
 def events(request):
     """
-    This page presents a list of all the events and links to the event log viewer.
+    This page presents a list of all the events and links to the event
+    log viewer.
     """
     if not test_user_authenticated(request):
         return login(request, next="/sscobbler/events", expired=True)
@@ -1147,40 +1206,43 @@ def events(request):
         events2 = []
         for id in events.keys():
             (ttime, name, state, read_by) = events[id]
-            events2.append([id, time.asctime(time.localtime(ttime)), name, state])
+            events2.append([id, time.asctime(time.localtime(ttime)),
+                            name, state])
 
         def sorter(a, b):
-            return cmp(a[0], b[0])
+            return (a[0] > b[0]) - (a[0] < b[0])
         events2.sort(sorter)
 
         t = get_template('events.tmpl')
         html = t.render(RequestContext(request, {
             'results': events2,
             'interface': INTERFACE,
-            'version': remote.extended_version(request.session['token'])['version'],
+            'version': get_version(),
             'username': username
         }))
 
         response_obj["message"] = "success.",
         response_obj["collections"] = {"events": html}
-        return JsonResponse(response_obj, status = 200)
+        return JsonResponse(response_obj, status=200)
     else:
-        return JsonResponse(response_obj, status = 405)
+        return JsonResponse(response_obj, status=405)
 
-# ======================================================================
 
 def eventlog(request, event=0):
     """
     Shows the log for a given event.
     """
     if not test_user_authenticated(request):
-        return login(request, next="/sscobbler/eventlog/%s" % str(event), expired=True)
+        return login(request,
+                     next="/sscobbler/eventlog/%s" % str(event),
+                     expired=True)
 
     response_obj = gen_response_obj(request)
     if request.method == "GET":
         event_info = remote.get_events()
         if event not in event_info:
-            return JsonResponse(gen_response_obj(request, message = "Not Found."))
+            return JsonResponse(gen_response_obj(request,
+                                                 message="Not Found."))
 
         data = event_info[event]
         eventname = data[0]
@@ -1196,18 +1258,17 @@ def eventlog(request, event=0):
             'eventid': event,
             'eventtime': eventtime,
             'interface': INTERFACE,
-            'version': remote.extended_version(request.session['token'])['version'],
+            'version': get_version(),
             'username': username
         }
         html = t.render(RequestContext(request, vars))
 
         response_obj["message"] = "success.",
         response_obj["collections"] = {"eventlog": html}
-        return JsonResponse(response_obj, status = 200)
+        return JsonResponse(response_obj, status=200)
     else:
-        return JsonResponse(response_obj, status = 405)
+        return JsonResponse(response_obj, status=405)
 
-# ======================================================================
 
 def random_mac(request, virttype="xenpv"):
     """
@@ -1221,9 +1282,8 @@ def random_mac(request, virttype="xenpv"):
         random_mac = remote.get_random_mac(virttype, request.session['token'])
         return HttpResponse(random_mac)
     else:
-        return JsonResponse(gen_response_obj(request), status = 405)
+        return JsonResponse(gen_response_obj(request), status=405)
 
-# ======================================================================
 
 # @require_POST
 def sync(request):
@@ -1236,11 +1296,11 @@ def sync(request):
     if request.method == "POST":
         remote.background_sync({"verbose": "True"}, request.session['token'])
         # return HttpResponseRedirect("/sscobbler/task_created")
-        return JsonResponse({'status': True, 'message': None, 'url': '/sscobbler/task_created'})
+        return JsonResponse({'status': True, 'message': None,
+                             'url': '/sscobbler/task_created'})
     else:
-        return JsonResponse(gen_response_obj(request), status = 405)
+        return JsonResponse(gen_response_obj(request), status=405)
 
-# ======================================================================
 
 # @require_POST
 def reposync(request):
@@ -1251,13 +1311,14 @@ def reposync(request):
         return login(request, next="/sscobbler/reposync", expired=True)
 
     if request.method == "POST":
-        remote.background_reposync({"names": "", "tries": 3}, request.session['token'])
+        remote.background_reposync({"names": "", "tries": 3},
+                                   request.session['token'])
         # return HttpResponseRedirect("/sscobbler/task_created")
-        return JsonResponse({'status': True, 'message': None, 'url': '/sscobbler/task_created'})
+        return JsonResponse({'status': True, 'message': None,
+                             'url': '/sscobbler/task_created'})
     else:
-        return JsonResponse(gen_response_obj(request), status = 405)
+        return JsonResponse(gen_response_obj(request), status=405)
 
-# ======================================================================
 
 # @require_POST
 def hardlink(request):
@@ -1270,11 +1331,11 @@ def hardlink(request):
     if request.method == "POST":
         remote.background_hardlink({}, request.session['token'])
         # return HttpResponseRedirect("/sscobbler/task_created")
-        return JsonResponse({'status': True, 'message': None, 'url': '/sscobbler/task_created'})
+        return JsonResponse({'status': True, 'message': None,
+                             'url': '/sscobbler/task_created'})
     else:
-        return JsonResponse(gen_response_obj(request), status = 405)
+        return JsonResponse(gen_response_obj(request), status=405)
 
-# ======================================================================
 
 # @require_POST
 def replicate(request):
@@ -1282,23 +1343,23 @@ def replicate(request):
     Replicate configuration from the central cobbler server, configured
     in /etc/cobbler/settings (note: this is uni-directional!)
 
-    FIXME: this is disabled because we really need a web page to provide options for
-    this command.
-
+    FIXME: this is disabled because we really need a web page to provide
+           options for this command.
     """
+    # just load settings from file until we decide to ask user (later?)
     # settings = remote.get_settings()
-    # options = settings # just load settings from file until we decide to ask user (later?)
+    # options = settings
     # remote.background_replicate(options, request.session['token'])
     if not test_user_authenticated(request):
         return login(request, next="/sscobbler/replicate", expired=True)
 
     if request.method == "POST":
         # return HttpResponseRedirect("/sscobbler/task_created")
-        return JsonResponse({'status': True, 'message': None, 'url': '/sscobbler/task_created'})
+        return JsonResponse({'status': True, 'message': None,
+                             'url': '/sscobbler/task_created'})
     else:
-        return JsonResponse(gen_response_obj(request), status = 405)
+        return JsonResponse(gen_response_obj(request), status=405)
 
-# ======================================================================
 
 def __names_from_dicts(lod, optional=True):
     """
@@ -1314,7 +1375,6 @@ def __names_from_dicts(lod, optional=True):
     results.sort()
     return results
 
-# ======================================================================
 
 def generic_edit(request, what=None, obj_name=None, editmode="new"):
     """
@@ -1325,7 +1385,8 @@ def generic_edit(request, what=None, obj_name=None, editmode="new"):
     if obj_name is not None:
         target = "/%s" % obj_name
     if not test_user_authenticated(request):
-        return login(request, next="/sscobbler/%s/edit%s" % (what, target), expired=True)
+        return login(request, next="/sscobbler/%s/edit%s" % (what, target),
+                     expired=True)
 
     response_obj = gen_response_obj(request)
     if request.method == "GET":
@@ -1337,10 +1398,13 @@ def generic_edit(request, what=None, obj_name=None, editmode="new"):
             child = True
 
         if obj_name is not None:
-            editable = remote.check_access_no_fail(request.session['token'], "modify_%s" % what, obj_name)
+            editable = remote.check_access_no_fail(request.session['token'],
+                                                   "modify_%s" % what,
+                                                   obj_name)
             obj = remote.get_item(what, obj_name, False)
         else:
-            editable = remote.check_access_no_fail(request.session['token'], "new_%s" % what, None)
+            editable = remote.check_access_no_fail(request.session['token'],
+                                                   "new_%s" % what, None)
             obj = None
 
         interfaces = {}
@@ -1363,33 +1427,51 @@ def generic_edit(request, what=None, obj_name=None, editmode="new"):
         # populate some select boxes
         if what == "profile":
             if (obj and obj["parent"] not in (None, "")) or child:
-                __tweak_field(fields, "parent", "choices", __names_from_dicts(remote.get_profiles()))
+                __tweak_field(fields, "parent", "choices",
+                              __names_from_dicts(remote.get_profiles()))
             else:
-                __tweak_field(fields, "distro", "choices", __names_from_dicts(remote.get_distros()))
+                __tweak_field(fields, "distro", "choices",
+                              __names_from_dicts(remote.get_distros()))
             __tweak_field(fields, "autoinstall", "choices", autoinstall_list)
-            __tweak_field(fields, "repos", "choices", __names_from_dicts(remote.get_repos()))
-            __tweak_field(fields, "mgmt_classes", "choices", __names_from_dicts(remote.get_mgmtclasses(), optional=False))
+            __tweak_field(fields, "repos", "choices",
+                          __names_from_dicts(remote.get_repos()))
+            __tweak_field(fields, "mgmt_classes", "choices",
+                          __names_from_dicts(remote.get_mgmtclasses(),
+                                             optional=False))
 
         elif what == "system":
-            __tweak_field(fields, "profile", "choices", __names_from_dicts(remote.get_profiles()))
-            __tweak_field(fields, "image", "choices", __names_from_dicts(remote.get_images(), optional=True))
+            __tweak_field(fields, "profile", "choices",
+                          __names_from_dicts(remote.get_profiles()))
+            __tweak_field(fields, "image", "choices",
+                          __names_from_dicts(remote.get_images(),
+                                             optional=True))
             __tweak_field(fields, "autoinstall", "choices", autoinstall_list)
-            __tweak_field(fields, "mgmt_classes", "choices", __names_from_dicts(remote.get_mgmtclasses(), optional=False))
+            __tweak_field(fields, "mgmt_classes", "choices",
+                          __names_from_dicts(remote.get_mgmtclasses(),
+                                             optional=False))
 
         elif what == "mgmtclass":
-            __tweak_field(fields, "packages", "choices", __names_from_dicts(remote.get_packages()))
-            __tweak_field(fields, "files", "choices", __names_from_dicts(remote.get_files()))
+            __tweak_field(fields, "packages", "choices",
+                          __names_from_dicts(remote.get_packages()))
+            __tweak_field(fields, "files", "choices",
+                          __names_from_dicts(remote.get_files()))
 
         elif what == "distro":
             __tweak_field(fields, "arch", "choices", remote.get_valid_archs())
-            __tweak_field(fields, "os_version", "choices", remote.get_valid_os_versions())
-            __tweak_field(fields, "breed", "choices", remote.get_valid_breeds())
-            __tweak_field(fields, "mgmt_classes", "choices", __names_from_dicts(remote.get_mgmtclasses(), optional=False))
+            __tweak_field(fields, "os_version", "choices",
+                          remote.get_valid_os_versions())
+            __tweak_field(fields, "breed", "choices",
+                          remote.get_valid_breeds())
+            __tweak_field(fields, "mgmt_classes", "choices",
+                          __names_from_dicts(remote.get_mgmtclasses(),
+                                             optional=False))
 
         elif what == "image":
             __tweak_field(fields, "arch", "choices", remote.get_valid_archs())
-            __tweak_field(fields, "breed", "choices", remote.get_valid_breeds())
-            __tweak_field(fields, "os_version", "choices", remote.get_valid_os_versions())
+            __tweak_field(fields, "breed", "choices",
+                          remote.get_valid_breeds())
+            __tweak_field(fields, "os_version", "choices",
+                          remote.get_valid_os_versions())
             __tweak_field(fields, "autoinstall", "choices", autoinstall_list)
 
         # if editing save the fields in the session for comparison later
@@ -1427,23 +1509,23 @@ def generic_edit(request, what=None, obj_name=None, editmode="new"):
             'interface_names': inames,
             'interface_length': len(inames),
             'interface': INTERFACE,
-            'version': remote.extended_version(request.session['token'])['version'],
+            'version': get_version(),
             'username': username,
             'name': obj_name,
         }))
 
         response_obj["message"] = "success.",
         response_obj["collections"] = {"generic_edit": html}
-        return JsonResponse(response_obj, status = 200)
+        return JsonResponse(response_obj, status=200)
     else:
-        return JsonResponse(response_obj, status = 405)
+        return JsonResponse(response_obj, status=405)
 
-# ======================================================================
 
 # @require_POST
 def generic_save(request, what):
     """
-    Saves an object back using the cobbler API after clearing any 'generic_edit' page.
+    Saves an object back using the cobbler API after clearing any
+    'generic_edit' page.
     """
     if not test_user_authenticated(request):
         return login(request, next="/sscobbler/%s/list" % what, expired=True)
@@ -1463,7 +1545,8 @@ def generic_save(request, what):
             return error_page(request, "Required field name is missing")
 
         prev_fields = []
-        if "%s_%s" % (what, obj_name) in request.session and editmode == "edit":
+        if "%s_%s" % (what, obj_name) in request.session\
+           and editmode == "edit":
             prev_fields = request.session["%s_%s" % (what, obj_name)]
 
         # grab the remote object handle
@@ -1471,11 +1554,15 @@ def generic_save(request, what):
         # for new objects, fail if the object already exists
         if editmode == "edit":
             if not remote.has_item(what, obj_name):
-                return error_page(request, "Failure trying to access item %s, it may have been deleted." % (obj_name))
-            obj_id = remote.get_item_handle(what, obj_name, request.session['token'])
+                return error_page(request, "Failure trying to access item %s,"
+                                           "it may have been deleted."
+                                           % (obj_name))
+            obj_id = remote.get_item_handle(what, obj_name,
+                                            request.session['token'])
         else:
             if remote.has_item(what, obj_name):
-                return error_page(request, "Could not create a new item %s, it already exists." % (obj_name))
+                return error_page(request, "Could not create a new item %s, "
+                                           "it already exists." % (obj_name))
             obj_id = remote.new_item(what, request.session['token'])
 
         # system needs either profile or image to be set
@@ -1484,7 +1571,8 @@ def generic_save(request, what):
             profile = request.POST.getlist('profile')
             image = request.POST.getlist('image')
             if "<<None>>" in profile and "<<None>>" in image:
-                return error_page(request, "Please provide either a valid profile or image for the system")
+                return error_page(request, "Please provide either a valid "
+                                           "profile or image for the system")
 
         # walk through our fields list saving things we know how to save
         fields = get_fields(what, subobject)
@@ -1495,7 +1583,8 @@ def generic_save(request, what):
                 # do not attempt renames here
                 continue
             else:
-                # check and see if the value exists in the fields stored in the session
+                # check and see if the value exists in the fields
+                # stored in the session
                 prev_value = None
                 for prev_field in prev_fields:
                     if prev_field['name'] == field['name']:
@@ -1503,7 +1592,8 @@ def generic_save(request, what):
                         break
 
                 value = request.POST.get(field['name'], None)
-                # Checkboxes return the value of the field if checked, otherwise None
+                # Checkboxes return the value of the field if checked,
+                # otherwise None
                 # convert to True/False
                 if field["html_element"] == "checkbox":
                     if value == field['name']:
@@ -1525,10 +1615,12 @@ def generic_save(request, what):
                 if value is not None:
                     if value == "<<None>>":
                         value = ""
-                    if value is not None and (not subobject or field['name'] != 'distro') and value != prev_value:
+                    if value is not None and (not subobject or
+                       field['name'] != 'distro') and value != prev_value:
                         try:
-                            remote.modify_item(what, obj_id, field['name'], value, request.session['token'])
-                        except Exception, e:
+                            remote.modify_item(what, obj_id, field['name'],
+                                               value, request.session['token'])
+                        except Exception as e:
                             return error_page(request, str(e))
 
         # special handling for system interface fields
@@ -1541,33 +1633,37 @@ def generic_save(request, what):
                     continue
                 ifdata = {}
                 for field in network_interface_fields:
-                    ifdata["%s-%s" % (field["name"], interface)] = request.POST.get("%s-%s" % (field["name"], interface), "")
+                    value = request.POST.get("%s-%s" % (field["name"],
+                                             interface), "")
+                    ifdata["%s-%s" % (field["name"], interface)] = value
                 ifdata = strip_none(ifdata)
                 # FIXME: I think this button is missing.
                 present = request.POST.get("present-%s" % interface, "")
                 original = request.POST.get("original-%s" % interface, "")
                 try:
                     if present == "0" and original == "1":
-                        remote.modify_system(obj_id, 'delete_interface', interface, request.session['token'])
+                        remote.modify_system(obj_id, 'delete_interface',
+                                             interface,
+                                             request.session['token'])
                     elif present == "1":
-                        remote.modify_system(obj_id, 'modify_interface', ifdata, request.session['token'])
-                except Exception, e:
+                        remote.modify_system(obj_id, 'modify_interface',
+                                             ifdata, request.session['token'])
+                except Exception as e:
                     return error_page(request, str(e))
 
         try:
             remote.save_item(what, obj_id, request.session['token'], editmode)
-        except Exception, e:
+        except Exception as e:
             return error_page(request, str(e))
 
         # return HttpResponseRedirect('/sscobbler/%s/list' % what)
         url = '/sscobbler/%s/list' % what
         return JsonResponse({'status': True, 'message': None, 'url': url})
     else:
-        return JsonResponse(gen_response_obj(request), status = 405)
+        return JsonResponse(gen_response_obj(request), status=405)
 
-# ======================================================================
+
 # Login/Logout views
-
 def test_user_authenticated(request):
     global remote
     global username
@@ -1576,7 +1672,7 @@ def test_user_authenticated(request):
     if url_cobbler_api is None:
         url_cobbler_api = local_get_cobbler_api_url()
 
-    remote = xmlrpclib.Server(url_cobbler_api, allow_none=True)
+    remote = xmlrpc.Server(url_cobbler_api, allow_none=True)
 
     # if we have a token, get the associated username from
     # the remote server via XMLRPC. We then compare that to
@@ -1585,14 +1681,17 @@ def test_user_authenticated(request):
     if 'token' in request.session and request.session['token'] != '':
         try:
             if remote.token_check(request.session['token']):
-                token_user = remote.get_user_from_token(request.session['token'])
-                if 'username' in request.session and request.session['username'] == token_user:
+                token = request.session['token']
+                token_user = remote.get_user_from_token(token)
+                if 'username' in request.session \
+                   and request.session['username'] == token_user:
                     username = request.session['username']
                     return True
         except:
             # just let it fall through to the 'return False' below
             pass
     return False
+
 
 def login(request, next=None, message=None, expired=False):
     global remote
@@ -1604,20 +1703,20 @@ def login(request, next=None, message=None, expired=False):
 
     if expired and not message:
         if INTERFACE_LANG == 'en':
-            message = r'Please Contact Administrator for username and password!'
+            message = r'Please Contact Administrator!'
         else:
             message = r"请联系管理员获取用户名与密码！"
 
-    content = {
-        'interface': INTERFACE,
-        'next': next,
-        'message': message
-    }
+    # content = {
+    #     'interface': INTERFACE,
+    #     'next': next,
+    #     'message': message
+    # }
 
     if url_cobbler_api is None:
         url_cobbler_api = local_get_cobbler_api_url()
 
-    remote = xmlrpclib.Server(url_cobbler_api, allow_none=True)
+    remote = xmlrpc.Server(url_cobbler_api, allow_none=True)
     token = remote.login(username, password)
 
     if token:

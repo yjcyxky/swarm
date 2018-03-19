@@ -11,14 +11,15 @@ from swarm.permissions import IsOwnerOrAdmin
 
 logger = logging.getLogger(__name__)
 
+
 class APIDetail(APIView):
     """
     Retrieve a specified API instance.
     """
     permission_classes = (permissions.IsAuthenticated,)
 
-    def gen_response_obj(self, request, message = None,
-                         collections = None, next = None):
+    def gen_response_obj(self, request, message=None,
+                         collections=None, next=None):
         collections.update({
             "api_uri": request.get_raw_uri() if isinstance(request, Request) else None,
             "next": next
@@ -58,16 +59,25 @@ class APIDetail(APIView):
         logger.debug('API_NAME: %s' % api_name)
         logger.debug(request.get_raw_uri())
         user = request.user
+        query_params = request.query_params
+        company_name = query_params.get('companyName', 'SuperSAN')
+        query_arg = query_params.get('queryArg', '')
+
         if api_name in ('apis', 'navbar', 'sidebar', 'welcome'):
             t = get_template('%s.json.tmpl' % api_name)
             api_prefix = request.get_host()
-            api_pool = t.render({"api_prefix": api_prefix, "user": user})
+            api_pool = t.render({
+                                    "api_prefix": api_prefix,
+                                    "user": user,
+                                    "company_name": company_name,
+                                    "query_arg": query_arg
+                                })
             collections = {
                 'apiData': json.loads(api_pool)
             }
-            response_obj = self.gen_response_obj(request, message = 'Success.',
-                                                 collections = collections)
-            return JsonResponse(response_obj, status = 200)
+            response_obj = self.gen_response_obj(request, message='Success.',
+                                                 collections=collections)
+            return JsonResponse(response_obj, status=200)
         else:
             return Response({
                 "status": "Not Found.",
@@ -75,12 +85,14 @@ class APIDetail(APIView):
                 "data": []
             })
 
+
 def custom404(request):
     return JsonResponse({
         'status_code': 404,
         'details': 'The resource was not found.',
         'status': 'Failed'
-    }, status = status.HTTP_404_NOT_FOUND)
+    }, status=status.HTTP_404_NOT_FOUND)
+
 
 @api_view(['GET', 'POST'])
 @permission_classes((permissions.IsAuthenticated, IsOwnerOrAdmin))

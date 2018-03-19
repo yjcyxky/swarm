@@ -16,10 +16,12 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework.validators import UniqueValidator
 from django.core.validators import RegexValidator
-from sscobweb.models import (Channel, Package, CobwebSetting)
 from django.db import transaction
+from sscobweb.models import (Channel, Package, CobwebSetting)
+from sscobweb.exceptions import CustomException
 
 logger = logging.getLogger(__name__)
+
 
 def check_channel_path(channel_path):
     scheme_dict = {
@@ -32,6 +34,7 @@ def check_channel_path(channel_path):
             return True
         else:
             return False
+
 
 class SettingSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -49,7 +52,7 @@ class SettingSerializer(serializers.HyperlinkedModelSerializer):
         if raw_is_active is True and is_active is False:
             raise CustomException('Valid Constraint: Must Be Sure that Only One Setting is Valid.')
         else:
-            CobwebSetting.objects.all().update(is_active = False)
+            CobwebSetting.objects.all().update(is_active=False)
 
     @transaction.atomic
     def update(self, instance, validated_data):
@@ -66,8 +69,8 @@ class SettingSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class ChannelSerializer(serializers.HyperlinkedModelSerializer):
-    md5sum = serializers.CharField(max_length = 32, allow_null = True, read_only = True)
-    channel_uuid = serializers.UUIDField(format = 'hex_verbose', read_only = True)
+    md5sum = serializers.CharField(max_length=32, allow_null=True, read_only=True)
+    channel_uuid = serializers.UUIDField(format='hex_verbose', read_only=True)
 
     class Meta:
         model = Channel
@@ -104,18 +107,19 @@ class ChannelSerializer(serializers.HyperlinkedModelSerializer):
         instance.save()
         return instance
 
+
 class PackageSerializer(serializers.HyperlinkedModelSerializer):
     """
     所有Channel添加时都必须与已有的Channel的repodata.json比对，确保不重复添加;
     但已经存在的package可更新channels字段，以保障同一个package可有多个channel与之对应，
     安装时可指定最优的channel来安装相应的package
     """
-    pkg_uuid = serializers.UUIDField(format = 'hex_verbose', read_only = True)
-    channels = ChannelSerializer(many = True, read_only = True)
+    pkg_uuid = serializers.UUIDField(format='hex_verbose', read_only=True)
+    channels = ChannelSerializer(many=True, read_only=True)
     channels_uuid = serializers.PrimaryKeyRelatedField(many=True,
-                                                       queryset = Channel.objects.all(),
-                                                       pk_field = serializers.UUIDField(format='hex_verbose'),
-                                                       source = 'channels')
+                                                       queryset=Channel.objects.all(),
+                                                       pk_field=serializers.UUIDField(format='hex_verbose'),
+                                                       source='channels')
 
     class Meta:
         model = Package

@@ -10,5 +10,6 @@
 
 from ssadvisor.scheduler_api.scheduler import BaseScheduler
 
+
 class SlurmScheduler(BaseScheduler):
     pass

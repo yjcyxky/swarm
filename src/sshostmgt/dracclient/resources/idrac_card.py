@@ -50,7 +50,7 @@ class iDRACCardConfiguration(object):
 
         items = doc.find('.//{%s}Items' % wsman.NS_WSMAN)
 
-        if items:
+        if items is not None:
             for item in items:
                 attribute = attr_cls.parse(item)
                 result[attribute.instance_id] = attribute

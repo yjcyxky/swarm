@@ -19,29 +19,29 @@ from collections import namedtuple
 from ctypes import byref, c_int, create_string_buffer, pointer, POINTER, sizeof
 
 from .const import (BLOCK_EMAIL, DEADLINE_TIME, DURATION_HLIMIT,
-                         DURATION_SLIMIT, ENCODING, ERROR_PATH, INPUT_PATH,
-                         JOB_CATEGORY, JOB_IDS_SESSION_ALL, JOB_IDS_SESSION_ANY,
-                         JOB_NAME, JobState, JobControlAction,
-                         JobSubmissionState, JOIN_FILES, JS_STATE,
-                         NATIVE_SPECIFICATION, OUTPUT_PATH, REMOTE_COMMAND,
-                         SIGNAL_BUFFER, START_TIME, status_to_string,
-                         string_to_control_action, TIMEOUT_NO_WAIT,
-                         TIMEOUT_WAIT_FOREVER, TRANSFER_FILES, V_ARGV, V_EMAIL,
-                         V_ENV, WCT_HLIMIT, WCT_SLIMIT, WD)
+                    DURATION_SLIMIT, ENCODING, ERROR_PATH, INPUT_PATH,
+                    JOB_CATEGORY, JOB_IDS_SESSION_ALL, JOB_IDS_SESSION_ANY,
+                    JOB_NAME, JobState, JobControlAction,
+                    JobSubmissionState, JOIN_FILES, JS_STATE,
+                    NATIVE_SPECIFICATION, OUTPUT_PATH, REMOTE_COMMAND,
+                    SIGNAL_BUFFER, START_TIME, status_to_string,
+                    string_to_control_action, TIMEOUT_NO_WAIT,
+                    TIMEOUT_WAIT_FOREVER, TRANSFER_FILES, V_ARGV, V_EMAIL,
+                    V_ENV, WCT_HLIMIT, WCT_SLIMIT, WD)
 from .helpers import (adapt_rusage, Attribute, attribute_names_iterator,
-                           BoolConverter, c, DictAttribute, IntConverter,
-                           run_bulk_job, SessionStringAttribute,
-                           SessionVersionAttribute, string_vector,
-                           VectorAttribute, Version)
+                      BoolConverter, c, DictAttribute, IntConverter,
+                      run_bulk_job, SessionStringAttribute,
+                      SessionVersionAttribute, string_vector,
+                      VectorAttribute, Version)
 from .wrappers import (drmaa_allocate_job_template, drmaa_attr_values_t,
-                            drmaa_control, drmaa_delete_job_template,
-                            drmaa_get_contact, drmaa_get_DRM_system,
-                            drmaa_get_DRMAA_implementation, drmaa_job_ps,
-                            drmaa_job_template_t, drmaa_run_job,
-                            drmaa_synchronize, drmaa_wait, drmaa_wcoredump,
-                            drmaa_wexitstatus, drmaa_wifaborted,
-                            drmaa_wifexited, drmaa_wifsignaled, drmaa_wtermsig,
-                            py_drmaa_exit, py_drmaa_init)
+                       drmaa_control, drmaa_delete_job_template,
+                       drmaa_get_contact, drmaa_get_DRM_system,
+                       drmaa_get_DRMAA_implementation, drmaa_job_ps,
+                       drmaa_job_template_t, drmaa_run_job,
+                       drmaa_synchronize, drmaa_wait, drmaa_wcoredump,
+                       drmaa_wexitstatus, drmaa_wifaborted,
+                       drmaa_wifexited, drmaa_wifsignaled, drmaa_wtermsig,
+                       py_drmaa_exit, py_drmaa_init)
 
 
 # Python 3 compatability help
@@ -90,8 +90,8 @@ class JobTemplate(object):
     A (DRM-dependant) opaque string to be passed to the DRM representing
     other directives.
     """
-    blockEmail = Attribute(BLOCK_EMAIL, type_converter=BoolConverter(true='1',
-                                                                     false='0'))
+    blockEmail = Attribute(BLOCK_EMAIL,
+                           type_converter=BoolConverter(true='1', false='0'))
     """False if this job should send an email, True otherwise."""
     startTime = Attribute(START_TIME)
     """The job start time, a partial timestamp string."""
@@ -310,8 +310,8 @@ class Session(object):
     @staticmethod
     def runBulkJobs(jobTemplate, beginIndex, endIndex, step):
         """
-        Submit a set of parametric jobs, each with attributes defined in the job
-        template.
+        Submit a set of parametric jobs, each with attributes defined in the
+        job template.
 
         :Parameters:
           jobTemplate : JobTemplate
@@ -335,7 +335,8 @@ class Session(object):
     @staticmethod
     def control(jobId, operation):
         """
-        Used to hold, release, suspend, resume, or kill the job identified by jobId.
+        Used to hold, release, suspend, resume, or kill the job identified
+        by jobId.
 
         :Parameters:
           jobId : string

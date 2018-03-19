@@ -9,12 +9,16 @@
 #  Author: Jingcheng Yang <yjcyxky@163.com>
 
 import sys
+import traceback
 
-def _load(path, module_name, modulelist = ['slurm', 'torque']):
-    loader = __import__(path, fromlist = modulelist)
-    return getattr(loader, '%s.%sScheduler' % (attr_name, module_name.capitalize())
 
-def get_scheduler(scheduler_name = 'slurm'):
+def _load(path, module_name, modulelist=['slurm', 'torque']):
+    loader = __import__(path, fromlist=modulelist)
+    return getattr(loader,
+                   '%s.%sScheduler' % (module_name, module_name.capitalize()))
+
+
+def get_scheduler(scheduler_name='slurm'):
     try:
         scheduler_name = scheduler_name.lower()
         scheduler_cls = _load('ssadvisor.scheduler_api', '%s' % scheduler_name)

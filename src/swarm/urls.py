@@ -46,7 +46,7 @@ urlpatterns = [
         url(r'^accounts/', include('account.urls')),
 
         # Cobbler
-        # url(r'^sscobbler/', include('sscobbler.urls')),
+        url(r'^sscobbler/', include('sscobbler.urls')),
 
         # Host Management
         url(r'^sshostmgt/', include('sshostmgt.urls')),

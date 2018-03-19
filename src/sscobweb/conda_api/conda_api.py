@@ -18,6 +18,7 @@ from os.path import basename, isdir, join
 ROOT_PREFIX = None
 __version__ = '1.2.1'
 
+
 class CondaError(Exception):
     "General Conda error"
     pass
@@ -34,12 +35,12 @@ def _call_conda(extra_args, abspath=True):
     if abspath:
         if sys.platform == 'win32':
             python = join(ROOT_PREFIX, 'python.exe')
-            conda  = join(ROOT_PREFIX, 'Scripts', 'conda-script.py')
+            conda = join(ROOT_PREFIX, 'Scripts', 'conda-script.py')
         else:
             python = join(ROOT_PREFIX, 'bin/python')
-            conda  = join(ROOT_PREFIX, 'bin/conda')
+            conda = join(ROOT_PREFIX, 'bin/conda')
         cmd_list = [python, conda]
-    else: # just use whatever conda is on the path
+    else:  # just use whatever conda is on the path
         cmd_list = ['conda']
 
     cmd_list.extend(extra_args)
@@ -215,13 +216,13 @@ def create(name=None, prefix=None, pkgs=None):
 
     cmd_list = ['create', '--yes', '--quiet']
     if name:
-        ref         = name
-        search      = [os.path.join(d, name) for d in info()['envs_dirs']]
-        cmd_list    = ['create', '--yes', '--quiet', '--name', name]
+        ref = name
+        search = [os.path.join(d, name) for d in info()['envs_dirs']]
+        cmd_list = ['create', '--yes', '--quiet', '--name', name]
     elif prefix:
-        ref         = prefix
-        search      = [prefix]
-        cmd_list    = ['create', '--yes', '--quiet', '--prefix', prefix]
+        ref = prefix
+        search = [prefix]
+        cmd_list = ['create', '--yes', '--quiet', '--prefix', prefix]
     else:
         raise TypeError('must specify either an environment name or a path '
                         'for new environment')
@@ -250,7 +251,7 @@ def install(name=None, prefix=None, pkgs=None):
         cmd_list.extend(['--name', name])
     elif prefix:
         cmd_list.extend(['--prefix', prefix])
-    else: # just install into the current environment, whatever that is
+    else:  # just install into the current environment, whatever that is
         pass
 
     cmd_list.extend(pkgs)
@@ -355,12 +356,14 @@ def clone_environment(clone, name=None, path=None, **kwargs):
         _setup_install_commands_from_kwargs(
             kwargs,
             ('dry_run', 'unknown', 'use_index_cache', 'use_local', 'no_pin',
-             'force', 'all', 'channel', 'override_channels', 'no_default_packages')))
+             'force', 'all', 'channel', 'override_channels',
+             'no_default_packages')))
 
     result = _call_and_parse(cmd_list, abspath=kwargs.get('abspath', True))
 
     if 'error' in result:
-        raise CondaError('conda %s: %s' % (" ".join(cmd_list), result['error']))
+        raise CondaError('conda %s: %s' % (" ".join(cmd_list),
+                         result['error']))
 
     return result
 
@@ -388,9 +391,11 @@ def process(name=None, prefix=None, cmd=None, args=None,
     conda_env = dict(os.environ)
 
     if sys.platform == 'win32':
-        conda_env['PATH'] = join(prefix, 'Scripts') + os.pathsep + conda_env['PATH']
-    else: # Unix
-        conda_env['PATH'] = join(prefix, 'bin') + os.pathsep + conda_env['PATH']
+        conda_env['PATH'] = join(prefix, 'Scripts') + \
+                            os.pathsep + conda_env['PATH']
+    else:  # Unix
+        conda_env['PATH'] = join(prefix, 'bin') + \
+                            os.pathsep + conda_env['PATH']
 
     conda_env['PATH'] = prefix + os.pathsep + conda_env['PATH']
 
@@ -398,7 +403,8 @@ def process(name=None, prefix=None, cmd=None, args=None,
     cmd_list.extend(args)
 
     try:
-        p = Popen(cmd_list, env=conda_env, stdin=stdin, stdout=stdout, stderr=stderr)
+        p = Popen(cmd_list, env=conda_env, stdin=stdin,
+                  stdout=stdout, stderr=stderr)
     except OSError:
         raise Exception("could not invoke %r\n" % cmd_list)
     return p
@@ -426,7 +432,8 @@ def config_path(**kwargs):
     result = _call_and_parse(cmd_list, abspath=kwargs.get('abspath', True))
 
     if 'error' in result:
-        raise CondaError('conda %s: %s' % (" ".join(cmd_list), result['error']))
+        raise CondaError('conda %s: %s' % (" ".join(cmd_list),
+                         result['error']))
     return result['rc_path']
 
 
@@ -444,7 +451,8 @@ def config_get(*keys, **kwargs):
     result = _call_and_parse(cmd_list, abspath=kwargs.get('abspath', True))
 
     if 'error' in result:
-        raise CondaError('conda %s: %s' % (" ".join(cmd_list), result['error']))
+        raise CondaError('conda %s: %s' % (" ".join(cmd_list),
+                         result['error']))
     return result['get']
 
 
@@ -460,7 +468,8 @@ def config_set(key, value, **kwargs):
     result = _call_and_parse(cmd_list, abspath=kwargs.get('abspath', True))
 
     if 'error' in result:
-        raise CondaError('conda %s: %s' % (" ".join(cmd_list), result['error']))
+        raise CondaError('conda %s: %s' % (" ".join(cmd_list),
+                         result['error']))
     return result.get('warnings', [])
 
 
@@ -476,7 +485,8 @@ def config_add(key, value, **kwargs):
     result = _call_and_parse(cmd_list, abspath=kwargs.get('abspath', True))
 
     if 'error' in result:
-        raise CondaError('conda %s: %s' % (" ".join(cmd_list), result['error']))
+        raise CondaError('conda %s: %s' % (" ".join(cmd_list),
+                         result['error']))
     return result.get('warnings', [])
 
 
@@ -492,7 +502,8 @@ def config_remove(key, value, **kwargs):
     result = _call_and_parse(cmd_list, abspath=kwargs.get('abspath', True))
 
     if 'error' in result:
-        raise CondaError('conda %s: %s' % (" ".join(cmd_list), result['error']))
+        raise CondaError('conda %s: %s' % (" ".join(cmd_list),
+                         result['error']))
     return result.get('warnings', [])
 
 
@@ -508,7 +519,8 @@ def config_delete(key, **kwargs):
     result = _call_and_parse(cmd_list, abspath=kwargs.get('abspath', True))
 
     if 'error' in result:
-        raise CondaError('conda %s: %s' % (" ".join(cmd_list), result['error']))
+        raise CondaError('conda %s: %s' % (" ".join(cmd_list),
+                         result['error']))
     return result.get('warnings', [])
 
 
@@ -524,7 +536,8 @@ def run(command, abspath=True):
     result = _call_and_parse(cmd_list, abspath=abspath)
 
     if 'error' in result:
-        raise CondaError('conda %s: %s' % (" ".join(cmd_list), result['error']))
+        raise CondaError('conda %s: %s' % (" ".join(cmd_list),
+                         result['error']))
     return result
 
 

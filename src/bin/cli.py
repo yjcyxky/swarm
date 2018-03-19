@@ -31,7 +31,7 @@ from django.core.management import call_command
 from django.core.management.commands import loaddata
 from daemon.pidfile import TimeoutPIDLockFile
 
-from configuration import conf as settings
+from bin.configuration import conf as settings
 from version import (get_version, get_company_name)
 from exceptions import SwarmException
 from ssspider.spider import get_argument_parser, main as spider_main
