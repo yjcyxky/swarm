@@ -707,7 +707,7 @@ class SettingList(generics.GenericAPIView):
         advisor_home = query_params.get('advisor_home')
         if is_active:
             filters.update({
-                'is_active': True if is_active.upper() == 'TRUE' else FALSE,
+                'is_active': True if is_active.upper() == 'TRUE' else False
             })
         if advisor_home:
             filters.update({

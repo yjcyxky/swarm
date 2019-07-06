@@ -12,12 +12,12 @@ import logging
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework import permissions
 from report_engine.models import (ReportNode, SectionNode)
 from report_engine.serializers import (ReportNodeSerializer,
                                        SectionNodeSerializer)
-from report_engine.permissions import (IsOwnerOrAdmin,
-                                       CustomDjangoModelPermissions)
+# from rest_framework import permissions
+# from report_engine.permissions import (IsOwnerOrAdmin,
+#                                        CustomDjangoModelPermissions)
 from report_engine.pagination import CustomPagination
 from report_engine.exceptions import CustomException
 
@@ -30,8 +30,8 @@ class ReportList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = ReportNodeSerializer
-    permission_classes = (permissions.IsAuthenticated,
-                          IsOwnerOrAdmin)
+    # permission_classes = (permissions.IsAuthenticated,
+    #                       IsOwnerOrAdmin)
     queryset = ReportNode.objects.all().order_by("created_time")
     lookup_field = 'report_uuid'
 
@@ -67,9 +67,9 @@ class ReportDetail(generics.GenericAPIView):
     """
     Retrieve, update a report information instance.
     """
-    permission_classes = (permissions.IsAuthenticated,
-                          CustomDjangoModelPermissions,
-                          IsOwnerOrAdmin,)
+    # permission_classes = (permissions.IsAuthenticated,
+    #                       CustomDjangoModelPermissions,
+    #                       IsOwnerOrAdmin,)
     serializer_class = ReportNodeSerializer
     queryset = ReportNode.objects
     lookup_field = 'report_uuid'
@@ -151,8 +151,8 @@ class RootNodeList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = SectionNodeSerializer
-    permission_classes = (permissions.IsAuthenticated,
-                          IsOwnerOrAdmin)
+    # permission_classes = (permissions.IsAuthenticated,
+    #                       IsOwnerOrAdmin)
     queryset = SectionNode.objects.all().order_by("created_time")
     lookup_field = 'section_uuid'
 
@@ -181,7 +181,9 @@ class RootNodeList(generics.GenericAPIView):
         """
         Create a new version of specified report instance.
         """
-        serializer = SectionNodeSerializer(data=request.data,
+        request_data = request.data
+        request_data.update({'report': report_uuid})
+        serializer = SectionNodeSerializer(data=request_data,
                                            context={'request': request})
         if serializer.is_valid():
             if serializer.validated_data.get('node_type', '').upper() \

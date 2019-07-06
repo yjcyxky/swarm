@@ -10,10 +10,12 @@
 
 import logging
 import re
+import uuid
 from django.utils import timezone
 from rest_framework.validators import UniqueValidator
 from rest_framework import serializers
 from django.db import transaction
+from django.contrib.auth.models import User, AnonymousUser
 from lib.rest_framework_recursive.fields import RecursiveField
 from report_engine.models import (SectionNode, Version, ReportNode, TitleNode,
                                   InfoNode, ParagraphNode, MediaNode, UrlNode,
@@ -21,6 +23,12 @@ from report_engine.models import (SectionNode, Version, ReportNode, TitleNode,
                                   ListNode, TableNode)
 
 logger = logging.getLogger(__name__)
+
+
+def pop_field(validated_data, field_name):
+    if validated_data.get(field_name):
+        validated_data.pop(field_name)
+    return validated_data
 
 
 def check_path(path):
@@ -33,7 +41,7 @@ def check_path(path):
 
 class TitleNodeSerializer(serializers.ModelSerializer):
     title_uuid = serializers.UUIDField(format='hex_verbose', read_only=True)
-    content = serializers.JSONField(binary=True)
+    content = serializers.JSONField()
 
     class Meta:
         model = TitleNode
@@ -42,7 +50,7 @@ class TitleNodeSerializer(serializers.ModelSerializer):
 
 class InfoNodeSerializer(serializers.ModelSerializer):
     info_uuid = serializers.UUIDField(format='hex_verbose', read_only=True)
-    content = serializers.JSONField(binary=True)
+    content = serializers.JSONField()
 
     class Meta:
         model = InfoNode
@@ -52,7 +60,7 @@ class InfoNodeSerializer(serializers.ModelSerializer):
 class ParagraphNodeSerializer(serializers.ModelSerializer):
     paragraph_uuid = serializers.UUIDField(format='hex_verbose',
                                            read_only=True)
-    content = serializers.JSONField(binary=True)
+    content = serializers.JSONField()
 
     class Meta:
         model = ParagraphNode
@@ -61,7 +69,7 @@ class ParagraphNodeSerializer(serializers.ModelSerializer):
 
 class MediaNodeSerializer(serializers.ModelSerializer):
     media_uuid = serializers.UUIDField(format='hex_verbose', read_only=True)
-    content = serializers.JSONField(binary=True)
+    content = serializers.JSONField()
 
     class Meta:
         model = MediaNode
@@ -70,7 +78,7 @@ class MediaNodeSerializer(serializers.ModelSerializer):
 
 class UrlNodeSerializer(serializers.ModelSerializer):
     url_uuid = serializers.UUIDField(format='hex_verbose', read_only=True)
-    content = serializers.JSONField(binary=True)
+    content = serializers.JSONField()
 
     class Meta:
         model = UrlNode
@@ -80,7 +88,7 @@ class UrlNodeSerializer(serializers.ModelSerializer):
 class ReferenceNodeSerializer(serializers.ModelSerializer):
     reference_uuid = serializers.UUIDField(format='hex_verbose',
                                            read_only=True)
-    content = serializers.JSONField(binary=True)
+    content = serializers.JSONField()
 
     class Meta:
         model = ReferenceNode
@@ -89,7 +97,7 @@ class ReferenceNodeSerializer(serializers.ModelSerializer):
 
 class HeaderNodeSerializer(serializers.ModelSerializer):
     header_uuid = serializers.UUIDField(format='hex_verbose', read_only=True)
-    content = serializers.JSONField(binary=True)
+    content = serializers.JSONField()
 
     class Meta:
         model = HeaderNode
@@ -98,7 +106,7 @@ class HeaderNodeSerializer(serializers.ModelSerializer):
 
 class FooterNodeSerializer(serializers.ModelSerializer):
     footer_uuid = serializers.UUIDField(format='hex_verbose', read_only=True)
-    content = serializers.JSONField(binary=True)
+    content = serializers.JSONField()
 
     class Meta:
         model = FooterNode
@@ -107,7 +115,7 @@ class FooterNodeSerializer(serializers.ModelSerializer):
 
 class ListNodeSerializer(serializers.ModelSerializer):
     list_uuid = serializers.UUIDField(format='hex_verbose', read_only=True)
-    content = serializers.JSONField(binary=True)
+    content = serializers.JSONField()
 
     class Meta:
         model = ListNode
@@ -116,7 +124,7 @@ class ListNodeSerializer(serializers.ModelSerializer):
 
 class TableNodeSerializer(serializers.ModelSerializer):
     table_uuid = serializers.UUIDField(format='hex_verbose', read_only=True)
-    content = serializers.JSONField(binary=True)
+    content = serializers.JSONField()
 
     class Meta:
         model = TableNode
@@ -137,30 +145,31 @@ class VersionSerializer(serializers.ModelSerializer):
 
 
 class SectionNodeSerializer(serializers.ModelSerializer):
-    section_uuid = serializers.UUIDField(format='hex_verbose',
+    section_uuid = serializers.UUIDField(format='hex_verbose', required=False,
                                          validators=[UniqueValidator(queryset=SectionNode.objects.all())])
-    created_time = serializers.DateTimeField()
     json_path = serializers.CharField(validators=[check_path, ],
-                                      allow_null=True)
-    title_node = TitleNodeSerializer(allow_null=True)
-    info_node = InfoNodeSerializer(allow_null=True)
-    paragraph_node = ParagraphNodeSerializer(allow_null=True)
-    media_node = MediaNodeSerializer(allow_null=True)
-    url_node = UrlNodeSerializer(allow_null=True)
-    reference_node = ReferenceNodeSerializer(allow_null=True)
-    header_node = HeaderNodeSerializer(allow_null=True)
-    footer_node = FooterNodeSerializer(allow_null=True)
-    list_node = ListNodeSerializer(allow_null=True)
-    table_node = TableNodeSerializer(allow_null=True)
-    section_node = RecursiveField(allow_null=True)
+                                      allow_null=True, required=False)
+    title_node = TitleNodeSerializer(allow_null=True, required=False)
+    info_node = InfoNodeSerializer(allow_null=True, required=False)
+    paragraph_node = ParagraphNodeSerializer(allow_null=True, required=False)
+    media_node = MediaNodeSerializer(allow_null=True, required=False)
+    url_node = UrlNodeSerializer(allow_null=True, required=False)
+    reference_node = ReferenceNodeSerializer(allow_null=True, required=False)
+    header_node = HeaderNodeSerializer(allow_null=True, required=False)
+    footer_node = FooterNodeSerializer(allow_null=True, required=False)
+    list_node = ListNodeSerializer(allow_null=True, required=False)
+    table_node = TableNodeSerializer(allow_null=True, required=False)
+    section_node_set = serializers.ListField(child=RecursiveField(), required=False)
+    section_node = RecursiveField(allow_null=True, required=False, many=True, read_only=True)
     report = serializers.PrimaryKeyRelatedField(queryset=ReportNode.objects.all(),
-                                                pk_field=serializers.UUIDField(format='hex_verbose'))
+                                                pk_field=serializers.UUIDField(format='hex_verbose'),
+                                                required=False)
     version = VersionSerializer(required=False)
 
     class Meta:
         model = SectionNode
-        fields = ('section_uuid', 'section_node', 'created_time', 'node_type',
-                  'title_node', 'info_node', 'paragraph_node', 'media_node',
+        fields = ('section_uuid', 'section_node_set', 'created_time', 'node_type',
+                  'title_node', 'info_node', 'paragraph_node', 'media_node', 'section_node',
                   'url_node', 'reference_node', 'header_node', 'footer_node',
                   'list_node', 'table_node', 'json_path', 'report', 'version')
 
@@ -174,10 +183,16 @@ class SectionNodeSerializer(serializers.ModelSerializer):
             if re.match(target_pattern, field):
                 return field
 
+    def validate(self, data):
+        if data.get('report') is None and data.get('node_type') == 'ROOT':
+            raise serializers.ValidationError("report must be specified.")
+        else:
+            return data
+
     @transaction.atomic
-    def recursive_create(self, validated_data):
+    def recursive_create(self, validated_data, report=None):
         based_fields = ('section_uuid', 'json_path', 'report', 'created_time',
-                        'node_type', 'section_node')
+                        'node_type', 'section_node_set')
         fields = self._fields.keys()
         # 集合差运算
         node_fields = list(set(fields).difference(set(based_fields)))
@@ -189,26 +204,42 @@ class SectionNodeSerializer(serializers.ModelSerializer):
         validated_data = {key: value for key, value in validated_data.items()
                           if value is not None}
 
-        field_data = validated_data.get('section_node')
+        section_node_set = validated_data.get('section_node_set')
+        section_node_lst = []
         field_dict = {}
-        if field_data:
-            validated_data.pop('section_node')
-            section_node = self.recursive_create(field_data)
-            field_dict.update({'section_node': section_node})
-        else:
-            for field in node_fields:
-                if validated_data.get(field):
-                    node_field_data = validated_data.pop(field)
-                    serializer_class = serializer_class_dict.get(field)
-                    assert serializer_class is not None
-                    serializer = serializer_class(node_field_data)
-                    if serializer.is_valid():
-                        field_data = serializer.validated_data
-                        field_instance = serializer.create(field_data)
-                        field_dict.update({field: field_instance})
-        section_node = SectionNode.objects.create(**field_dict,
-                                                  **validated_data)
-        return section_node
+        if section_node_set:
+            pop_field(validated_data, 'section_node_set')
+
+            for section_node in section_node_set:
+                section_node_instance = self.recursive_create(section_node)
+                section_node_lst.append(section_node_instance)
+
+        for field in node_fields:
+            if validated_data.get(field):
+                node_field_data = validated_data.pop(field)
+                serializer_class = serializer_class_dict.get(field)
+                assert serializer_class is not None
+                serializer = serializer_class(data=node_field_data)
+                print("serializer", node_field_data, serializer_class, serializer.is_valid(), serializer.errors)
+                if serializer.is_valid():
+                    field_data = serializer.validated_data
+                    instance_uuid = uuid.uuid1()
+                    prefix = field.split('_node')[0]
+                    key = "%s_uuid" % prefix
+                    field_data.update({key: instance_uuid})
+                    field_instance = serializer.create(field_data)
+                    field_dict.update({field: field_instance})
+
+        pop_field(validated_data, 'section_uuid')
+        section_uuid = uuid.uuid1()
+        print("field_dict", field_dict)
+        parent_section_node = SectionNode.objects.create(section_uuid=section_uuid,
+                                                         **field_dict,
+                                                         **validated_data)
+        if len(section_node_lst) > 0:
+            for section_node in section_node_lst:
+                parent_section_node.section_node.add(section_node)
+        return parent_section_node
 
     @transaction.atomic
     def create(self, validated_data):
@@ -235,9 +266,11 @@ class SectionNodeSerializer(serializers.ModelSerializer):
 
 
 class ReportNodeSerializer(serializers.ModelSerializer):
-    report_uuid = serializers.UUIDField(format='hex_verbose',
+    report_uuid = serializers.UUIDField(format='hex_verbose', required=False,
                                         validators=[UniqueValidator(queryset=ReportNode.objects.all())])
-    version_set = VersionSerializer(many=True)
+    version_set = VersionSerializer(many=True, required=False)
+    created_time = serializers.DateTimeField(required=False)
+    updated_time = serializers.DateTimeField(required=False)
     owner = serializers.ReadOnlyField(source='user.id')
 
     class Meta:
@@ -262,21 +295,34 @@ class ReportNodeSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        print(globals())
+        updated_time = created_time = timezone.now()
+        report_uuid = uuid.uuid1()
         user = self.context['request'].user
-        version_set = validated_data.pop('version_set')
-        report = ReportNode.objects.create(user=user, **validated_data)
+        print(user.__class__)
+        if user.__class__ == AnonymousUser:
+            user = User.objects.filter(is_staff=True).first()
+            # TODO: user is None return 400 status code
+
+        pop_field(validated_data, 'report_uuid')
+        report = ReportNode.objects.create(user=user,
+                                           report_uuid=report_uuid,
+                                           created_time=created_time,
+                                           updated_time=updated_time,
+                                           **validated_data)
         report.save()
-        self.update_version_set(report, version_set)
+        if validated_data.get('version_set'):
+            version_set = validated_data.pop('version_set')
+            self.update_version_set(report, version_set)
         return report
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        version_set = validated_data.pop('version_set')
-        self.update_version_set(instance, version_set)
+        if validated_data.get('version_set'):
+            version_set = validated_data.pop('version_set')
+            self.update_version_set(instance, version_set)
+        updated_time = timezone.now()
         instance.user = validated_data.get('owner', instance.user)
         instance.patient = validated_data.get('patient', instance.patient)
-        instance.updated_time = validated_data.get('updated_time',
-                                                   instance.updated_time)
+        instance.updated_time = updated_time
         instance.latest = validated_data.get('latest', instance.latest)
         instance.save()

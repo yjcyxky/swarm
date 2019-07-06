@@ -1,0 +1,10 @@
+.swarm
+*_bak.py
+.gitigore
+initdata/*
+__pycache__
+flower.db
+docs/*
+.spider
+migrations
+*.pyc

@@ -1,0 +1,31 @@
+from os.path import join
+
+_HEADERS = ['hello.h']
+HEADERS = [join("../include", hfile) for hfile in _HEADERS]
+
+_OBJS = ['hello.o', 'hellofunc.o']
+OBJS = [join("obj", ofile) for ofile in _OBJS]
+
+
+rule hello:
+    """build the executable from the object files"""
+    output:
+        'hello'
+    input:
+        OBJS
+    shell:
+        "gcc -o {output} {input} -I ../include -lm"
+
+rule c_to_o:
+    """compile a single .c file to an .o file"""
+    output:
+        temp('obj/{name}.o')
+    input:
+        '{name}.c'
+    shell:
+        "gcc -c -o {output} {input} -I ../include"
+
+rule clean:
+    """clean up temporary files"""
+    shell:
+        "rm -f   *~  core  ../include/*~"

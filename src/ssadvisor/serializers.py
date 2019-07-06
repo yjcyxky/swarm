@@ -156,7 +156,7 @@ class TaskSerializer(serializers.ModelSerializer):
                 check_value(items)
                 try:
                     user_instance = User.objects.get(pk = id)
-                except:
+                except Exception:
                     raise CustomException('No Such User.', status_code = status.HTTP_400_BAD_REQUEST)
 
                 UserTask(task = task, user = user_instance, mode = mode,

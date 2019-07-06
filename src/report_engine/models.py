@@ -35,7 +35,7 @@ class TitleNode(models.Model):
     Title容器，用于存储报告的Title
     """
     title_uuid = models.CharField(max_length=36, primary_key=True,
-                                  default=uuid.uuid4())
+                                  default=uuid.uuid1())
     created_time = models.DateTimeField(auto_now_add=True)
     content = mysql_models.JSONField(max_length=255)
 
@@ -52,7 +52,7 @@ class InfoNode(models.Model):
     Meta信息节点，用于存储报告相关的Metadata
     """
     info_uuid = models.CharField(max_length=36, primary_key=True,
-                                 default=uuid.uuid4())
+                                 default=uuid.uuid1())
     created_time = models.DateTimeField(auto_now_add=True)
     content = mysql_models.JSONField(max_length=255)
 
@@ -69,7 +69,7 @@ class ParagraphNode(models.Model):
     段落节点，用于存储报告的段落内容
     """
     paragraph_uuid = models.CharField(max_length=36, primary_key=True,
-                                      default=uuid.uuid4())
+                                      default=uuid.uuid1())
     created_time = models.DateTimeField(auto_now_add=True)
     content = mysql_models.JSONField(max_length=255)
 
@@ -86,7 +86,7 @@ class MediaNode(models.Model):
     Media节点，用于存储多媒体内容
     """
     media_uuid = models.CharField(max_length=36, primary_key=True,
-                                  default=uuid.uuid4())
+                                  default=uuid.uuid1())
     created_time = models.DateTimeField(auto_now_add=True)
     content = mysql_models.JSONField(max_length=255)
 
@@ -103,7 +103,7 @@ class UrlNode(models.Model):
     URL节点，用于存储报告内容中的链接
     """
     url_uuid = models.CharField(max_length=36, primary_key=True,
-                                default=uuid.uuid4())
+                                default=uuid.uuid1())
     created_time = models.DateTimeField(auto_now_add=True)
     content = mysql_models.JSONField(max_length=255)
 
@@ -120,7 +120,7 @@ class ReferenceNode(models.Model):
     参考文献节点，用于存储报告中的参考文献
     """
     reference_uuid = models.CharField(max_length=36, primary_key=True,
-                                      default=uuid.uuid4())
+                                      default=uuid.uuid1())
     created_time = models.DateTimeField(auto_now_add=True)
     content = mysql_models.JSONField(max_length=255)
 
@@ -137,7 +137,7 @@ class HeaderNode(models.Model):
     页眉节点，用于存储报告相关的页眉
     """
     header_uuid = models.CharField(max_length=36, primary_key=True,
-                                   default=uuid.uuid4())
+                                   default=uuid.uuid1())
     created_time = models.DateTimeField(auto_now_add=True)
     content = mysql_models.JSONField(max_length=255)
 
@@ -154,7 +154,7 @@ class FooterNode(models.Model):
     页脚节点，用于存储报告相关的页脚
     """
     footer_uuid = models.CharField(max_length=36, primary_key=True,
-                                   default=uuid.uuid4())
+                                   default=uuid.uuid1())
     created_time = models.DateTimeField(auto_now_add=True)
     content = mysql_models.JSONField(max_length=255)
 
@@ -171,7 +171,7 @@ class ListNode(models.Model):
     列表节点，用于存储报告相关的列表
     """
     list_uuid = models.CharField(max_length=36, primary_key=True,
-                                 default=uuid.uuid4())
+                                 default=uuid.uuid1())
     created_time = models.DateTimeField(auto_now_add=True)
     content = mysql_models.JSONField(max_length=255)
 
@@ -188,7 +188,7 @@ class TableNode(models.Model):
     表格节点，用于存储报告中的表格
     """
     table_uuid = models.CharField(max_length=36, primary_key=True,
-                                  default=uuid.uuid4())
+                                  default=uuid.uuid1())
     created_time = models.DateTimeField(auto_now_add=True)
     content = mysql_models.JSONField(max_length=255)
 
@@ -205,7 +205,7 @@ class Version(models.Model):
     版本信息节点，用于存储报告版本信息
     """
     version_uuid = models.CharField(max_length=36, primary_key=True,
-                                    default=uuid.uuid4())
+                                    default=uuid.uuid1())
     created_time = models.DateTimeField(auto_now_add=True)
     name_alias = models.CharField(max_length=32)
 
@@ -222,7 +222,7 @@ class ReportNode(models.Model):
     报告节点，用于存储报告Metadata
     """
     report_uuid = models.CharField(max_length=36, primary_key=True,
-                                   default=uuid.uuid4())
+                                   default=uuid.uuid1())
     # 最新版Report UUID
     latest = models.CharField(max_length=36, null=True, blank=True)
     created_time = models.DateTimeField(auto_now_add=True)
@@ -243,7 +243,7 @@ class SectionNode(models.Model):
         ('section', 'SECTION'),
     )
     section_uuid = models.CharField(max_length=36, primary_key=True,
-                                    default=uuid.uuid4())
+                                    default=uuid.uuid1())
     created_time = models.DateTimeField(auto_now_add=True)
     # updated_time = models.DateTimeField(null = True)
     node_type = models.CharField(max_length=32, choices=TYPES)
@@ -268,8 +268,7 @@ class SectionNode(models.Model):
                                      on_delete=models.CASCADE)
     table_node = models.OneToOneField(TableNode, null=True,
                                       on_delete=models.CASCADE)
-    section_node = models.ForeignKey('self', null=True,
-                                     on_delete=models.CASCADE)
+    section_node = models.ManyToManyField('self', null=True, symmetrical=False)
     report = models.ForeignKey(ReportNode, null=True, blank=True,
                                related_name='root_node_set',
                                on_delete=models.CASCADE)

@@ -16,9 +16,9 @@ ERROR=false
 
 # 函数定义
 install_software() {
-	OUTPUT_JSON=`conda create --json --quiet -n ${software_name} ${software}`
+	OUTPUT_JSON=`conda create --json -q -n ${software_name} ${software}`
 	SUCCESS=`echo $OUTPUT_JSON | jq '.success'`
-	export ERROR_MSG=`echo $OUTPUT_JSON | jq '.error'`
+	export ERROR_MSG=`echo $OUTPUT_JSON | jq '.exception_name'`
 	if [ "$SUCCESS" != 'true' ];then
 		export ERROR=true
 	else
@@ -27,7 +27,15 @@ install_software() {
 }
 
 search_software() {
-	conda search ${software_name}
+	OUTPUT_JSON=`conda search ${software_name} --json`
+	ERROR=`echo $OUTPUT_JSON | jq -r 'has("error")'`
+    if [ "$ERROR" == 'true' ];then
+    	export ERROR=true
+		export ERROR_MSG=`echo $OUTPUT_JSON | jq '.exception_name'`
+	else
+		export ERROR=false
+		export SUCCESS_MSG=`echo $OUTPUT_JSON | jq -r '.[] | .[] | .name + "\t"  + .version'`
+	fi
 }
 
 gen_conda_modulefile() {
@@ -148,7 +156,7 @@ if [ -z "${software}" ];then
 fi
 
 # 匹配输入模式
-export matched_str=`echo $software | grep -E '[a-zA-Z0-9\-\_\.]+=[a-zA-Z0-9\-\_\.\*]+'`
+export matched_str=`echo $software | grep -E '[a-zA-Z0-9\-\_\.*]+=[a-zA-Z0-9\-\_\.\*]+'`
 software_name=${software//=/-}
 
 if [ "${software_name}" == "${software}" ] || [ -z $matched_str ]; then
@@ -171,10 +179,15 @@ fi
 
 # 搜索模式
 if [ ! -z "$search_mode" ];then
+	software_name=`echo ${software_name} | sed 's/-\*//g'`
 	printf "${GREEN}搜索${software_name}...\n${NC}"
 	printf "${YELLOW}"
 	search_software
-	printf "${NC}"
+	if $ERROR; then
+		printf "${RED}$ERROR_MSG${NC}\n"
+	else
+		printf "${GREEN}$SUCCESS_MSG${NC}\n"
+	fi
 	exit 2
 fi
 
