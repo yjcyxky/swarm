@@ -6,6 +6,5 @@ __pycache__
 flower.db
 docs/*
 .spider
-migrations
 *.pyc
 .vscode

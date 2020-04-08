@@ -1,8 +1,6 @@
 from django.http import JsonResponse
 from rest_framework import status
 
-logger = logging.getLogger(__name__)
-
 
 def custom404(request):
     return JsonResponse({

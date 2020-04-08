@@ -17,8 +17,6 @@ from django.conf.urls import url, include
 from rest_framework_jwt.views import (obtain_jwt_token, refresh_jwt_token,
                                       verify_jwt_token)
 from django.contrib.auth import views as auth_views
-from drf_yasg.views import get_schema_view
-from drf_yasg import openapi
 from django.views.generic.base import RedirectView
 from swarm import views
 from swarm import settings
@@ -44,6 +42,7 @@ urlpatterns = [
         url(r'^sshostmgt/', include('sshostmgt.urls')),
         url(r'^sscluster/', include('sscluster.urls')),
         url(r'^sscobweb/', include('sscobweb.urls')),
+        url(r'^grafana/', include('grafana.urls')),
 
         url(r'^.*$', views.custom404, name='custom404')
     ])),
