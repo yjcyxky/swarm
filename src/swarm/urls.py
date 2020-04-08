@@ -16,22 +16,30 @@ Including another URLconf
 from django.conf.urls import url, include
 from rest_framework_jwt.views import (obtain_jwt_token, refresh_jwt_token,
                                       verify_jwt_token)
-from rest_framework.schemas import get_schema_view
-from swagger.renderers import SwaggerUIRenderer, OpenAPIRenderer
 from django.contrib.auth import views as auth_views
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from django.views.generic.base import RedirectView
 from swarm import views
 from swarm import settings
+from rest_framework import permissions
 
-schema_view = get_schema_view(title='Swarm APIs',
-                              renderer_classes=[OpenAPIRenderer,
-                                                SwaggerUIRenderer])
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Swarm Management API",
+      default_version='v1',
+      description="A swagger endpoint for swarm management api.",
+      terms_of_service="https://www.google.com/policies/terms/",
+      contact=openapi.Contact(email="yjcyxky@163.com"),
+      license=openapi.License(name="GPLv3 License"),
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
     # For API Documentation
-    url(r'^$', schema_view, name="docs"),
-    url(r'^api-auth/',
-        include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^accounts/login/$', auth_views.login, name='login'),
+    url(r'^accounts/login/$', auth_views.LoginView, name='login'),
     url(r'^api/v1/', include([
         url(r'^apis/(?P<api_name>[a-zA-Z0-9]+)$',
             views.APIDetail.as_view(),
@@ -50,20 +58,12 @@ urlpatterns = [
 
         # Host Management
         url(r'^sshostmgt/', include('sshostmgt.urls')),
-        url(r'^ssfalcon/', include('ssfalcon.urls')),
         url(r'^sscluster/', include('sscluster.urls')),
-        url(r'^ssnagios/', include('ssnagios.urls')),
         url(r'^sscobweb/', include('sscobweb.urls')),
-        url(r'^ssadvisor/', include('ssadvisor.urls')),
-        url(r'^report-engine/', include('report_engine.urls')),
-        url(r'^ssganglia/', include('ssganglia.urls')),
 
-        # Flower
-        url(r'^flower$',
-            views.redirect_flower),
-        url(r'^.*/$', views.custom404, name='custom404')
+        url(r'^.*$', views.custom404, name='custom404')
     ])),
-    url(r'^.*/$', views.custom404, name="custom404")
+    url(r'^.*$', views.custom404, name="custom404")
 ]
 
 
@@ -74,11 +74,7 @@ if settings.DEBUG:
     # you need to use django.contrib.staticfiles
     # Do Not need to use static files in the restful project.
     from django.conf.urls.static import static
-    import debug_toolbar
-    urlpatterns = [
-        url(r'^__debug__/', include(debug_toolbar.urls)),
-    ] + urlpatterns + static(settings.MEDIA_URL,
-                             document_root=settings.MEDIA_ROOT)
+    urlpatterns = urlpatterns + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
     urlpatterns += [
         re_path(r'^static/(?P<path>.*)$', views.serve),

@@ -16,7 +16,6 @@ from rest_framework import permissions
 from rest_framework.serializers import ValidationError
 from sshostmgt.models import (IPMI, Host, Tag, Storage)
 from sshostmgt.pagination import CustomPagination
-# from sshostmgt.permissions import IsOwnerOrAdmin
 from sshostmgt.exceptions import CustomException
 from sshostmgt.serializers import (IPMISerializer, TagSerializer, StorageSerializer,
                                    HostSerializer, HostListSerializer)
@@ -29,9 +28,7 @@ class IPMIList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = IPMISerializer
-    permission_classes = (permissions.IsAuthenticated,
-                          permissions.DjangoModelPermissions,
-                          permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = IPMI.objects.all().order_by('ipmi_addr')
     lookup_field = 'ipmi_uuid'
 
@@ -125,8 +122,7 @@ class IPMIDetail(generics.GenericAPIView):
     """
     Retrieve, update a ipmi instance.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = IPMISerializer
     queryset = IPMI.objects
     lookup_field = 'ipmi_uuid'
@@ -181,9 +177,7 @@ class TagList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = TagSerializer
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.DjangoModelPermissions,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = Tag.objects.all().order_by('tag_name')
     lookup_field = 'tag_uuid'
 
@@ -217,8 +211,7 @@ class TagDetail(generics.GenericAPIView):
     """
     Retrieve, update a tag instance.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = TagSerializer
     queryset = Tag.objects
     lookup_field = 'tag_uuid'
@@ -267,9 +260,7 @@ class HostList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = HostListSerializer
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.DjangoModelPermissions,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = Host.objects.all().order_by('hostname')
     lookup_field = 'host_uuid'
 
@@ -336,8 +327,7 @@ class HostDetail(generics.GenericAPIView):
     """
     Retrieve, update a host instance.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = HostSerializer
     queryset = Host.objects
     lookup_field = 'host_uuid'
@@ -397,9 +387,7 @@ class StorageList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = StorageSerializer
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.DjangoModelPermissions,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = Storage.objects.all().order_by('storage_name')
     lookup_field = 'storage_uuid'
 
@@ -466,8 +454,7 @@ class StorageDetail(generics.GenericAPIView):
     """
     Retrieve, update a storage instance.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-    #                       permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = StorageSerializer
     queryset = Storage.objects
     lookup_field = 'storage_uuid'

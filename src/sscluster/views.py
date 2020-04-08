@@ -20,9 +20,6 @@ from django.db.models import (Count, Sum)
 import django_filters.rest_framework
 from sscluster.models import (Cluster, JobLog, ToDoList)
 from sscluster.pagination import CustomPagination
-# Model Permission - CustomDjangoModelPermissions
-# Object Permission - IsOwner IsOwnerOrAdmin
-from sscluster.permissions import (CustomDjangoModelPermissions)
 from sscluster.exceptions import CustomException
 from sscluster.serializers import (ClusterSerializer, JobLogSerializer,
                                    JobLogCountSerializer, ToDoListSerializer)
@@ -36,8 +33,6 @@ class ClusterList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = ClusterSerializer
-    # permission_classes = (permissions.IsAuthenticated,
-                          # CustomDjangoModelPermissions)
 
     queryset = Cluster.objects.all().order_by('cluster_name')
     lookup_field = 'cluster_uuid'
@@ -104,8 +99,7 @@ class ClusterDetail(generics.GenericAPIView):
     """
     Retrieve, update a cluster instance.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-                          # CustomDjangoModelPermissions)
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = ClusterSerializer
     queryset = Cluster.objects
     lookup_field = 'cluster_uuid'
@@ -153,8 +147,7 @@ class JobLogList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = JobLogSerializer
-    # permission_classes = (permissions.IsAuthenticated,
-                          # CustomDjangoModelPermissions)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = JobLog.objects.all().order_by('-jobid')
     lookup_field = 'job_uuid'
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
@@ -223,8 +216,7 @@ class JobLogDetail(generics.GenericAPIView):
     """
     Retrieve, update a joblog instance.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-                          # CustomDjangoModelPermissions)
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = JobLogSerializer
     queryset = JobLog.objects
     lookup_field = 'job_uuid'
@@ -272,8 +264,7 @@ class JobLogCount(generics.GenericAPIView):
     """
     Get count of JobLog Records.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-                          # CustomDjangoModelPermissions)
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = JobLogCountSerializer
     pagination_class = CustomPagination
     queryset = User.objects
@@ -360,8 +351,7 @@ class ToDoListList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = ToDoListSerializer
-    # permission_classes = (permissions.IsAuthenticated,
-                          # CustomDjangoModelPermissions)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = ToDoList.objects.all().order_by('item_name')
     lookup_field = 'id'
 
@@ -432,8 +422,7 @@ class ToDoListDetail(generics.GenericAPIView):
     """
     Retrieve, update a ToDoList instance.
     """
-    # permission_classes = (permissions.IsAuthenticated,
-                          # CustomDjangoModelPermissions)
+    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = ToDoListSerializer
     queryset = ToDoList.objects
     lookup_field = 'id'

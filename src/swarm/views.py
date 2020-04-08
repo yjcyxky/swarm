@@ -92,10 +92,3 @@ def custom404(request):
         'details': 'The resource was not found.',
         'status': 'Failed'
     }, status=status.HTTP_404_NOT_FOUND)
-
-
-@api_view(['GET', 'POST'])
-@permission_classes((permissions.IsAuthenticated, IsOwnerOrAdmin))
-def redirect_flower(request):
-    print(request, dir(request))
-    # return HttpResponseRedirect(redirect_to=)

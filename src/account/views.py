@@ -18,7 +18,6 @@ from rest_framework import permissions
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from account.serializers import (UserSerializer)
-from account.permissions import (IsOwnerOrAdmin)
 from account.pagination import CustomPagination
 from account.exceptions import CustomException
 
@@ -31,8 +30,7 @@ class UserList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = UserSerializer
-    permission_classes = (permissions.IsAuthenticated,
-                          permissions.IsAdminUser)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = User.objects.all().order_by("username")
     lookup_field = 'id'
 
@@ -127,8 +125,7 @@ class UserDetail(APIView):
     """
     Retrieve, update a user instance.
     """
-    permission_classes = (permissions.IsAuthenticated,
-                          IsOwnerOrAdmin,)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = User.objects
     lookup_field = 'id'
 
@@ -138,7 +135,6 @@ class UserDetail(APIView):
         }
 
         obj = get_object_or_404(self.queryset, **filter)
-        self.check_object_permissions(self.request, obj)
         return obj
 
     def get(self, request, pk):

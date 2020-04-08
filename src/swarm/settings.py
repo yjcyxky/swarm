@@ -45,23 +45,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'registration',
+    'django_registration',
     'rest_framework',
+    'drf_yasg',
     'corsheaders',
-    'django_extensions',
     'sscobbler.apps.SscobblerConfig',
     'sshostmgt.apps.SshostmgtConfig',
-    'ssfalcon.apps.SsfalconConfig',
-    'ssnagios.apps.SsnagiosConfig',
     'sscluster.apps.SsclusterConfig',
     'sscobweb.apps.SscobwebConfig',
-    'ssadvisor.apps.SsadvisorConfig',
-    'ssganglia.apps.SsgangliaConfig',
     'account.apps.AccountConfig',
-    'report_engine.apps.ReportEngineConfig',
-    'swagger',
     'swarm',
-    'debug_toolbar',
     'django_celery_beat',
 ]
 
@@ -74,7 +67,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'swarm.urls'
@@ -101,12 +93,12 @@ WSGI_APPLICATION = 'wsgi.application'
 # REST FRAMEWORK
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        # 'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        # 'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
-        # 'rest_framework.authentication.BasicAuthentication',
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
     ),
     'EXCEPTION_HANDLER': 'swarm.exceptions.custom_exception_handler',
 }
@@ -182,7 +174,7 @@ if TEST_MODE:
     MIGRATION_MODULES = DisableMigrations()
 else:
     MIGRATION_MODULES = {
-        'ssnagios': None,
+
     }
 
 # Password validation
@@ -226,7 +218,10 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.file'
-SESSION_FILE_PATH = '/var/lib/cobbler_sessions'
+SESSION_FILE_PATH = os.path.join(settings.get('core', 'swarm_home'), 'cobbler_sessions')
+
+if not os.path.isdir(SESSION_FILE_PATH):
+    os.mkdir(SESSION_FILE_PATH)
 
 # Set CORS
 # CORS_ORIGIN_WHITELIST = (
@@ -237,8 +232,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 def get_loggers(level):
     loggers = {}
-    for logger in ('django', 'sscluster', 'sshostmgt', 'ssadvisor',
-                   'sscobweb', 'ssganglia', 'ssnagios', 'report_engine'):
+    for logger in ('django', 'sscluster', 'sshostmgt', 'sscobweb'):
         loggers.update({
             logger: {
                 'handlers': ['file', 'stream'],
@@ -289,13 +283,9 @@ CELERY_TASK_SERIALIZER = conf.get('celery', 'task_serializer')
 CELERY_TIMEZONE = 'Asia/Shanghai'    # 指定时区，不指定默认为 'UTC'
 
 # schedules
-CELERY_BEAT_SCHEDULE = {
-    'add-every-60-seconds': {
-         'task': 'ssadvisor.tasks.loop_submit_job',
-         'schedule': crontab(minute='*/1'),       # 每 60 秒执行一次
-    },
-}
-
-
-# ReportEngine
-REPORT_ENGINE_HOME = settings.get('report_engine', 'report_engine_home')
+# CELERY_BEAT_SCHEDULE = {
+#     'add-every-60-seconds': {
+#          'task': 'ssadvisor.tasks.loop_submit_job',
+#          'schedule': crontab(minute='*/1'),       # 每 60 秒执行一次
+#     },
+# }

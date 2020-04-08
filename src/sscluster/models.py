@@ -12,7 +12,6 @@ import logging, copy
 from datetime import datetime
 from django.db import models
 from django.apps import apps
-from django.contrib.auth.models import (User, Group)
 
 logger = logging.getLogger(__name__)
 
@@ -23,14 +22,13 @@ class ToDoList(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
     checked_status = models.BooleanField(null = False, default = False)
     finished_time = models.DateTimeField(null = True)
-    user = models.ForeignKey(User, on_delete = models.CASCADE)
+    user = models.CharField(max_length = 32)
 
     def __str__(self):
         return '%s-%s' % (self.id, self.item_name)
 
     class Meta:
         ordering = ('checked_status', 'created_time', 'user')
-        permissions = (("list_todolist", "can list todolist instance(s)"),)
 
 class Cluster(models.Model):
     cluster_uuid = models.CharField(max_length = 36, primary_key = True)
@@ -46,15 +44,12 @@ class Cluster(models.Model):
 
     class Meta:
         ordering = ('cluster_name',)
-        permissions = (("list_cluster", "can list cluster instance(s)"),)
 
 class JobLog(models.Model):
     job_uuid = models.CharField(max_length = 36, primary_key = True)
     jobid = models.CharField(max_length = 32, unique = True)
     jobname = models.CharField(max_length = 128)
-    user = models.ForeignKey(User, on_delete = models.CASCADE)
     group = models.CharField(max_length = 32)
-    # group = models.ForeignKey(Group, on_delete = models.CASCADE)
     owner = models.CharField(max_length = 32)    # owner等同于user，为获取集群记录方便而添加，日后再移除
     queue = models.CharField(max_length = 32)
     ctime = models.DateTimeField(null = True)    # Time job was created
@@ -83,7 +78,6 @@ class JobLog(models.Model):
 
     class Meta:
         ordering = ('jobid', 'owner')
-        permissions = (("list_joblog", "can list joblog instance(s)"),)
 
     # Record Marker
     # A --- abort --- (Job has been aborted by the server)

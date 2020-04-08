@@ -34,8 +34,6 @@ from daemon.pidfile import TimeoutPIDLockFile
 from bin.configuration import conf as settings
 from version import (get_version, get_company_name)
 from exceptions import SwarmException
-from ssspider.spider import get_argument_parser, main as spider_main
-from ssnagios.raw_sqls import add_fields as ssnagios_add_fields
 
 
 def sigint_handler(sig, frame):
@@ -99,27 +97,10 @@ def bash_completion():
 def initdb(args, **kwargs):
     print("初始化Swarm数据库...")
     setup_django()
-    apps = ('report_engine', 'ssadvisor', 'sscluster', 'sscobbler', 'sscobweb',
-            'ssganglia', 'sshostmgt', 'django_celery_beat', 'swarm', 'account')
+    apps = ('sscluster', 'sscobbler', 'sscobweb', 
+            'sshostmgt', 'django_celery_beat', 'swarm', 'account')
     call_command('makemigrations', *apps, verbosity=0, interactive=False)
     call_command('migrate', verbosity=0)
-
-    print("初始化ssnagios模块数据库...")
-    BASE_DIR = conf.BASE_DIR
-    INSTALL_DB = os.path.join(BASE_DIR, 'ssnagios/initdb/installdb')
-    USERNAME = settings.get('core', 'swarm_db_user')
-    PASSWORD = settings.get('core', 'swarm_db_password')
-    DATABASE = settings.get('core', 'swarm_db_name')
-    HOSTNAME = settings.get('core', 'swarm_db_host')
-    PORT = settings.get('core', 'swarm_db_port')
-    CMD = [INSTALL_DB, '-u', USERNAME, '-p', PASSWORD, '-h', HOSTNAME,
-           '-d', DATABASE, '-P', PORT]
-    status = subprocess.call(CMD)
-
-    if status == 0:
-        ssnagios_add_fields()
-    else:
-        sys.exit(status)
 
     initdata = args.initdata
     if initdata:
@@ -128,17 +109,10 @@ def initdb(args, **kwargs):
     print("完成.")
 
 
-def ganglia(args, **kwargs):
-    print("初始化Ganglia数据库...")
+def create_superuser(args, **kwargs):
+    print("创建超级用户")
     setup_django()
-    from ssganglia.models import RRDConfig
-    rrd_dir_path = args.rrd_dir_path if args.rrd_dir_path \
-        else settings.get('ganglia', 'rrd_dir_path')
-    print("rrd目录路径: %s" % rrd_dir_path)
-    if rrd_dir_path:
-        ganglia_config = RRDConfig(rrd_dir_path)
-        ganglia_config.sync2db()
-    print("完成.")
+    call_command('createsuperuser')
 
 
 def resetdb(args, **kwargs):
@@ -150,38 +124,6 @@ def resetdb(args, **kwargs):
         # db_utils.resetdb()
     else:
         print("Bail.")
-
-
-def spider(args, **kwargs):
-    from ssspider.exceptions import SpiderParameterError
-    from ssspider.utils import gen_spider_file
-    spider_template = args.spider_template
-    vars_file_path = args.ini
-    spiderfile = args.spiderfile
-
-    if spider_template is None and vars_file_path is None:
-        spider_main(args=args)
-
-    if not (spider_template and vars_file_path):
-        raise SpiderParameterError("You must specify spider_template(-st or \
-                                    --spider_template)"
-                                   "and ini arguments(-i or --ini) or only \
-                                   specify spiderfile argument(--spiderfile).")
-    else:
-        workdir = args.directory
-        if workdir:
-            if not os.path.exists(workdir):
-                print(
-                    "Creating specified working directory {}.".format(workdir))
-                os.makedirs(workdir)
-            workdir = os.path.abspath(workdir)
-            os.chdir(workdir)
-        else:
-            workdir = os.getcwd()
-        spiderfile = gen_spider_file(spider_template, vars_file_path,
-                                     output_dir=workdir)
-        args.spiderfile = spiderfile
-        spider_main(args=args)
 
 
 def flower(args, **kwargs):
@@ -448,28 +390,6 @@ def restart_workers(gunicorn_master_proc, num_workers_expected):
                 start_refresh(gunicorn_master_proc)
 
 
-def advisor(args, **kwargs):
-    from ssadvisor.jobs import Job
-    bash_templ_path = args.bash_template
-    vars_file_path = args.ini
-    jobid = jobname = args.job
-    terminate_flag = args.terminate_flag
-
-    if (jobname and bash_templ_path and vars_file_path):
-        job = Job(jobname, bash_templ_path=bash_templ_path,
-                  vars_file_path=vars_file_path)
-        job.submit_job()
-        print('Your job has been submitted with ID %s' % job.get_jobid())
-    elif (jobid and terminate_flag):
-        job = Job(jobid=jobid)
-        jobstatus = job.terminate_job()
-        print("The status of your job is: %s" % jobstatus)
-    else:
-        job = Job(jobid=jobid)
-        jobstatus = job.get_jobstatus()
-        print("The status of your job is %s" % jobstatus)
-
-
 def webserver(args, **kwargs):
     access_logfile = args.access_logfile or \
         settings.get('webserver', 'access_logfile')
@@ -679,35 +599,7 @@ class CLIFactory(object):
             ("-L", "--loglevel"),
             help="Logging level, choose between DEBUG, INFO, WARNING,"
                  "ERROR, CRITICAL, or FATAL.",
-            default='INFO'),
-        # advisor
-        'bash_template': Arg(
-            ("-bt", "--bash_template"),
-            help="bash template file for submitting job."
-                 "(Only Support Jinja2 Syntax)",
-            required=False),
-        'vars_file': Arg(
-            ("-i", "--ini"),
-            help="config file for rendering template file."
-                 "(Only Support INI Syntax)",
-            required=False),
-        'terminate_flag': Arg(
-            ("-T", "--terminate"),
-            "Terminate the specified job.",
-            "store_true",
-            default=False),
-        'job': Arg(
-            ("job",),
-            help="job's name or id."),
-        # spider
-        'spider_template': Arg(
-            ("-st", "--spider_template"),
-            help="spider template file",
-            required=False),
-        'rrd_dir_path': Arg(
-            ("-rrd", "--rrd_dir_path"),
-            help="RRD Directory Path.",
-            required=True)
+            default='INFO')
     }
     subparsers = (
         {
@@ -725,6 +617,10 @@ class CLIFactory(object):
             'func': resetdb,
             'help': "Burn down and rebuild the metadata database",
             'args': ('yes',),
+        }, {
+            'func': create_superuser,
+            'help': "Create a super user.",
+            'args': tuple(),
         }, {
             'func': flower,
             'help': "Start a Celery Flower",
@@ -744,22 +640,6 @@ class CLIFactory(object):
             'func': version,
             'help': "Show the version",
             'args': tuple(),
-        }, {
-            'func': advisor,
-            'help': "Submit a job to cluster. (Advisor Terminal Version)",
-            'args': ('bash_template', 'vars_file', 'terminate_flag', 'job'),
-        }, {
-            'func': spider,
-            'help': "Spider is a Python based language and execution "
-                    "environment for GNU Make-like workflows."
-                    "(Spider Terminal Version)",
-            # 调用外部命令时使用，external_args与extra_args联用，extra_args用于扩展外部命令的参数
-            'extra_args': ('spider_template', 'vars_file'),
-            'external_args': True
-        }, {
-            'func': ganglia,
-            'help': "Initialized Ganglia Database.",
-            'args': ('rrd_dir_path',),
         }, {
             'func': bash_complete,
             'help': "Activate Bash Completion.",
@@ -782,7 +662,6 @@ class CLIFactory(object):
             sp = subparsers.add_parser(sub['func'].__name__, help=sub['help'])
             sp.set_defaults(func=sub['func'])
             if sub.get('external_args'):
-                get_argument_parser(parser=sp)
                 for arg in sub['extra_args']:
                     arg = cls.args[arg]
                     kwargs = {

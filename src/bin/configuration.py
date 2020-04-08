@@ -141,20 +141,6 @@ expose_config = False
 # http://pythonhosted.org/airflow/security.html#web-authentication
 authenticate = False
 
-# Filter the list of dags by owner name (requires authentication to be enabled)
-filter_by_owner = False
-
-# Filtering mode. Choices include user (default) and ldapgroup.
-# Ldap group filtering requires using the ldap backend
-#
-# Note that the ldap server needs the "memberOf" overlay to be set up
-# in order to user the ldapgroup mode.
-owner_mode = user
-
-# Default DAG orientation. Valid values are:
-# LR (Left->Right), TB (Top->Bottom), RL (Right->Left), BT (Bottom->Top)
-dag_orientation = LR
-
 # Puts the webserver in demonstration mode; blurs the names of Operators for
 # privacy.
 demo_mode = False
@@ -162,10 +148,6 @@ demo_mode = False
 # The amount of time (in secs) webserver will wait for initial handshake
 # while fetching logs from other worker machine
 log_fetch_timeout_sec = 5
-
-# By default, the webserver shows paused DAGs. Flip this to hide paused
-# DAGs by default
-hide_paused_dags_by_default = False
 
 [celery]
 # This section only applies if you are using the CeleryExecutor in
@@ -189,29 +171,6 @@ flower_port = 5555
 
 # Default queue that tasks get assigned to and that worker listen on.
 default_queue = default
-
-[advisor]
-# Pointer to DRMAA library slurm-drmaa/lib/libdrmaa.so.1
-drmaa_library_path = /opt/local/lib
-
-# Cluster Scheduler(Choices: torque/slurm)
-scheduler_name = torque
-
-advisor_home = {SWARM_HOME}/advisor
-
-# The maximum number of tasks running at the same time
-max_task_num = 10
-
-[ansible]
-ansible_playbook_dir = {SWARM_HOME}/ansible/playbook
-ansible_audit_dir = {SWARM_HOME}/ansible/audit
-ansible_log_dir = {SWARM_HOME}/ansible/logs
-
-[ganglia]
-rrd_dir_path = /var/lib/ganglia/rrd
-
-[report_engine]
-report_engine_home = {SWARM_HOME}/report_engine
 """
 
 TEST_CONFIG = """\
@@ -230,9 +189,7 @@ run_mode = DEBUG
 base_url = http://localhost:8080
 web_server_host = 0.0.0.0
 web_server_port = 8080
-dag_orientation = LR
 log_fetch_timeout_sec = 5
-hide_paused_dags_by_default = False
 
 [celery]
 broker_url = redis://localhost:6379/0
@@ -242,23 +199,6 @@ task_serializer = json
 flower_host = 0.0.0.0
 flower_port = 5555
 default_queue = default
-
-[advisor]
-drmaa_library_path = /opt/local/lib
-scheduler_name = torque
-advisor_home = {SWARM_HOME}/advisor
-max_task_num = 10
-
-[ansible]
-ansible_playbook_dir = {SWARM_HOME}/ansible/playbook
-ansible_audit_dir = {SWARM_HOME}/ansible/audit
-ansible_log_dir = {SWARM_HOME}/ansible/logs
-
-[ganglia]
-rrd_dir_path = /var/lib/ganglia/rrd
-
-[report_engine]
-report_engine_home = {SWARM_HOME}/report_engine
 """
 
 
@@ -495,8 +435,3 @@ def set(section, option, value):  # noqa
 # CELERY_ACCEPT_CONTENT = ['json']
 # CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 # CELERY_TASK_SERIALIZER = 'json'
-
-# DRMAA Library Configuration
-if 'DRMAA_LIBRARY_PATH' not in os.environ:
-    drmaa_library_path = conf.get('advisor', 'drmaa_library_path')
-    os.environ.setdefault('DRMAA_LIBRARY_PATH', drmaa_library_path)
