@@ -218,7 +218,8 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.file'
-SESSION_FILE_PATH = os.path.join(settings.get('core', 'swarm_home'), 'cobbler_sessions')
+SESSION_FILE_PATH = os.path.join(settings.get(
+    'core', 'swarm_home'), 'cobbler_sessions')
 
 if not os.path.isdir(SESSION_FILE_PATH):
     os.mkdir(SESSION_FILE_PATH)
@@ -241,6 +242,7 @@ def get_loggers(level):
             }
         })
     return loggers
+
 
 if not TEST_MODE:
     LOGGING = {

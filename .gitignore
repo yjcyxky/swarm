@@ -8,3 +8,4 @@ docs/*
 .spider
 migrations
 *.pyc
+.vscode

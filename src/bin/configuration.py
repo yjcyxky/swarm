@@ -134,21 +134,6 @@ worker_class = sync
 access_logfile = -
 error_logfile = -
 
-# Expose the configuration file in the web server
-expose_config = False
-
-# Set to true to turn on authentication:
-# http://pythonhosted.org/airflow/security.html#web-authentication
-authenticate = False
-
-# Puts the webserver in demonstration mode; blurs the names of Operators for
-# privacy.
-demo_mode = False
-
-# The amount of time (in secs) webserver will wait for initial handshake
-# while fetching logs from other worker machine
-log_fetch_timeout_sec = 5
-
 [celery]
 # This section only applies if you are using the CeleryExecutor in
 # [core] section above

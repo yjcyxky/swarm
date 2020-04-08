@@ -192,10 +192,3 @@ EN_INTERFACE = {
     "welcome": r"Welcome to Use ",
     "yes": r"On",
 }
-
-# SSHOSTMGT SETTINGS
-SSHOSTMGT_DB_SETTINGS = {
-    "db": "sshostmgt_db",
-    "host": "localhost",
-    "port": "27017"
-}

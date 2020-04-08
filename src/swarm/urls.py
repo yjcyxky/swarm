@@ -24,27 +24,11 @@ from swarm import views
 from swarm import settings
 from rest_framework import permissions
 
-schema_view = get_schema_view(
-   openapi.Info(
-      title="Swarm Management API",
-      default_version='v1',
-      description="A swagger endpoint for swarm management api.",
-      terms_of_service="https://www.google.com/policies/terms/",
-      contact=openapi.Contact(email="yjcyxky@163.com"),
-      license=openapi.License(name="GPLv3 License"),
-   ),
-   public=True,
-   permission_classes=(permissions.AllowAny,),
-)
 
 urlpatterns = [
     # For API Documentation
     url(r'^accounts/login/$', auth_views.LoginView, name='login'),
     url(r'^api/v1/', include([
-        url(r'^apis/(?P<api_name>[a-zA-Z0-9]+)$',
-            views.APIDetail.as_view(),
-            name="api-list"),
-
         # API Token
         url(r'^api-token-auth$', obtain_jwt_token),
         url(r'^api-token-refresh$', refresh_jwt_token),
