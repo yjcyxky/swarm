@@ -25,7 +25,7 @@ from swarm import settings
 urlpatterns = [
     # For API Documentation
     url(r'^admin/', admin.site.urls),
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),  # For login/logout
     url(r'^version$', views.get_version, name='version'),
     url(r'^api/v1/', include([
         # API Token
@@ -44,7 +44,6 @@ urlpatterns = [
         url(r'^sscluster/', include('sscluster.urls')),
         url(r'^sscobweb/', include('sscobweb.urls')),
         url(r'^grafana/', include('grafana.urls')),
-        url(r'^agent-state', views.agent_state, name='agent_state'),
 
         url(r'^.*$', views.custom404, name='custom404')
     ])),

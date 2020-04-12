@@ -28,7 +28,6 @@ class PanelList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = PanelSerializer
-    permission_classes = (permissions.IsAuthenticated,)
     queryset = Panel.objects.all().order_by('created_time')
     lookup_field = 'panel_uuid'
 
@@ -62,7 +61,6 @@ class PanelDetail(generics.GenericAPIView):
     """
     Retrieve, update a panel instance.
     """
-    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = PanelSerializer
     queryset = Panel.objects
     lookup_field = 'panel_uuid'
@@ -121,7 +119,6 @@ class DashboardList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = DashboardSerializer
-    permission_classes = (permissions.IsAuthenticated,)
     queryset = Dashboard.objects.all().order_by('created_time')
     lookup_field = 'dashboard_uuid'
 
@@ -155,7 +152,6 @@ class DashboardDetail(generics.GenericAPIView):
     """
     Retrieve, update a dashboard instance.
     """
-    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = DashboardSerializer
     queryset = Dashboard.objects
     lookup_field = 'dashboard_uuid'

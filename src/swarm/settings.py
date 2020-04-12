@@ -91,9 +91,7 @@ WSGI_APPLICATION = 'wsgi.application'
 
 # REST FRAMEWORK
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
+    'DEFAULT_PERMISSION_CLASSES': [],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
@@ -101,6 +99,9 @@ REST_FRAMEWORK = {
     ),
     'EXCEPTION_HANDLER': 'swarm.exceptions.custom_exception_handler',
 }
+
+if settings.getboolean('core', 'enable_auth'):
+    REST_FRAMEWORK['DEFAULT_PERMISSION_CLASSES'].append('rest_framework.permissions.IsAuthenticated')
 
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
@@ -290,7 +291,3 @@ CELERY_TIMEZONE = 'Asia/Shanghai'    # 指定时区，不指定默认为 'UTC'
 #          'schedule': crontab(minute='*/1'),       # 每 60 秒执行一次
 #     },
 # }
-
-MONITOR_BASE_URL = 'https://ifttt.3steps.cn'
-MONITOR_USERNAME = 'tideland'
-MONITOR_PASSWORD = 'e4c80e7e-6dcc-44e3-8f3a-405ead11874b'

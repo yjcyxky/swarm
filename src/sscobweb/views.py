@@ -33,7 +33,6 @@ class ChannelList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = ChannelSerializer
-    permission_classes = (permissions.IsAuthenticated,)
     queryset = Channel.objects.all().order_by('is_active')
     lookup_field = 'channel_uuid'
 
@@ -118,7 +117,6 @@ class ChannelDetail(generics.GenericAPIView):
     """
     Retrieve, update a channel instance.
     """
-    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = ChannelSerializer
     queryset = Channel.objects
     lookup_field = 'channel_uuid'
@@ -179,7 +177,6 @@ class PackageList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = PackageSerializer
-    permission_classes = (permissions.IsAuthenticated,)
     queryset = Package.objects.all().order_by('pkg_name')
     lookup_field = 'pkg_uuid'
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
@@ -255,7 +252,6 @@ class PackageDetail(generics.GenericAPIView):
     """
     Retrieve, update a package instance.
     """
-    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = PackageSerializer
     queryset = Package.objects
     lookup_field = 'pkg_uuid'
@@ -317,7 +313,6 @@ class SettingList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = SettingSerializer
-    permission_classes = (permissions.IsAuthenticated,)
     queryset = CobwebSetting.objects.all().order_by('name')
     lookup_field = 'setting_uuid'
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
@@ -395,7 +390,6 @@ class SettingDetail(generics.GenericAPIView):
     """
     Retrieve, update a setting instance.
     """
-    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = SettingSerializer
     queryset = CobwebSetting.objects
     lookup_field = 'setting_uuid'

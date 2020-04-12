@@ -92,6 +92,9 @@ unit_test_mode = False
 # Run_mode only supports the following modes: DEBUG|INFO|WARNING|ERROR
 run_mode = DEBUG
 
+# Use the default auth module, otherwise depending on the external auth service.
+enable_auth = True
+
 [webserver]
 # The ip specified when starting the web server
 web_server_host = 0.0.0.0
@@ -164,6 +167,7 @@ swarm_db_password = yjc040653
 swarm_db_host = localhost
 swarm_db_port = 3306
 run_mode = DEBUG
+enable_auth = True
 
 [webserver]
 web_server_host = 0.0.0.0

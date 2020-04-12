@@ -30,7 +30,6 @@ class UserList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = UserSerializer
-    permission_classes = (permissions.IsAuthenticated,)
     queryset = User.objects.all().order_by("username")
     lookup_field = 'id'
 
@@ -45,8 +44,10 @@ class UserList(generics.GenericAPIView):
 
         if new_kwargs:
             try:
-                logger.debug("UserList@exist_object@new_kwargs:%s" % str(new_kwargs))
-                logger.debug("UserList@exist_object@objects:%s" % str(self.queryset.get(**new_kwargs)))
+                logger.debug("UserList@exist_object@new_kwargs:%s" %
+                             str(new_kwargs))
+                logger.debug("UserList@exist_object@objects:%s" %
+                             str(self.queryset.get(**new_kwargs)))
                 return self.queryset.get(**new_kwargs)
             except User.DoesNotExist:
                 return False
@@ -125,7 +126,6 @@ class UserDetail(APIView):
     """
     Retrieve, update a user instance.
     """
-    permission_classes = (permissions.IsAuthenticated,)
     queryset = User.objects
     lookup_field = 'id'
 
@@ -197,15 +197,14 @@ class UserDetail(APIView):
 
 
 @api_view(['GET'])
-@permission_classes((permissions.IsAuthenticated, ))
 def current_user(request):
-        """
-        Retrieve account information for current user.
-        """
-        user = request.user
-        serializer = UserSerializer(user, context={'request': request})
-        return Response({
-            "status": "Success",
-            "status_code": status.HTTP_200_OK,
-            "data": serializer.data
-        })
+    """
+    Retrieve account information for current user.
+    """
+    user = request.user
+    serializer = UserSerializer(user, context={'request': request})
+    return Response({
+        "status": "Success",
+        "status_code": status.HTTP_200_OK,
+        "data": serializer.data
+    })
