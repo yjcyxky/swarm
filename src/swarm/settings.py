@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_registration',
     'rest_framework',
     'corsheaders',
     'sscobbler.apps.SscobblerConfig',
@@ -125,7 +124,7 @@ JWT_AUTH = {
     'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
     'JWT_ALLOW_REFRESH': True,
     'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
-    'JWT_AUTH_HEADER_PREFIX': 'JWT'
+    'JWT_AUTH_HEADER_PREFIX': 'Bearer'
 }
 
 # Database
@@ -291,3 +290,7 @@ CELERY_TIMEZONE = 'Asia/Shanghai'    # 指定时区，不指定默认为 'UTC'
 #          'schedule': crontab(minute='*/1'),       # 每 60 秒执行一次
 #     },
 # }
+
+MONITOR_BASE_URL = 'https://ifttt.3steps.cn'
+MONITOR_USERNAME = 'tideland'
+MONITOR_PASSWORD = 'e4c80e7e-6dcc-44e3-8f3a-405ead11874b'

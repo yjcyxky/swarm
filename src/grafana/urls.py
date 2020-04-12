@@ -12,10 +12,16 @@ from django.conf.urls import url
 from grafana import views
 
 urlpatterns = [
-    url(r'^panel$',
+    url(r'^panels$',
         views.PanelList.as_view(),
         name='panel-list'),
-    url(r'^panel/(?P<panel_uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
+    url(r'^panels/(?P<panel_uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
         views.PanelDetail.as_view(),
         name='panel-detail'),
+    url(r'^dashboards$',
+        views.DashboardList.as_view(),
+        name='dashboard-list'),
+    url(r'^dashboards/(?P<dashboard_uuid>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$',
+        views.DashboardDetail.as_view(),
+        name='dashboard-detail'),
 ]

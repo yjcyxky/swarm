@@ -16,16 +16,17 @@ Including another URLconf
 from django.conf.urls import url, include
 from rest_framework_jwt.views import (obtain_jwt_token, refresh_jwt_token,
                                       verify_jwt_token)
-from django.contrib.auth import views as auth_views
-from django.views.generic.base import RedirectView
+from django.contrib import admin
+from rest_framework import permissions
 from swarm import views
 from swarm import settings
-from rest_framework import permissions
 
 
 urlpatterns = [
     # For API Documentation
-    url(r'^accounts/login/$', auth_views.LoginView, name='login'),
+    url(r'^admin/', admin.site.urls),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^version$', views.get_version, name='version'),
     url(r'^api/v1/', include([
         # API Token
         url(r'^api-token-auth$', obtain_jwt_token),
@@ -43,12 +44,12 @@ urlpatterns = [
         url(r'^sscluster/', include('sscluster.urls')),
         url(r'^sscobweb/', include('sscobweb.urls')),
         url(r'^grafana/', include('grafana.urls')),
+        url(r'^agent-state', views.agent_state, name='agent_state'),
 
         url(r'^.*$', views.custom404, name='custom404')
     ])),
     url(r'^.*$', views.custom404, name="custom404")
 ]
-
 
 if settings.DEBUG:
     from django.contrib.staticfiles import views
@@ -59,6 +60,6 @@ if settings.DEBUG:
     from django.conf.urls.static import static
     urlpatterns = urlpatterns + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-    urlpatterns += [
+    urlpatterns = [
         re_path(r'^static/(?P<path>.*)$', views.serve),
-    ]
+    ] + urlpatterns

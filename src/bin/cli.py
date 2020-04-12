@@ -32,7 +32,7 @@ from django.core.management.commands import loaddata
 from daemon.pidfile import TimeoutPIDLockFile
 
 from bin.configuration import conf as settings
-from version import (get_version, get_company_name)
+from swarm.version import (get_version, get_company_name)
 from exceptions import SwarmException
 
 
@@ -97,7 +97,7 @@ def bash_completion():
 def initdb(args, **kwargs):
     print("初始化Swarm数据库...")
     setup_django()
-    apps = ('sscluster', 'sscobbler', 'sscobweb', 
+    apps = ('sscluster', 'sscobbler', 'sscobweb', 'grafana',
             'sshostmgt', 'django_celery_beat', 'swarm', 'account')
     call_command('makemigrations', *apps, verbosity=0, interactive=False)
     call_command('migrate', verbosity=0)
@@ -407,67 +407,59 @@ def webserver(args, **kwargs):
         raise SwarmException(
             'An SSL key must also be provided for use with ' + ssl_cert)
 
-    if args.debug:
-        cmd = sys.argv[0]
-        subcommand = 'runserver'
-        args = [cmd, subcommand, '%s:%s' % (args.hostname, args.port)]
-        django_cmd(args)
+    pid, stdout, stderr, log_file = setup_locations("webserver", pid=args.pid)
+    print(
+        textwrap.dedent('''\
+            Running the Gunicorn Server with:
+            Workers: {num_workers} {args.workerclass}
+            Host: {args.hostname}:{args.port}
+            Timeout: {worker_timeout}
+            Logfiles: {access_logfile} {error_logfile}
+            PID: {pid}
+            =================================================================\
+        '''.format(**locals())))
+
+    GUNICORN_CONFIG = os.path.join(conf.BASE_DIR, 'bin', 'gunicorn_config.py')
+    run_args = [
+        'gunicorn',
+        '-w', str(num_workers),
+        '-k', str(args.workerclass),
+        '-t', str(worker_timeout),
+        '-b', args.hostname + ':' + str(args.port),
+        '-n', 'swarm-webserver',
+        '-p', str(pid),
+        '-c', GUNICORN_CONFIG
+    ]
+
+    if args.access_logfile:
+        run_args += ['--access-logfile', str(args.access_logfile)]
+
+    if args.error_logfile:
+        run_args += ['--error-logfile', str(args.error_logfile)]
+
+    if args.daemon:
+        run_args += ["-D"]
+    if ssl_cert:
+        run_args += ['--certfile', ssl_cert, '--keyfile', ssl_key]
+
+    run_args += ["wsgi:application"]
+
+    gunicorn_master_proc = subprocess.Popen(run_args)
+
+    def kill_proc(dummy_signum, dummy_frame):
+        gunicorn_master_proc.terminate()
+        gunicorn_master_proc.wait()
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, kill_proc)
+    signal.signal(signal.SIGTERM, kill_proc)
+
+    # These run forever until SIG{INT, TERM, KILL, ...} signal is sent
+    if settings.getint('webserver', 'worker_refresh_interval') > 0:
+        restart_workers(gunicorn_master_proc, num_workers)
     else:
-        pid, stdout, stderr, log_file = setup_locations("webserver",
-                                                        pid=args.pid)
-        print(
-            textwrap.dedent('''\
-                Running the Gunicorn Server with:
-                Workers: {num_workers} {args.workerclass}
-                Host: {args.hostname}:{args.port}
-                Timeout: {worker_timeout}
-                Logfiles: {access_logfile} {error_logfile}
-                PID: {pid}
-                =================================================================\
-            '''.format(**locals())))
-
-        GUNICORN_CONFIG = os.path.join(conf.BASE_DIR, 'bin',
-                                       'gunicorn_config.py')
-        run_args = [
-            'gunicorn',
-            '-w', str(num_workers),
-            '-k', str(args.workerclass),
-            '-t', str(worker_timeout),
-            '-b', args.hostname + ':' + str(args.port),
-            '-n', 'swarm-webserver',
-            '-p', str(pid),
-            '-c', GUNICORN_CONFIG
-        ]
-
-        if args.access_logfile:
-            run_args += ['--access-logfile', str(args.access_logfile)]
-
-        if args.error_logfile:
-            run_args += ['--error-logfile', str(args.error_logfile)]
-
-        if args.daemon:
-            run_args += ["-D"]
-        if ssl_cert:
-            run_args += ['--certfile', ssl_cert, '--keyfile', ssl_key]
-
-        run_args += ["wsgi:application"]
-
-        gunicorn_master_proc = subprocess.Popen(run_args)
-
-        def kill_proc(dummy_signum, dummy_frame):
-            gunicorn_master_proc.terminate()
-            gunicorn_master_proc.wait()
-            sys.exit(0)
-
-        signal.signal(signal.SIGINT, kill_proc)
-        signal.signal(signal.SIGTERM, kill_proc)
-
-        # These run forever until SIG{INT, TERM, KILL, ...} signal is sent
-        if settings.getint('webserver', 'worker_refresh_interval') > 0:
-            restart_workers(gunicorn_master_proc, num_workers)
-        else:
-            while True:
-                time.sleep(1)
+        while True:
+            time.sleep(1)
 
 
 def django_cmd(args):
@@ -533,10 +525,6 @@ class CLIFactory(object):
             ("-hn", "--hostname"),
             default=conf.get('webserver', 'WEB_SERVER_HOST'),
             help="Set the hostname on which to run the web server"),
-        'debug': Arg(
-            ("-d", "--debug"),
-            "Use the server that ships with Flask in debug mode",
-            "store_true"),
         'access_logfile': Arg(
             ("-A", "--access_logfile"),
             default=conf.get('webserver', 'ACCESS_LOGFILE'),
@@ -612,7 +600,7 @@ class CLIFactory(object):
             'args': ('port', 'workers', 'workerclass', 'worker_timeout',
                      'pid', 'daemon', 'stdout', 'stderr', 'access_logfile',
                      'error_logfile', 'log_file', 'ssl_cert', 'ssl_key',
-                     'hostname', 'debug'),
+                     'hostname'),
         }, {
             'func': resetdb,
             'help': "Burn down and rebuild the metadata database",

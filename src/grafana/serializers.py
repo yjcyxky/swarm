@@ -13,7 +13,7 @@ import re
 import datetime
 from rest_framework import serializers
 from rest_framework import status
-from grafana.models import (Panel,)
+from grafana.models import (Panel, Dashboard)
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +40,27 @@ class PanelSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         keys = ['db_name', 'query_str', 'panel_type', 'refresh', 'refresh_interval', 'tag_name']
+        for key in keys:
+            if hasattr(instance, key) and validated_data.get(key):
+                setattr(instance, key, validated_data.get(key))
+
+        instance.save()
+        return instance
+
+
+class DashboardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Dashboard
+        fields = ('dashboard_uuid', 'title', 'dashboard_model', 'created_time')
+        lookup_field = 'dashboard_uuid'
+
+    def create(self, validated_data):
+        dashboard = Dashboard.objects.create(**validated_data)
+        dashboard.save()
+        return dashboard
+
+    def update(self, instance, validated_data):
+        keys = ['title', 'dashboard_model']
         for key in keys:
             if hasattr(instance, key) and validated_data.get(key):
                 setattr(instance, key, validated_data.get(key))
