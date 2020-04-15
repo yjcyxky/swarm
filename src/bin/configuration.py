@@ -132,6 +132,9 @@ worker_class = sync
 access_logfile = -
 error_logfile = -
 
+# Enable CORS Headers
+enable_cors = True
+
 [celery]
 # This section only applies if you are using the CeleryExecutor in
 # [core] section above
@@ -173,6 +176,7 @@ enable_auth = True
 web_server_host = 0.0.0.0
 web_server_port = 8080
 log_fetch_timeout_sec = 5
+enable_cors = True
 
 [celery]
 broker_url = redis://localhost:6379/0

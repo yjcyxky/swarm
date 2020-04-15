@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'corsheaders',
     'sscobbler.apps.SscobblerConfig',
     'sshostmgt.apps.SshostmgtConfig',
     'sscluster.apps.SsclusterConfig',
@@ -58,7 +57,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -67,6 +65,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Add CORS
+if settings.get('webserver', 'enable_cors') in ('True', 'true', 'T', 't'):
+    INSTALLED_APPS.insert(0, 'corsheaders')
+    MIDDLEWARE.insert(0, 'corsheaders.middleware.CorsMiddleware')
+    CORS_ORIGIN_ALLOW_ALL = True
 
 ROOT_URLCONF = 'swarm.urls'
 
@@ -223,12 +227,6 @@ SESSION_FILE_PATH = os.path.join(settings.get(
 
 if not os.path.isdir(SESSION_FILE_PATH):
     os.mkdir(SESSION_FILE_PATH)
-
-# Set CORS
-# CORS_ORIGIN_WHITELIST = (
-#    '10.157.43.71',
-# )
-CORS_ORIGIN_ALLOW_ALL = True
 
 
 def get_loggers(level):

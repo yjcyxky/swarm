@@ -13,6 +13,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.serializers import ValidationError
 from sshostmgt.models import (IPMI, Host, Tag, Storage)
 from sshostmgt.pagination import CustomPagination
@@ -30,49 +31,33 @@ class IPMIList(generics.GenericAPIView):
     serializer_class = IPMISerializer
     queryset = IPMI.objects.all().order_by('ipmi_addr')
     lookup_field = 'ipmi_uuid'
+    filter_backends = (DjangoFilterBackend,)
 
-    def exist_object(self, **kwargs):
-        new_kwargs = {}
-        for key in kwargs.keys():
-            if key in ('ipmi_uuid', 'ipmi_mac', 'ipmi_addr'):
-                if len(kwargs.get(key)) > 1:
-                    return False
-                else:
-                    new_kwargs[key] = kwargs.get(key)[0]
-
-        if new_kwargs:
-            try:
-                logger.debug("IPMIList@exist_object@new_kwargs:%s" % str(new_kwargs))
-                logger.debug("IPMIList@exist_object@objects:%s" % str(self.queryset.get(**new_kwargs)))
-                return self.queryset.get(**new_kwargs)
-            except IPMI.DoesNotExist:
-                return False
+    def get_queryset(self, filters = None):
+        if filters:
+            return IPMI.objects.all().filter(**filters)
+        else:
+            return IPMI.objects.all()
 
     def get(self, request, format=None):
         """
         Get all ipmi objects.
         """
         query_params = request.query_params
-        if query_params and (query_params.get('ipmi_addr') or
-                             query_params.get('ipmi_uuid') or
-                             query_params.get('ipmi_mac')):
-            if not self.exist_object(**query_params):
-                # raise Http404
-                return Response({
-                    "status": "Not Found.",
-                    "status_code": status.HTTP_404_NOT_FOUND,
-                    "data": []
-                })
-            else:
-                return Response({
-                    "status": "Success.",
-                    "status_code": status.HTTP_200_OK
-                })
-        else:
-            queryset = self.paginate_queryset(self.get_queryset())
-            serializer = self.get_serializer(queryset, many=True,
-                                             context={'request': request})
-            return self.get_paginated_response(serializer.data)
+        filters = {}
+
+        ipmi_addr = query_params.get('ipmi_addr')
+        if ipmi_addr:
+            filters.update({'ipmi_addr': ipmi_addr})
+
+        power_state = query_params.get('power_state')
+        if power_state:
+            filters.update({'power_state': power_state})
+
+        queryset = self.paginate_queryset(self.get_queryset(filters))
+        serializer = self.get_serializer(queryset, many = True,
+                                         context = {'request': request})
+        return self.get_paginated_response(serializer.data)
 
     def post(self, request):
         """
@@ -88,33 +73,10 @@ class IPMIList(generics.GenericAPIView):
                 "status_code": status.HTTP_201_CREATED,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request):
-        """
-        Modify ipmi information.
-        """
-        try:
-            ipmi_addr = request.data.get("ipmi_addr")
-            if ipmi_addr is None:
-                raise CustomException("You need to set ipmi_addr in post.",
-                                      status_code=status.HTTP_400_BAD_REQUEST)
-            ipmi = self.queryset.get(ipmi_addr=ipmi_addr)
-            serializer = IPMISerializer(ipmi, data=request.data,
-                                        context={'request': request},
-                                        partial=True)
-            if serializer.is_valid():
-                ipmi = serializer.update(ipmi, serializer.validated_data)
-                serializer = IPMISerializer(ipmi, context={'request': request})
-                return Response({
-                    "status": "Updated Success",
-                    "status_code": status.HTTP_200_OK,
-                    "data": serializer.data
-                })
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except IPMI.DoesNotExist:
-            raise CustomException("Not Found the IPMI Instance.",
-                                  status_code=status.HTTP_404_NOT_FOUND)
+        return Response({
+            'status': 'Bad Request',
+            'message': serializer.errors,
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class IPMIDetail(generics.GenericAPIView):
@@ -161,7 +123,10 @@ class IPMIDetail(generics.GenericAPIView):
                 "status_code": status.HTTP_200_OK,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'status': 'Bad Request',
+            'message': serializer.errors,
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, ipmi_uuid, format=None):
         ipmi = self.get_object(ipmi_uuid)
@@ -177,14 +142,28 @@ class TagList(generics.GenericAPIView):
     serializer_class = TagSerializer
     queryset = Tag.objects.all().order_by('tag_name')
     lookup_field = 'tag_uuid'
+    filter_backends = (DjangoFilterBackend,)
+
+    def get_queryset(self, filters = None):
+        if filters:
+            return Tag.objects.all().filter(**filters)
+        else:
+            return Tag.objects.all()
 
     def get(self, request, format=None):
         """
         Get all tag objects.
         """
-        queryset = self.paginate_queryset(self.get_queryset())
-        serializer = self.get_serializer(queryset, many=True,
-                                         context={'request': request})
+        query_params = request.query_params
+        filters = {}
+
+        tag_name = query_params.get('tag_name')
+        if tag_name:
+            filters.update({'tag_name__icontains': tag_name})
+
+        queryset = self.paginate_queryset(self.get_queryset(filters))
+        serializer = self.get_serializer(queryset, many = True,
+                                         context = {'request': request})
         return self.get_paginated_response(serializer.data)
 
     def post(self, request):
@@ -201,7 +180,10 @@ class TagList(generics.GenericAPIView):
                 "status_code": status.HTTP_201_CREATED,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'status': 'Bad Request',
+            'message': serializer.errors,
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TagDetail(generics.GenericAPIView):
@@ -247,7 +229,10 @@ class TagDetail(generics.GenericAPIView):
                 "status_code": status.HTTP_200_OK,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'status': 'Bad Request',
+            'message': serializer.errors,
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class HostList(generics.GenericAPIView):
@@ -258,48 +243,37 @@ class HostList(generics.GenericAPIView):
     serializer_class = HostListSerializer
     queryset = Host.objects.all().order_by('hostname')
     lookup_field = 'host_uuid'
+    filter_backends = (DjangoFilterBackend,)
 
-    def exist_object(self, **kwargs):
-        new_kwargs = {}
-        for key in kwargs.keys():
-            if key in ('host_uuid', 'mgmt_mac', 'mgmt_ip_addr', 'hostname'):
-                if len(kwargs.get(key)) > 1:
-                    return False
-                else:
-                    new_kwargs[key] = kwargs.get(key)[0]
-
-        if new_kwargs:
-            try:
-                logger.debug("HostList@exist_object@new_kwargs:%s" % str(new_kwargs))
-                logger.debug("HostList@exist_object@objects:%s" % str(self.queryset.get(**new_kwargs)))
-                return self.queryset.get(**new_kwargs)
-            except Host.DoesNotExist:
-                return False
+    def get_queryset(self, filters = None):
+        if filters:
+            return Host.objects.all().filter(**filters)
+        else:
+            return Host.objects.all()
 
     def get(self, request, format=None):
         """
         Get all host objects.
         """
         query_params = request.query_params
-        if query_params and (query_params.get('mgmt_ip_addr') or
-                             query_params.get('host_uuid') or
-                             query_params.get('mgmt_mac') or
-                             query_params.get('hostname')):
-            if not self.exist_object(**query_params):
-                return Response({
-                    "status": "Failed.",
-                    "status_code": status.HTTP_404_NOT_FOUND
-                })
-            else:
-                return Response({
-                    "status": "Success.",
-                    "status_code": status.HTTP_200_OK
-                })
-        else:
-            queryset = self.paginate_queryset(self.get_queryset())
-            serializer = self.get_serializer(queryset, many=True,
-                                             context={'request': request})
-            return self.get_paginated_response(serializer.data)
+        filters = {}
+
+        mgmt_mac = query_params.get('mgmt_mac')
+        if mgmt_mac:
+            filters.update({'mgmt_mac': mgmt_mac})
+
+        hostname = query_params.get('hostname')
+        if hostname:
+            filters.update({'hostname': hostname})
+
+        mgmt_ip_addr = query_params.get('mgmt_ip_addr')
+        if mgmt_ip_addr:
+            filters.update({'mgmt_ip_addr': mgmt_ip_addr})
+
+        queryset = self.paginate_queryset(self.get_queryset(filters))
+        serializer = self.get_serializer(queryset, many = True,
+                                         context = {'request': request})
+        return self.get_paginated_response(serializer.data)
 
     def post(self, request):
         """
@@ -315,7 +289,10 @@ class HostList(generics.GenericAPIView):
                 "status_code": status.HTTP_201_CREATED,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'status': 'Bad Request',
+            'message': serializer.errors,
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class HostDetail(generics.GenericAPIView):
@@ -365,7 +342,10 @@ class HostDetail(generics.GenericAPIView):
                 "status_code": status.HTTP_200_OK,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'status': 'Bad Request',
+            'message': serializer.errors,
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, host_uuid, format=None):
         host = self.get_object(host_uuid)
@@ -383,47 +363,29 @@ class StorageList(generics.GenericAPIView):
     serializer_class = StorageSerializer
     queryset = Storage.objects.all().order_by('storage_name')
     lookup_field = 'storage_uuid'
+    filter_backends = (DjangoFilterBackend,)
 
-    def exist_object(self, **kwargs):
-        new_kwargs = {}
-        for key in kwargs.keys():
-            if key in ('storage_uuid', 'storage_name', 'storage_path'):
-                if len(kwargs.get(key)) > 1:
-                    return False
-                else:
-                    new_kwargs[key] = kwargs.get(key)[0]
-
-        if new_kwargs:
-            try:
-                logger.debug("StorageList@exist_object@new_kwargs:%s" % str(new_kwargs))
-                logger.debug("StorageList@exist_object@objects:%s" % str(self.queryset.get(**new_kwargs)))
-                return self.queryset.get(**new_kwargs)
-            except Host.DoesNotExist:
-                return False
+    def get_queryset(self, filters = None):
+        if filters:
+            return Storage.objects.all().filter(**filters)
+        else:
+            return Storage.objects.all()
 
     def get(self, request, format=None):
         """
         Get all storage objects.
         """
         query_params = request.query_params
-        if query_params and (query_params.get('storage_uuid') or
-                             query_params.get('storage_name') or
-                             query_params.get('storage_path')):
-            if not self.exist_object(**query_params):
-                return Response({
-                    "status": "Failed.",
-                    "status_code": status.HTTP_404_NOT_FOUND
-                })
-            else:
-                return Response({
-                    "status": "Success.",
-                    "status_code": status.HTTP_200_OK
-                })
-        else:
-            queryset = self.paginate_queryset(self.get_queryset())
-            serializer = self.get_serializer(queryset, many=True,
-                                             context={'request': request})
-            return self.get_paginated_response(serializer.data)
+        filters = {}
+
+        storage_name = query_params.get('storage_name')
+        if storage_name:
+            filters.update({'storage_name': storage_name})
+
+        queryset = self.paginate_queryset(self.get_queryset(filters))
+        serializer = self.get_serializer(queryset, many = True,
+                                         context = {'request': request})
+        return self.get_paginated_response(serializer.data)
 
     def post(self, request):
         """
@@ -440,7 +402,10 @@ class StorageList(generics.GenericAPIView):
                 "status_code": status.HTTP_201_CREATED,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'status': 'Bad Request',
+            'message': serializer.errors,
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class StorageDetail(generics.GenericAPIView):
@@ -487,4 +452,7 @@ class StorageDetail(generics.GenericAPIView):
                 "status_code": status.HTTP_200_OK,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'status': 'Bad Request',
+            'message': serializer.errors,
+        }, status=status.HTTP_400_BAD_REQUEST)

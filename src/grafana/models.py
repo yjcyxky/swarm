@@ -32,9 +32,9 @@ class Panel(models.Model):
     panel_type = models.CharField(max_length=32, choices=PANEL_TYPE, default='LineChart', help_text='Chart type.')
     refresh = models.BooleanField(default=True, help_text='Return True if you want to refresh panel.')
     refresh_interval = models.PositiveIntegerField(help_text='Refresh Interval (default: second).')
-    tag_name = models.CharField(max_length=32)
+    tag_name = models.CharField(max_length=32, null=True, blank=True)
     title = models.CharField(max_length=255, help_text='Panel name.')
-    created_time = models.DateTimeField()
+    created_time = models.DateTimeField(auto_now_add=True, blank=True)
 
     def __str__(self):
         return self.panel_uuid
@@ -47,7 +47,7 @@ class Dashboard(models.Model):
     dashboard_uuid = models.CharField(max_length=36, primary_key=True)
     title = models.CharField(max_length=255, help_text='Dashboard name.')
     dashboard_model = models.TextField(help_text="JSON string for the dashboard.")
-    created_time = models.DateTimeField()
+    created_time = models.DateTimeField(auto_now_add=True, blank=True)
 
     def __str__(self):
         return self.dashboard_uuid

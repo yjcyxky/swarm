@@ -17,7 +17,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
 from django.db.models import (Count, Sum)
-import django_filters.rest_framework
+from django_filters.rest_framework import DjangoFilterBackend
 from sscluster.models import (Cluster, JobLog, ToDoList)
 from sscluster.pagination import CustomPagination
 from sscluster.exceptions import CustomException
@@ -33,50 +33,31 @@ class ClusterList(generics.GenericAPIView):
     """
     pagination_class = CustomPagination
     serializer_class = ClusterSerializer
-
     queryset = Cluster.objects.all().order_by('cluster_name')
     lookup_field = 'cluster_uuid'
+    filter_backends = (DjangoFilterBackend,)
 
-    def exist_object(self, **kwargs):
-        new_kwargs = {}
-        for key in kwargs.keys():
-            if key in ('cluster_uuid', 'cluster_name'):
-                if len(kwargs.get(key)) > 1:
-                    return False
-                else:
-                    new_kwargs[key] = kwargs.get(key)[0]
-
-        if new_kwargs:
-            try:
-                logger.debug("ClusterList@exist_object@new_kwargs:%s" % str(new_kwargs))
-                logger.debug("ClusterList@exist_object@objects:%s" % str(self.queryset.get(**new_kwargs)))
-                return self.queryset.get(**new_kwargs)
-            except Cluster.DoesNotExist:
-                return False
+    def get_queryset(self, filters = None):
+        if filters:
+            return Cluster.objects.all().filter(**filters)
+        else:
+            return Cluster.objects.all()
 
     def get(self, request, format = None):
         """
         Get all cluster objects.
         """
         query_params = request.query_params
-        if query_params and (query_params.get('cluster_uuid') or \
-                             query_params.get('cluster_name')):
-            if not self.exist_object(**query_params):
-                return Response({
-                    "status": "Not Found.",
-                    "status_code": status.HTTP_404_NOT_FOUND,
-                    "data": []
-                })
-            else:
-                return Response({
-                    "status": "Success.",
-                    "status_code": status.HTTP_200_OK
-                })
-        else:
-            queryset = self.paginate_queryset(self.get_queryset())
-            serializer = self.get_serializer(queryset, many = True,
-                                             context = {'request': request})
-            return self.get_paginated_response(serializer.data)
+        filters = {}
+
+        cluster_name = query_params.get('cluster_name')
+        if cluster_name:
+            filters.update({'cluster_name': cluster_name})
+
+        queryset = self.paginate_queryset(self.get_queryset(filters))
+        serializer = self.get_serializer(queryset, many = True,
+                                         context = {'request': request})
+        return self.get_paginated_response(serializer.data)
 
     def post(self, request):
         """
@@ -148,16 +129,13 @@ class JobLogList(generics.GenericAPIView):
     serializer_class = JobLogSerializer
     queryset = JobLog.objects.all().order_by('-jobid')
     lookup_field = 'job_uuid'
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend,)
 
     def get_queryset(self, filters = None):
-        try:
-            if filters:
-                return JobLog.objects.all().filter(**filters).order_by('-jobid')
-            else:
-                return JobLog.objects.all().order_by('-jobid')
-        except JobLog.DoesNotExist:
-            raise CustomException("Not Found the JobLog.", status_code = status.HTTP_404_NOT_FOUND)
+        if filters:
+            return JobLog.objects.all().filter(**filters)
+        else:
+            return JobLog.objects.all()
 
     def get(self, request, format = None):
         """
@@ -349,52 +327,25 @@ class ToDoListList(generics.GenericAPIView):
     serializer_class = ToDoListSerializer
     queryset = ToDoList.objects.all().order_by('item_name')
     lookup_field = 'id'
+    filter_backends = (DjangoFilterBackend,)
 
-    def exist_object(self, **kwargs):
-        new_kwargs = {}
-        for key in kwargs.keys():
-            if key in ('item_name'):
-                if len(kwargs.get(key)) > 1:
-                    return False
-                else:
-                    new_kwargs[key] = kwargs.get(key)[0]
-
-        if new_kwargs:
-            try:
-                logger.debug("ToDoListList@exist_object@new_kwargs:%s" % str(new_kwargs))
-                logger.debug("ToDoListList@exist_object@objects:%s" % str(self.queryset.get(**new_kwargs)))
-                return self.queryset.get(**new_kwargs)
-            except ToDoList.DoesNotExist:
-                return False
-
-    def get_objects(self, user):
-        try:
-            return ToDoList.objects.all().filter(user = user).order_by('checked_status', 'item_name')
-        except ToDoList.DoesNotExist:
-            raise CustomException("Not Found the ToDoList.", status_code = status.HTTP_404_NOT_FOUND)
+    def get_queryset(self, filters = None):
+        if filters:
+            return ToDoList.objects.all().filter(**filters)
+        else:
+            return ToDoList.objects.all()
 
     def get(self, request, format = None):
         """
         Get all ToDoList objects.
         """
         query_params = request.query_params
-        if query_params and query_params.get('item_name'):
-            if not self.exist_object(**query_params):
-                return Response({
-                    "status": "Not Found.",
-                    "status_code": status.HTTP_404_NOT_FOUND,
-                    "data": []
-                })
-            else:
-                return Response({
-                    "status": "Success.",
-                    "status_code": status.HTTP_200_OK
-                })
-        else:
-            queryset = self.paginate_queryset(self.get_objects(request.user))
-            serializer = self.get_serializer(queryset, many = True,
-                                             context = {'request': request})
-            return self.get_paginated_response(serializer.data)
+        filters = {'user': request.user}
+
+        queryset = self.paginate_queryset(self.get_queryset(filters))
+        serializer = self.get_serializer(queryset, many = True,
+                                            context = {'request': request})
+        return self.get_paginated_response(serializer.data)
 
     def post(self, request):
         """

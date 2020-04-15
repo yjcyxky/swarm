@@ -41,7 +41,6 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             instance.set_password(kwargs.get('password'))
             logger.debug("UserSerializer@update@reset_password@%s" % kwargs.get('password'))
 
-        logger.debug("UserSerializer@update@validated_data.password@%s" % validated_data.get('password'))
-        logger.debug("UserSerializer@update@intance.password@%s" % instance.password)
+        logger.debug("UserSerializer@update@validated_data@%s" % validated_data)
         instance.save()
         return instance

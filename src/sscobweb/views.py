@@ -9,13 +9,13 @@
 #  Author: Jingcheng Yang <yjcyxky@163.com>
 
 import logging
-import django_filters.rest_framework
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
+from django_filters.rest_framework import DjangoFilterBackend
 from sscobweb.models import (Channel, Package, CobwebSetting)
 from sscobweb.pagination import CustomPagination
 from sscobweb.exceptions import CustomException
@@ -35,57 +35,29 @@ class ChannelList(generics.GenericAPIView):
     serializer_class = ChannelSerializer
     queryset = Channel.objects.all().order_by('is_active')
     lookup_field = 'channel_uuid'
+    filter_backends = (DjangoFilterBackend,)
 
-    def exist_object(self, **kwargs):
-        new_kwargs = {}
-        for key in kwargs.keys():
-            if key in ('channel_uuid', 'channel_name', 'md5sum'):
-                if len(kwargs.get(key)) > 1:
-                    return False
-                else:
-                    new_kwargs[key] = kwargs.get(key)[0]
-
-        if new_kwargs:
-            try:
-                logger.debug("ChannelList@exist_object@new_kwargs:%s" %
-                             str(new_kwargs))
-                logger.debug("ChannelList@exist_object@objects:%s" %
-                             str(self.queryset.get(**new_kwargs)))
-                return self.queryset.get(**new_kwargs)
-            except Channel.DoesNotExist:
-                return False
-
-    def get_object(self, channel_name):
-        try:
-            return self.queryset.get(channel_name=channel_name)
-        except Channel.DoesNotExist:
-            raise CustomException("Not Found the Channel.",
-                                  status_code=status.HTTP_404_NOT_FOUND)
+    def get_queryset(self, filters = None):
+        if filters:
+            return Channel.objects.all().filter(**filters)
+        else:
+            return Channel.objects.all()
 
     def get(self, request, format=None):
         """
         Get all channel objects.
         """
         query_params = request.query_params
-        if query_params and (query_params.get('channel_uuid') or
-                             query_params.get('channel_name') or
-                             query_params.get('md5sum')):
-            if not self.exist_object(**query_params):
-                return Response({
-                    "status": "Not Found.",
-                    "status_code": status.HTTP_404_NOT_FOUND,
-                    "data": []
-                })
-            else:
-                return Response({
-                    "status": "Success.",
-                    "status_code": status.HTTP_200_OK
-                })
-        else:
-            queryset = self.paginate_queryset(self.get_queryset())
-            serializer = self.get_serializer(queryset, many=True,
-                                             context={'request': request})
-            return self.get_paginated_response(serializer.data)
+        filters = {}
+
+        channel_name = query_params.get('channel_name')
+        if channel_name:
+            filters.update({'channel_name__icontains': channel_name})
+
+        queryset = self.paginate_queryset(self.get_queryset(filters))
+        serializer = self.get_serializer(queryset, many = True,
+                                         context = {'request': request})
+        return self.get_paginated_response(serializer.data)
 
     def post(self, request):
         """
@@ -110,7 +82,10 @@ class ChannelList(generics.GenericAPIView):
                 "status_code": status.HTTP_201_CREATED,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'status': 'Bad Request',
+            'message': serializer.errors,
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ChannelDetail(generics.GenericAPIView):
@@ -179,20 +154,16 @@ class PackageList(generics.GenericAPIView):
     serializer_class = PackageSerializer
     queryset = Package.objects.all().order_by('pkg_name')
     lookup_field = 'pkg_uuid'
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend,)
 
     def get_queryset(self, filters=None):
-        try:
-            if filters:
-                return Package.objects.all()\
-                                      .filter(**filters)\
-                                      .order_by('pkg_name', 'is_installed')
-            else:
-                return Package.objects.all()\
-                                      .order_by('pkg_name', 'is_installed')
-        except Package.DoesNotExist:
-            raise CustomException("Not Found the Packages.",
-                                  status_code=status.HTTP_404_NOT_FOUND)
+        if filters:
+            return Package.objects.all()\
+                          .filter(**filters)\
+                          .order_by('pkg_name', 'is_installed')
+        else:
+            return Package.objects.all()\
+                          .order_by('pkg_name', 'is_installed')
 
     def get(self, request, format=None):
         """
@@ -200,30 +171,26 @@ class PackageList(generics.GenericAPIView):
         """
         query_params = request.query_params
 
-        try:
-            filters = {}
-            name = query_params.get('name', '')
-            name = name if len(name) > 0 else None
-            is_installed = query_params.get('is_installed')
-            installed_time = query_params.get('installed_time',
-                                              '2100-12-12 08:00:00')
-            created_date = query_params.get('created_date')
-            if created_date:
-                filters.update({
-                    'created_date__gt': created_date,
-                })
-            if is_installed:
-                filters.update({
-                    'is_installed': bool(is_installed),
-                    'installed_time__lt': installed_time,
-                })
-            if name:
-                filters.update({
-                    'name__contains': name
-                })
-        except ValueError:
-            raise CustomException("Bad Request.",
-                                  status_code=status.HTTP_400_BAD_REQUEST)
+        filters = {}
+        name = query_params.get('name', '')
+        name = name if len(name) > 0 else None
+        is_installed = query_params.get('is_installed')
+        installed_time = query_params.get('installed_time',
+                                            '2100-12-12 08:00:00')
+        created_date = query_params.get('created_date')
+        if created_date:
+            filters.update({
+                'created_date__gt': created_date,
+            })
+        if is_installed:
+            filters.update({
+                'is_installed': bool(is_installed),
+                'installed_time__lt': installed_time,
+            })
+        if name:
+            filters.update({
+                'name__contains': name
+            })
 
         queryset = self.paginate_queryset(self.get_queryset(filters))
         serializer = self.get_serializer(queryset, many=True,
@@ -245,7 +212,10 @@ class PackageList(generics.GenericAPIView):
                 "status_code": status.HTTP_201_CREATED,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'status': 'Bad Request',
+            'message': serializer.errors,
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PackageDetail(generics.GenericAPIView):
@@ -304,7 +274,10 @@ class PackageDetail(generics.GenericAPIView):
                 "status_code": status.HTTP_200_OK,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'status': 'Bad Request',
+            'message': serializer.errors,
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SettingList(generics.GenericAPIView):
@@ -315,7 +288,7 @@ class SettingList(generics.GenericAPIView):
     serializer_class = SettingSerializer
     queryset = CobwebSetting.objects.all().order_by('name')
     lookup_field = 'setting_uuid'
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend,)
 
     def get_queryset(self, filters=None):
         try:
@@ -383,7 +356,10 @@ class SettingList(generics.GenericAPIView):
                 "status_code": status.HTTP_201_CREATED,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'status': 'Bad Request',
+            'message': serializer.errors,
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SettingDetail(generics.GenericAPIView):
@@ -430,4 +406,7 @@ class SettingDetail(generics.GenericAPIView):
                 "status_code": status.HTTP_200_OK,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'status': 'Bad Request',
+            'message': serializer.errors,
+        }, status=status.HTTP_400_BAD_REQUEST)

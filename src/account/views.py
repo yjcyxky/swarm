@@ -15,11 +15,11 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
+from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from account.serializers import (UserSerializer)
 from account.pagination import CustomPagination
-from account.exceptions import CustomException
 
 logger = logging.getLogger(__name__)
 
@@ -32,51 +32,37 @@ class UserList(generics.GenericAPIView):
     serializer_class = UserSerializer
     queryset = User.objects.all().order_by("username")
     lookup_field = 'id'
+    filter_backends = (DjangoFilterBackend,)
 
-    def exist_object(self, **kwargs):
-        new_kwargs = {}
-        for key in kwargs.keys():
-            if key in ('id', 'username', 'email'):
-                if len(kwargs.get(key)) > 1:
-                    return False
-                else:
-                    new_kwargs[key] = kwargs.get(key)[0]
-
-        if new_kwargs:
-            try:
-                logger.debug("UserList@exist_object@new_kwargs:%s" %
-                             str(new_kwargs))
-                logger.debug("UserList@exist_object@objects:%s" %
-                             str(self.queryset.get(**new_kwargs)))
-                return self.queryset.get(**new_kwargs)
-            except User.DoesNotExist:
-                return False
+    def get_queryset(self, filters = None):
+        if filters:
+            return User.objects.all().filter(**filters)
+        else:
+            return User.objects.all()
 
     def get(self, request, format=None):
         """
         Get all users.
         """
         query_params = request.query_params
-        if query_params and (query_params.get('id') or
-                             query_params.get('username') or
-                             query_params.get('email')):
-            if not self.exist_object(**query_params):
-                return Response({
-                    "status": "Not Found.",
-                    "status_code": status.HTTP_404_NOT_FOUND,
-                    "data": []
-                })
-            else:
-                return Response({
-                    "status": "Success.",
-                    "status_code": status.HTTP_200_OK,
-                    "data": []
-                })
-        else:
-            queryset = self.paginate_queryset(self.get_queryset())
-            serializer = self.get_serializer(queryset, many=True,
-                                             context={'request': request})
-            return self.get_paginated_response(serializer.data)
+        filters = {}
+
+        username = query_params.get('username')
+        if username:
+            filters.update({'username': username})
+
+        is_staff = query_params.get('is_staff')
+        if is_staff:
+            filters.update({'is_staff': True if is_staff == 'true' else False})
+
+        is_active = query_params.get('is_active')
+        if is_active:
+            filters.update({'is_staff': True if is_active == 'true' else False})
+
+        queryset = self.paginate_queryset(self.get_queryset(filters))
+        serializer = self.get_serializer(queryset, many = True,
+                                         context = {'request': request})
+        return self.get_paginated_response(serializer.data)
 
     def post(self, request):
         """
@@ -92,34 +78,10 @@ class UserList(generics.GenericAPIView):
                 "status_code": status.HTTP_201_CREATED,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request):
-        """
-        Modify account information for the user.
-        """
-        try:
-            username = request.data.get("username")
-            if username is None:
-                raise CustomException("You need to set username in post.",
-                                      status_code=status.HTTP_400_BAD_REQUEST)
-            user = self.queryset.get(username=username)
-            serializer = UserSerializer(user, data=request.data,
-                                        context={'request': request},
-                                        partial=True)
-            if serializer.is_valid():
-                user = serializer.update(user, serializer.validated_data)
-                serializer = UserSerializer(user, context={'request': request})
-                return Response({
-                    "status": "Updated Success",
-                    "status_code": status.HTTP_200_OK,
-                    "data": serializer.data
-                })
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
-        except User.DoesNotExist:
-            raise CustomException("Not Found the User.",
-                                  status_code=status.HTTP_404_NOT_FOUND)
+        return Response({
+            'status': 'Bad Request',
+            'message': serializer.errors,
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserDetail(APIView):
@@ -159,22 +121,17 @@ class UserDetail(APIView):
                                     context={'request': request},
                                     partial=True)
         if serializer.is_valid():
-            query_params = request.query_params
-            if query_params.get("resetPassword"):
-                password = user.username
-                logger.debug("UserDetail@put@password@%s" % password)
-            else:
-                password = None
-
-            user = serializer.update(user, serializer.validated_data,
-                                     password=password)
+            user = serializer.update(user, serializer.validated_data)
             serializer = UserSerializer(user, context={'request': request})
             return Response({
                 "status": "Updated Success",
                 "status_code": status.HTTP_200_OK,
                 "data": serializer.data
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'status': 'Bad Request',
+            'message': serializer.errors,
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
         """

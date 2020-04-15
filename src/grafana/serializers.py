@@ -29,7 +29,7 @@ class PanelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Panel
         fields = ('panel_uuid', 'db_name', 'query_str', 'panel_type',
-                  'refresh', 'refresh_interval', 'tag_name',
+                  'refresh', 'refresh_interval', 'tag_name', 'title',
                   'created_time')
         lookup_field = 'panel_uuid'
 
